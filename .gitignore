@@ -1,0 +1,25 @@
+# Entorno virtual
+.venv/
+venv/
+ENV/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Credenciales y secretos
+.env
+credentials.json
+
+# Archivos de salida y temporales
+temp/
+output/
+*.mp3
+
+# Otros
+.DS_Store
+.idea/
+.vscode/
