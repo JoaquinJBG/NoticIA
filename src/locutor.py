@@ -25,7 +25,7 @@ async def procesar_guion_a_audio(guion_texto):
             nombre_locutor = "Álex"
         elif "santi:" in linea_lower:
             texto = linea.split(":", 1)[1].strip()
-            voz = "es-ES-ElviraNeural" # Cambiado a Elvira para que se note la diferencia al 100%
+            voz = Config.VOZ_SANTI
             nombre_locutor = "Santi"
         else:
             # Si no hay prefijo claro, intentamos adivinarlo o lo saltamos

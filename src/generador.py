@@ -24,6 +24,7 @@ def construir_guion(datos_noticias):
 def construir_bloque(categoria, noticias):
     # Prompt específico para cada bloque para forzar la profundidad
     prompt_bloque = f"{Config.get_prompt_sistema()}\n\n"
+    prompt_bloque += f"CONTEXTO GENERAL:\n{Config.get_contexto()}\n\n"
     prompt_bloque += f"BLOQUE ACTUAL: {categoria.upper()}\n"
     prompt_bloque += "INSTRUCCIONES DE DURACIÓN: Este bloque debe durar al menos 8-10 minutos de charla. "
     prompt_bloque += "No te limites a leer las noticias. Debatid sobre ellas, buscad el ángulo polémico, "
