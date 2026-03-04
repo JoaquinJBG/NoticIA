@@ -1,22 +1,24 @@
 import asyncio
 import edge_tts
+import os
 
-async def prueba_voces():
-    # Texto de prueba para cada uno
-    test_alex = "Hola, soy Álex. Me encargo de analizar los sesgos de la prensa española y la geopolítica china. Hoy el ambiente está tenso."
-    test_santi = "¡Qué pasa! Aquí Santi. Olvidaos de los servidores, lo que mola es esta nueva IA que ha salido en Xataka. ¡Es una locura!"
-
-    # Generar audio de Álex
-    print("Grabando a Álex...")
-    communicate_alex = edge_tts.Communicate(test_alex, "es-ES-AlvaroNeural")
-    await communicate_alex.save("test_alex.mp3")
-
-    # Generar audio de Santi
-    print("Grabando a Santi...")
-    communicate_santi = edge_tts.Communicate(test_santi, "es-ES-EliasNeural")
-    await communicate_santi.save("test_santi.mp3")
-
-    print("✅ ¡Prueba terminada! Busca los archivos test_alex.mp3 y test_santi.mp3 en tu carpeta.")
+async def test_all_spanish_voices():
+    # Buscamos todas las voces de España (es-ES)
+    voices = await edge_tts.VoicesManager.create()
+    es_voices = voices.find(Locale="es-ES")
+    
+    os.makedirs("test_voces", exist_ok=True)
+    
+    print(f"🔊 Probando {len(es_voices)} voces de España...")
+    
+    for v in es_voices:
+        short_name = v["ShortName"]
+        file_path = f"test_voces/{short_name}.mp3"
+        texto = f"Hola, soy la voz {short_name}. ¿Qué te parece cómo sueno para el podcast?"
+        
+        print(f"Generando: {short_name}...")
+        communicate = edge_tts.Communicate(texto, short_name)
+        await communicate.save(file_path)
 
 if __name__ == "__main__":
-    asyncio.run(prueba_voces())
+    asyncio.run(test_all_spanish_voices())
