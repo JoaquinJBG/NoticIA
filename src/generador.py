@@ -39,7 +39,7 @@ def llamar_ia(system_prompt, user_prompt):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.7,
+            temperature=0.85, # Mayor creatividad para evitar bucles
             max_tokens=4096
         )
         return completion.choices[0].message.content
@@ -86,8 +86,11 @@ def construir_bloque(categoria, noticias):
     prompt_sistema = f"{Config.get_prompt_sistema()}\n\nCONTEXTO GENERAL:\n{Config.get_contexto()}"
     prompt_usuario = f"""
     BLOQUE ACTUAL: {categoria.upper()}
-    INSTRUCCIONES: Charlad sobre estas noticias durante al menos 8-10 minutos. 
-    Aportad contexto, debatid con pasión y bajad la noticia al suelo.
+    INSTRUCCIONES CRÍTICAS: 
+    - NO REPITAS frases como "Sí, es cierto", "Exacto", "Tienes razón" al inicio de cada frase.
+    - VARÍA las transiciones y la estructura de las respuestas.
+    - Charlad de forma apasionada y profunda sobre estas noticias durante 8-10 minutos. 
+    - Bajad la noticia al suelo y aportad contexto real.
     
     NOTICIAS:
     {str(noticias)}

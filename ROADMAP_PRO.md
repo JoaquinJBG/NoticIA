@@ -17,9 +17,10 @@ Este documento marca el camino para elevar la calidad de NoticIA al nivel de los
 - [ ] **Sumario Dinámico:** Álex y Santi presentan los 3 temas más potentes al inicio.
 - [ ] **Cierre y CTA:** Despedida profesional animando a seguir el podcast.
 
-### 2. ⚪ Dinamismo y Solapamiento (`feat/dinamismo-voces`)
-- [ ] **Cross-fading de voces:** Solapamiento de 200ms-300ms entre intervenciones.
-- [ ] **Reacciones Cortas:** Inyectar fragmentos de "claro", "sí", "increíble" de fondo.
+### 2. 🟢 Dinamismo y Solapamiento (`R-4-Dinamismo-y-solapamiento`)
+- [x] **Cross-fading de voces:** Solapamiento de 250ms entre intervenciones.
+- [x] **Reducción de repeticiones:** Ajuste de temperatura y prompts para evitar bucles.
+- [ ] **Reacciones Cortas:** (Opcional, pospuesto por petición del usuario).
 
 ### 3. ⚪ Paisaje Sonoro Dinámico (`feat/diseno-sonoro`)
 - [ ] **Música por categoría:** Cambiar la sintonía de fondo según el tema (Tensión, Tech, Chill).

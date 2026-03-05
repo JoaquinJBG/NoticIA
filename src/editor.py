@@ -7,28 +7,37 @@ def ensamblar_podcast(fragmentos, archivo_salida="noticIA_final.mp3"):
         print("❌ No hay fragmentos de voz para unir.")
         return
 
-    print("🎬 Iniciando montaje final con sintonía...")
-    
+    print("🎬 Iniciando montaje final con sintonía y solapamiento dinámico...")
+
     # Usamos la sintonía configurada
     ruta_sintonia = Config.RUTA_SINTONIA
-    
-    # 2. Unimos las voces primero
-    voces = AudioSegment.empty()
-    pausa_entre_voces = AudioSegment.silent(duration=500) 
 
-    for archivo in fragmentos:
-        segmento = AudioSegment.from_mp3(archivo)
-        voces += segmento + pausa_entre_voces
+    # 2. Unimos las voces con solapamiento inteligente (crossfade)
+    voces = AudioSegment.empty()
+    ms_solapamiento = 250 # Milisegundos que se pisan las voces para naturalidad
+
+    for i in range(len(fragmentos)):
+        try:
+            segmento_actual = AudioSegment.from_mp3(fragmentos[i])
+            if i == 0:
+                voces = segmento_actual
+            else:
+                # El crossfade de pydub hace que el final de 'voces' se mezcle con el inicio de 'segmento_actual'
+                voces = voces.append(segmento_actual, crossfade=ms_solapamiento)
+        except Exception as e:
+            print(f"⚠️ Error procesando fragmento {fragmentos[i]}: {e}")
+            continue
 
     # 3. Cargamos y mezclamos la música
     try:
         if os.path.exists(ruta_sintonia):
             musica = AudioSegment.from_mp3(ruta_sintonia)
-            musica = musica - 28  # Volumen de fondo casi imperceptible para tertulias largas
+            musica = musica - 28  # Volumen de fondo muy bajo
             
             # Repetir música si el podcast es largo
             if len(musica) < len(voces):
-                musica = musica * (len(voces) // len(musica) + 1)
+                veces_repetir = (len(voces) // len(musica)) + 1
+                musica = musica * veces_repetir
             
             # Ajustar duración y aplicar fundidos
             musica = musica[:len(voces) + 2000]
