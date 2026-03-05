@@ -27,9 +27,10 @@ Este documento marca el camino para elevar la calidad de NoticIA al nivel de los
 - [x] **Efecto Ráfaga:** Música con volumen alto al inicio de cada bloque para impacto.
 - [x] **Transiciones suaves:** Fundidos encadenados entre bloques musicales.
 
-### 4. ⚪ Investigación Profunda (`feat/investigacion-pro`)
-- [ ] **Contexto Expandido:** Gemini genera un "briefing" de contexto antes del guion.
-- [ ] **Curiosidades:** Inclusión de datos históricos o analogías pop no presentes en el RSS.
+### 4. 🟢 Investigación Profunda (`R-6-investigacion-profunda`)
+- [x] **Doble pasada de IA:** Generación de un Briefing de Contexto antes del guion.
+- [x] **Autoridad y Datos:** Inclusión de antecedentes históricos y curiosidades culturales.
+- [x] **Analogías Pop:** Comparaciones con cine y series para mayor amenidad.
 
 ### 5. ⚪ Post-producción de Audio (`feat/mastering-audio`)
 - [ ] **Mastering Digital:** Aplicar compresión y normalización de picos a la mezcla final.
