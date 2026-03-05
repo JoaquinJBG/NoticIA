@@ -33,6 +33,6 @@ Este documento marca el camino para elevar la calidad de NoticIA al nivel de los
 - [x] **Mastering Digital:** Normalización, compresión y limitación profesional.
 - [x] **EQ de voces:** Refuerzo de graves para calidez de estudio.
 
-### 6. ⚪ Frikismo y Cinefilia (`R-8-frikismo-y-cine`)
-- [ ] **Bloque Friki Especializado:** Enfoque en Anime (España), Nintendo y Pokémon (VGC/Leaks).
-- [ ] **Recomendación de Cine de Culto:** Álex o Santi cierran el bloque friki con una joya del cine.
+### 6. 🟢 Frikismo y Cinefilia (`R-8-frikismo-y-cine`)
+- [x] **Bloque Friki Especializado:** Enfoque en Anime (España), Nintendo y Pokémon (VGC/Leaks).
+- [x] **Recomendación de Cine de Culto:** Álex o Santi cierran el bloque friki con una joya del cine.

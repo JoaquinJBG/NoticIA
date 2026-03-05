@@ -27,9 +27,10 @@ FEEDS = {
         "https://www.scientificamerican.com/custom-feeds/rss-all/"
     ],
     "friki": [
-        "https://www.pokemon.com/es/rss-feeds/",
-        "https://victoryroadvgc.com/feed/",
         "https://noticias.crunchyroll.com/rss",
+        "https://www.nintenderos.com/feed/",
+        "https://www.cpokemon.com/feed/",
+        "https://victoryroadvgc.com/feed/",
         "https://vgc.news/feed/",
         "https://www.3djuegos.com/index.php?noticias=rss"
     ],
