@@ -14,7 +14,7 @@ def ensamblar_podcast(fragmentos, archivo_salida="noticIA_final.mp3"):
     
     # 2. Unimos las voces primero
     voces = AudioSegment.empty()
-    pausa_entre_voces = AudioSegment.silent(duration=500) 
+    pausa_entre_voces = AudioSegment.silent(duration=800) # Pausa un poco más larga para que respiren
 
     for archivo in fragmentos:
         segmento = AudioSegment.from_mp3(archivo)

@@ -22,10 +22,14 @@ async def procesar_guion_a_audio(guion_texto):
         if "álex:" in linea_lower or "alex:" in linea_lower:
             texto = linea.split(":", 1)[1].strip()
             voz = Config.VOZ_ALEX
+            rate = "-5%" # Un poco más lento para sonar reflexivo
+            pitch = "-1Hz" # Un pelín más grave
             nombre_locutor = "Álex"
         elif "santi:" in linea_lower:
             texto = linea.split(":", 1)[1].strip()
             voz = Config.VOZ_SANTI
+            rate = "+0%" # Velocidad normal
+            pitch = "+2Hz" # Un poco más agudo/energético
             nombre_locutor = "Santi"
         else:
             # Si no hay prefijo claro, intentamos adivinarlo o lo saltamos
@@ -37,8 +41,8 @@ async def procesar_guion_a_audio(guion_texto):
         temp_file = os.path.join(Config.CARPETA_TEMP, f"fragmento_{contador}.mp3")
         
         try:
-            print(f"🎙️ Grabando a {nombre_locutor} con voz {voz}...")
-            communicate = edge_tts.Communicate(texto, voz)
+            print(f"🎙️ Grabando a {nombre_locutor} con voz {voz} (Rate: {rate}, Pitch: {pitch})...")
+            communicate = edge_tts.Communicate(texto, voz, rate=rate, pitch=pitch)
             await communicate.save(temp_file)
             piezas_audio.append(temp_file)
             contador += 1
