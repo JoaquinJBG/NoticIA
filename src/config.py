@@ -13,8 +13,19 @@ class Config:
     VOZ_ALEX = os.getenv("VOZ_ALEX", "es-ES-AlvaroNeural")
     VOZ_SANTI = os.getenv("VOZ_SANTI", "es-ES-XimenaNeural")
     
-    # Rutas
+    # Rutas y Sintonías por Categoría
     RUTA_SINTONIA = os.getenv("RUTA_SINTONIA", "sintonias/sintonia1.mp3")
+    SINTONIAS = {
+        "espana": "sintonias/serio.mp3",
+        "geopolitica": "sintonias/serio.mp3",
+        "ia_y_actualidad": "sintonias/animado.mp3",
+        "ciencia": "sintonias/neutro.mp3",
+        "friki": "sintonias/animado.mp3",
+        "futbol": "sintonias/neutro.mp3",
+        "intro": "sintonias/sintonia1.mp3",
+        "outro": "sintonias/sintonia1.mp3"
+    }
+    
     CARPETA_OUTPUT = os.getenv("CARPETA_OUTPUT", "output")
     CARPETA_TEMP = os.getenv("CARPETA_TEMP", "temp")
     

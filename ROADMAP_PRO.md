@@ -22,9 +22,10 @@ Este documento marca el camino para elevar la calidad de NoticIA al nivel de los
 - [x] **Reducción de repeticiones:** Ajuste de temperatura y prompts para evitar bucles.
 - [ ] **Reacciones Cortas:** (Opcional, pospuesto por petición del usuario).
 
-### 3. ⚪ Paisaje Sonoro Dinámico (`feat/diseno-sonoro`)
-- [ ] **Música por categoría:** Cambiar la sintonía de fondo según el tema (Tensión, Tech, Chill).
-- [ ] **FX de ambiente:** Sonidos sutiles de estudio (agua, sillas, pasos).
+### 3. 🟢 Paisaje Sonoro Dinámico (`R-5-diseno-sonoro`)
+- [x] **Música por categoría:** Cambio automático de sintonía según el tema (Serio, Animado, Neutro).
+- [x] **Efecto Ráfaga:** Música con volumen alto al inicio de cada bloque para impacto.
+- [x] **Transiciones suaves:** Fundidos encadenados entre bloques musicales.
 
 ### 4. ⚪ Investigación Profunda (`feat/investigacion-pro`)
 - [ ] **Contexto Expandido:** Gemini genera un "briefing" de contexto antes del guion.
