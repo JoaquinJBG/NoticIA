@@ -30,7 +30,7 @@ Antes de instalar, asegúrate de tener:
 
 1.  **Clona el repositorio:**
     ```bash
-    git clone https://github.com/tu-usuario/NoticIA.git
+    git clone https://github.com/JoaquinJBG/NoticIA.git
     cd NoticIA
     ```
 
