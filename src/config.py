@@ -7,10 +7,11 @@ load_dotenv()
 class Config:
     # Credenciales
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-    
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
     # Voces
     VOZ_ALEX = os.getenv("VOZ_ALEX", "es-ES-AlvaroNeural")
-    VOZ_SANTI = os.getenv("VOZ_SANTI", "es-ES-ElviraNeural")
+    VOZ_SANTI = os.getenv("VOZ_SANTI", "es-ES-XimenaNeural")
     
     # Rutas
     RUTA_SINTONIA = os.getenv("RUTA_SINTONIA", "sintonias/sintonia1.mp3")
