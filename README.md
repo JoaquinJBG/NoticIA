@@ -15,7 +15,7 @@
 
 Antes de instalar, asegúrate de tener:
 
-1.  **Python 3.10 o superior.**
+1.  **Python 3.12 o superior.**
 2.  **FFmpeg:** Crucial para el procesamiento de audio.
     - **Linux:** `sudo apt install ffmpeg`
     - **macOS:** `brew install ffmpeg`

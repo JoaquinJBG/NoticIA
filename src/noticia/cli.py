@@ -15,6 +15,9 @@ logger = logging.getLogger("noticia.cli")
 async def producir_episodio():
     logger.info("--- INICIANDO PRODUCCIÓN DE NOTICIA: PROFESSIONAL EDITION ---")
 
+    if settings.groq_api_key is None:
+        raise RuntimeError("Falta GROQ_API_KEY en el .env: configúrala antes de ejecutar.")
+
     os.makedirs(settings.carpeta_output, exist_ok=True)
     os.makedirs(settings.carpeta_temp, exist_ok=True)
 
