@@ -3,6 +3,8 @@ import unicodedata
 
 from rapidfuzz import fuzz
 
+from noticia.fuentes import CATEGORIAS_CON_CONTRASTE
+
 _STOPWORDS = {
     "el", "la", "los", "las", "un", "una", "unos", "unas", "de", "del", "y",
     "o", "a", "en", "que", "por", "con", "para", "su", "sus", "al", "se",
@@ -49,3 +51,14 @@ def agrupar_categoria(articulos, umbral=70):
         reverse=True,
     )
     return clusters
+
+
+def agrupar(pool):
+    """Aplica clustering a las categorías de contraste; deja el resto plano."""
+    resultado = {}
+    for categoria, articulos in pool.items():
+        if categoria in CATEGORIAS_CON_CONTRASTE:
+            resultado[categoria] = {"clusters": agrupar_categoria(articulos)}
+        else:
+            resultado[categoria] = articulos
+    return resultado

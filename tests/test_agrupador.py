@@ -36,3 +36,22 @@ def test_agrupar_categoria_clusters_tienen_tema():
     clusters = agrupador.agrupar_categoria(arts)
     assert clusters[0]["tema"] == "Noticia única importante"
     assert "_norm" not in clusters[0]  # campo interno no se filtra
+
+
+def test_agrupar_categorias_de_contraste_devuelven_clusters():
+    pool = {
+        "espana": [_art("Sube el IPC en abril", "elpais.com")],
+        "futbol": [_art("El Madrid gana la liga", "marca.com")],
+    }
+    resultado = agrupador.agrupar(pool)
+    # España (contraste) -> dict con clusters
+    assert "clusters" in resultado["espana"]
+    assert isinstance(resultado["espana"]["clusters"], list)
+    # Fútbol (simple) -> lista plana sin tocar
+    assert resultado["futbol"] == pool["futbol"]
+
+
+def test_agrupar_categoria_vacia_devuelve_estructura_valida():
+    resultado = agrupador.agrupar({"ciencia": [], "friki": []})
+    assert resultado["ciencia"] == {"clusters": []}
+    assert resultado["friki"] == []
