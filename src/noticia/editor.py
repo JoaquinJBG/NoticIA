@@ -105,7 +105,3 @@ def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_fi
                 logger.debug("No se pudo borrar el temporal %s: %s", f, exc)
 
     logger.info("¡MASTERING COMPLETADO! Podcast listo para subir: %s", archivo_salida)
-
-
-def ensamblar_podcast(fragmentos, archivo_salida="noticIA_final.mp3"):
-    ensamblar_podcast_dinamico({"espana": fragmentos}, archivo_salida)
