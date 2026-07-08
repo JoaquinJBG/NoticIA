@@ -1,6 +1,7 @@
 import asyncio
 import os
 
+from noticia.config import settings
 from noticia.editor import ensamblar_podcast_dinamico
 from noticia.generador import construir_guion
 from noticia.ingesta import obtener_noticias
@@ -10,8 +11,8 @@ from noticia.locutor import procesar_guion_a_audio
 async def producir_episodio():
     print("--- 🎙️ INICIANDO PRODUCCIÓN DE NOTICIA: PROFESSIONAL EDITION ---")
 
-    os.makedirs("output", exist_ok=True)
-    os.makedirs("temp", exist_ok=True)
+    os.makedirs(settings.carpeta_output, exist_ok=True)
+    os.makedirs(settings.carpeta_temp, exist_ok=True)
 
     print("📡 Capturando noticias de todas las fuentes...")
     noticias = obtener_noticias()
@@ -29,7 +30,7 @@ async def producir_episodio():
         fragmentos_audio_por_bloque[categoria] = await procesar_guion_a_audio(texto_bloque)
 
     if fragmentos_audio_por_bloque:
-        archivo_final = os.path.join("output", "NoticIA_PRO_Final.mp3")
+        archivo_final = os.path.join(settings.carpeta_output, "NoticIA_PRO_Final.mp3")
         print("🎬 Iniciando montaje dinámico y mastering final...")
         ensamblar_podcast_dinamico(fragmentos_audio_por_bloque, archivo_final)
         print(f"\n--- ✨ PODCAST PROFESIONAL FINALIZADO: {archivo_final} ---")

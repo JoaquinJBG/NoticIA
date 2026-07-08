@@ -2,7 +2,7 @@ import os
 
 from pydub import AudioSegment, effects
 
-from noticia.config import Config
+from noticia.config import settings
 
 
 def aplicar_mastering_pro(audio):
@@ -55,7 +55,7 @@ def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_fi
             except:
                 continue
 
-        ruta_musica = Config.SINTONIAS.get(categoria, Config.RUTA_SINTONIA)
+        ruta_musica = settings.sintonias.get(categoria, settings.ruta_sintonia)
         try:
             if os.path.exists(ruta_musica):
                 musica = AudioSegment.from_mp3(ruta_musica)

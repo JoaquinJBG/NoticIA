@@ -1,13 +1,18 @@
 from groq import Groq
 
-from noticia.config import Config
+from noticia.config import get_contexto, get_prompt_sistema, settings
 
-# Configuramos el cliente de Groq
-if not Config.GROQ_API_KEY:
-    raise ValueError("❌ No se encontró la GROQ_API_KEY. Revisa tu archivo .env")
-
-client = Groq(api_key=Config.GROQ_API_KEY)
 MODELO_GROQ = "llama-3.3-70b-versatile"
+_client: Groq | None = None
+
+
+def _get_client() -> Groq:
+    global _client
+    if settings.groq_api_key is None:
+        raise RuntimeError("❌ Falta GROQ_API_KEY en el .env")
+    if _client is None:
+        _client = Groq(api_key=settings.groq_api_key)
+    return _client
 
 
 def construir_guion(datos_noticias):
@@ -37,7 +42,7 @@ def construir_guion(datos_noticias):
 
 def llamar_ia(system_prompt, user_prompt, temperature=0.85):
     try:
-        completion = client.chat.completions.create(
+        completion = _get_client().chat.completions.create(
             model=MODELO_GROQ,
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -71,7 +76,7 @@ def generar_briefing_contexto(categoria, noticias):
 
 
 def construir_bloque_con_contexto(categoria, noticias, briefing):
-    prompt_sistema = f"{Config.get_prompt_sistema()}\n\nCONTEXTO GENERAL:\n{Config.get_contexto()}"
+    prompt_sistema = f"{get_prompt_sistema()}\n\nCONTEXTO GENERAL:\n{get_contexto()}"
     prompt_usuario = f"""
     BLOQUE ACTUAL: {categoria.upper()}
     
@@ -100,7 +105,7 @@ def generar_intro(datos_noticias):
             titulares.append(datos_noticias[cat][0]["titular"])
 
     resumen_titulares = "\n".join(titulares[:3])
-    prompt_sistema = Config.get_prompt_sistema()
+    prompt_sistema = get_prompt_sistema()
     prompt_usuario = f"TAREA: Genera la introducción con este sumario de temas: {resumen_titulares}. Saludo carismático y hook inicial."
 
     texto = llamar_ia(prompt_sistema, prompt_usuario)
@@ -110,7 +115,7 @@ def generar_intro(datos_noticias):
 
 
 def generar_outro():
-    prompt_sistema = Config.get_prompt_sistema()
+    prompt_sistema = get_prompt_sistema()
     prompt_usuario = (
         "TAREA: Genera la despedida del podcast. Resumen breve, Call to Action y cierre: NoticIA."
     )

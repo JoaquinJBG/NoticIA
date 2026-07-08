@@ -2,7 +2,7 @@ import os
 
 import edge_tts
 
-from noticia.config import Config
+from noticia.config import settings
 
 
 async def procesar_guion_a_audio(guion_texto):
@@ -12,7 +12,7 @@ async def procesar_guion_a_audio(guion_texto):
     print("🎙️ Empezando la locución...")
 
     # Usamos la carpeta temporal configurada
-    os.makedirs(Config.CARPETA_TEMP, exist_ok=True)
+    os.makedirs(settings.carpeta_temp, exist_ok=True)
 
     contador = 0
     for linea in lineas:
@@ -25,11 +25,11 @@ async def procesar_guion_a_audio(guion_texto):
 
         if "álex:" in linea_lower or "alex:" in linea_lower:
             texto = linea.split(":", 1)[1].strip()
-            voz = Config.VOZ_ALEX
+            voz = settings.voz_alex
             nombre_locutor = "Álex"
         elif "santi:" in linea_lower:
             texto = linea.split(":", 1)[1].strip()
-            voz = Config.VOZ_SANTI
+            voz = settings.voz_santi
             nombre_locutor = "Santi"
         else:
             # Si no hay prefijo claro, intentamos adivinarlo o lo saltamos
@@ -39,7 +39,7 @@ async def procesar_guion_a_audio(guion_texto):
         if not texto:
             continue
 
-        temp_file = os.path.join(Config.CARPETA_TEMP, f"fragmento_{contador}.mp3")
+        temp_file = os.path.join(settings.carpeta_temp, f"fragmento_{contador}.mp3")
 
         try:
             print(f"🎙️ Grabando a {nombre_locutor} con voz {voz}...")
