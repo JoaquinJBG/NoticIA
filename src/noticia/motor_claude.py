@@ -1,5 +1,6 @@
 import logging
 import subprocess
+import tempfile
 
 from noticia.config import settings
 
@@ -17,6 +18,10 @@ def generar_texto(system_prompt: str, user_prompt: str) -> str:
     - Binario ausente -> RuntimeError (error de configuración; aborta).
     - returncode != 0 (p. ej. sin sesión de Max) o timeout -> log + "".
       El generador tolera bloques vacíos.
+
+    Se ejecuta con `cwd` en un directorio temporal vacío para que `claude -p`
+    no descubra el CLAUDE.md ni la configuración del propio proyecto NoticIA
+    como contexto ambiental.
     """
     cmd = [
         "claude",
@@ -27,13 +32,15 @@ def generar_texto(system_prompt: str, user_prompt: str) -> str:
         system_prompt,
     ]
     try:
-        proc = subprocess.run(
-            cmd,
-            input=user_prompt,
-            capture_output=True,
-            text=True,
-            timeout=TIMEOUT_SEGUNDOS,
-        )
+        with tempfile.TemporaryDirectory() as directorio_aislado:
+            proc = subprocess.run(
+                cmd,
+                input=user_prompt,
+                capture_output=True,
+                text=True,
+                timeout=TIMEOUT_SEGUNDOS,
+                cwd=directorio_aislado,
+            )
     except FileNotFoundError as exc:
         raise RuntimeError(
             "Claude CLI no disponible: instala e inicia sesión en Claude (Max)."

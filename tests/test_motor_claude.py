@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 import pytest
@@ -57,3 +58,18 @@ def test_generar_texto_timeout_devuelve_vacio(monkeypatch):
 
     monkeypatch.setattr(motor_claude.subprocess, "run", boom)
     assert motor_claude.generar_texto("s", "u") == ""
+
+
+def test_generar_texto_aisla_cwd_en_directorio_temporal(monkeypatch):
+    capturado = {}
+
+    def fake_run(cmd, **kw):
+        capturado["cwd"] = kw.get("cwd")
+        return _Proc(returncode=0, stdout="ok")
+
+    monkeypatch.setattr(motor_claude.subprocess, "run", fake_run)
+    motor_claude.generar_texto("SYS", "USER")
+
+    cwd = capturado["cwd"]
+    assert cwd
+    assert cwd != os.getcwd()

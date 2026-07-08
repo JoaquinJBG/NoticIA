@@ -62,7 +62,7 @@ def _formatear_guion(guion: dict) -> str:
     partes = []
     for bloque in _ORDEN_BLOQUES:
         lineas = guion.get(bloque)
-        if not lineas:
+        if not lineas or not any(linea.strip() for linea in lineas):
             continue
         partes.append(f"## {bloque}\n\n" + "\n".join(lineas))
     return "\n\n".join(partes) + "\n"
@@ -75,11 +75,19 @@ def generar_solo_guion(salida: str | None = None) -> str:
     noticias = obtener_noticias()
     guion = construir_guion(noticias)
 
+    if not any(linea.strip() for lineas in guion.values() for linea in lineas):
+        logger.error("Guion vacío: ¿sesión de Claude iniciada?")
+        raise RuntimeError(
+            "Guion vacío: ningún bloque tiene contenido. ¿Sesión de Claude iniciada?"
+        )
+
     if salida is None:
         fecha = datetime.now(UTC).strftime("%Y-%m-%d")
         salida = os.path.join(settings.carpeta_output, f"guion_{fecha}.md")
 
-    Path(salida).write_text(_formatear_guion(guion), encoding="utf-8")
+    ruta_salida = Path(salida)
+    ruta_salida.parent.mkdir(parents=True, exist_ok=True)
+    ruta_salida.write_text(_formatear_guion(guion), encoding="utf-8")
     logger.info("Guion escrito en %s", salida)
     return salida
 
