@@ -69,3 +69,38 @@ def test_dedup_por_url_y_titular():
     ]
     out = ingesta._dedup(arts)
     assert [a["titular"] for a in out] == ["A", "B", "C"]
+
+
+class _FakeFeed:
+    def __init__(self, entries):
+        self.entries = entries
+
+
+def test_descargar_feed_parsea_entradas(monkeypatch):
+    entradas = [
+        {"title": "N1", "summary": "s1", "link": "u1", "published_parsed": _time.gmtime()},
+        {"title": "N2", "summary": "s2", "link": "u2", "published_parsed": _time.gmtime()},
+    ]
+    monkeypatch.setattr(ingesta.feedparser, "parse", lambda url: _FakeFeed(entradas))
+    arts = ingesta._descargar_feed("http://x", "x.com")
+    assert [a["titular"] for a in arts] == ["N1", "N2"]
+    assert arts[0]["fuente"] == "x.com"
+
+
+def test_obtener_pool_filtra_recencia_y_estructura(monkeypatch):
+    reciente = _time.gmtime(_time.time() - 3600)
+    viejo = _time.gmtime(_time.time() - 10 * 24 * 3600)
+    entradas = [
+        {"title": "Nueva", "summary": "s", "link": "u-nueva", "published_parsed": reciente},
+        {"title": "Vieja", "summary": "s", "link": "u-vieja", "published_parsed": viejo},
+    ]
+    monkeypatch.setattr(ingesta.feedparser, "parse", lambda url: _FakeFeed(entradas))
+    # Catálogos mínimos para no depender de la lista real ni de la red
+    monkeypatch.setattr(ingesta.fuentes, "FEEDS_CURADOS", {"espana": ["http://x"]})
+    monkeypatch.setattr(ingesta.fuentes, "SECCIONES_GOOGLE_NEWS", {})
+
+    pool = ingesta.obtener_pool(ventana_horas=48, timeout=1)
+    assert set(pool.keys()) == {"espana"}
+    titulares = [a["titular"] for a in pool["espana"]]
+    assert "Nueva" in titulares
+    assert "Vieja" not in titulares

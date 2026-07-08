@@ -2,7 +2,14 @@ import calendar
 import html
 import logging
 import re
+import socket
 import time
+from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import urlparse
+
+import feedparser
+
+from noticia import fuentes
 
 logger = logging.getLogger("noticia.ingesta")
 
@@ -64,3 +71,52 @@ def _dedup(articulos):
         vistos.add(clave)
         salida.append(art)
     return salida
+
+
+def _dominio(url):
+    net = urlparse(url).netloc
+    return net[4:] if net.startswith("www.") else net
+
+
+def _descargar_feed(url, fuente_por_defecto, max_entradas=15):
+    feed = feedparser.parse(url)
+    articulos = []
+    for entry in feed.entries[:max_entradas]:
+        art = _parsear_entrada(entry, fuente_por_defecto)
+        if art:
+            articulos.append(art)
+    return articulos
+
+
+def obtener_pool(ventana_horas=48, timeout=10, max_workers=12):
+    """Devuelve {categoria: [articulo, ...]} limpio, reciente y sin duplicados."""
+    socket.setdefaulttimeout(timeout)
+
+    # (categoria, url, fuente_por_defecto)
+    tareas = []
+    for categoria, urls in fuentes.FEEDS_CURADOS.items():
+        for url in urls:
+            tareas.append((categoria, url, _dominio(url)))
+    for categoria, topics in fuentes.SECCIONES_GOOGLE_NEWS.items():
+        for topic in topics:
+            tareas.append((categoria, fuentes.url_google_news(topic), "news.google.com"))
+
+    pool = {categoria: [] for categoria in fuentes.FEEDS_CURADOS}
+
+    def _trabajo(tarea):
+        categoria, url, fuente = tarea
+        try:
+            return categoria, _descargar_feed(url, fuente)
+        except Exception as exc:
+            logger.warning("Feed fallido %s: %s", url, exc)
+            return categoria, []
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        for categoria, articulos in executor.map(_trabajo, tareas):
+            pool.setdefault(categoria, []).extend(articulos)
+
+    for categoria in pool:
+        recientes = [a for a in pool[categoria] if es_reciente(a["fecha"], ventana_horas)]
+        pool[categoria] = _dedup(recientes)
+
+    return pool
