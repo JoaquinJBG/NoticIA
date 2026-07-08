@@ -23,3 +23,6 @@ output/
 .DS_Store
 .idea/
 .vscode/
+
+# Log de ejecución
+produccion.log

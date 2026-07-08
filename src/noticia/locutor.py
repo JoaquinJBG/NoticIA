@@ -1,51 +1,59 @@
-import edge_tts
+import logging
 import os
-from src.config import Config
+
+import edge_tts
+
+from noticia.config import settings
+
+logger = logging.getLogger("noticia.locutor")
+
 
 async def procesar_guion_a_audio(guion_texto):
     lineas = guion_texto.split("\n")
     piezas_audio = []
-    
-    print("🎙️ Empezando la locución...")
+
+    logger.info("Empezando la locución...")
 
     # Usamos la carpeta temporal configurada
-    os.makedirs(Config.CARPETA_TEMP, exist_ok=True)
+    os.makedirs(settings.carpeta_temp, exist_ok=True)
 
     contador = 0
     for linea in lineas:
         linea = linea.strip()
-        if not linea: continue
-        
+        if not linea:
+            continue
+
         # Un parser más robusto: buscamos "alex" o "santi" al principio de la línea
         linea_lower = linea.lower()
-        
+
         if "álex:" in linea_lower or "alex:" in linea_lower:
             texto = linea.split(":", 1)[1].strip()
-            voz = Config.VOZ_ALEX
+            voz = settings.voz_alex
             nombre_locutor = "Álex"
         elif "santi:" in linea_lower:
             texto = linea.split(":", 1)[1].strip()
-            voz = Config.VOZ_SANTI
+            voz = settings.voz_santi
             nombre_locutor = "Santi"
         else:
             # Si no hay prefijo claro, intentamos adivinarlo o lo saltamos
-            print(f"⚠️ Saltando línea sin locutor: {linea[:30]}...")
-            continue 
+            logger.warning("Saltando línea sin locutor: %s...", linea[:30])
+            continue
 
-        if not texto: continue
+        if not texto:
+            continue
 
-        temp_file = os.path.join(Config.CARPETA_TEMP, f"fragmento_{contador}.mp3")
-        
+        temp_file = os.path.join(settings.carpeta_temp, f"fragmento_{contador}.mp3")
+
         try:
-            print(f"🎙️ Grabando a {nombre_locutor} con voz {voz}...")
+            logger.info("Grabando a %s con voz %s...", nombre_locutor, voz)
             communicate = edge_tts.Communicate(texto, voz)
             await communicate.save(temp_file)
             piezas_audio.append(temp_file)
             contador += 1
-            print(f"✅ [{contador}] Grabado: {texto[:40]}...")
+            logger.info("[%s] Grabado: %s...", contador, texto[:40])
         except Exception as e:
-            print(f"❌ Error grabando línea {contador}: {e}")
+            logger.error("Error grabando línea %s: %s", contador, e)
             continue
 
-    print(f"🎬 Se han generado {len(piezas_audio)} fragmentos.")
+    logger.info("Se han generado %s fragmentos.", len(piezas_audio))
     return piezas_audio

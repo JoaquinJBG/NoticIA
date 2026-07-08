@@ -15,7 +15,7 @@
 
 Antes de instalar, asegúrate de tener:
 
-1.  **Python 3.10 o superior.**
+1.  **Python 3.12 o superior.**
 2.  **FFmpeg:** Crucial para el procesamiento de audio.
     - **Linux:** `sudo apt install ffmpeg`
     - **macOS:** `brew install ffmpeg`
@@ -34,18 +34,12 @@ Antes de instalar, asegúrate de tener:
     cd NoticIA
     ```
 
-2.  **Crea un entorno virtual:**
+2.  **Sincroniza las dependencias:**
     ```bash
-    python -m venv .venv
-    source .venv/bin/activate  # En Windows: .venv\Scripts\activate
+    uv sync
     ```
 
-3.  **Instala las dependencias:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Configura las variables de entorno:**
+3.  **Configura las variables de entorno:**
     Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
     ```env
     GROQ_API_KEY=tu_api_key_aqui
@@ -58,30 +52,29 @@ Antes de instalar, asegúrate de tener:
 
 ## 🎮 Uso
 
-### Producción Completa
-Para generar un podcast completo con todas las noticias del día (la duración dependerá de la cantidad de noticias):
+Para generar un podcast completo con todas las noticias del día:
 ```bash
-python main.py
-```
-
-### Prueba Rápida (5 minutos)
-Para verificar que todo funciona correctamente (API, audio, FFmpeg) sin gastar muchos tokens ni tiempo:
-```bash
-python test_5min.py
+uv run noticia
 ```
 
 El resultado final se guardará en la carpeta `output/`.
+
+Para ejecutar los tests:
+```bash
+uv run pytest
+```
 
 ---
 
 ## 📂 Estructura del Proyecto
 
-- `main.py`: Punto de entrada principal.
-- `src/`: Lógica del sistema (ingesta, generador, locutor, editor).
+- `src/noticia/cli.py`: Punto de entrada principal (comando `uv run noticia`).
+- `src/noticia/`: Lógica del sistema (config, ingesta, generador, locutor, editor).
 - `reglas/`: Prompts de sistema y contexto que definen la personalidad de los locutores.
 - `sintonias/`: Archivos MP3 con la música de fondo para cada bloque.
 - `output/`: Carpeta donde se generan los podcasts finales.
 - `temp/`: Carpeta temporal para fragmentos de audio (se limpia automáticamente).
+- `tests/`: Pruebas automatizadas con pytest.
 
 ---
 
