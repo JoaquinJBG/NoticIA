@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     groq_api_key: str | None = None
     gemini_api_key: str | None = None
+    modelo_claude: str = "sonnet"
 
     voz_alex: str = "es-ES-AlvaroNeural"
     voz_santi: str = "es-ES-XimenaNeural"
