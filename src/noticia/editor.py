@@ -1,8 +1,11 @@
+import logging
 import os
 
 from pydub import AudioSegment, effects
 
 from noticia.config import settings
+
+logger = logging.getLogger("noticia.editor")
 
 
 def aplicar_mastering_pro(audio):
@@ -10,7 +13,7 @@ def aplicar_mastering_pro(audio):
     Aplica una cadena de mastering: Normalización de pico,
     compresión de rango dinámico y ganancia de calidez.
     """
-    print("🎚️ Aplicando Mastering Profesional (EQ + Compresión)...")
+    logger.info("Aplicando Mastering Profesional (EQ + Compresión)...")
 
     # 1. Normalizar para asegurar que trabajamos con buen nivel
     audio = effects.normalize(audio)
@@ -31,10 +34,10 @@ def aplicar_mastering_pro(audio):
 
 def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_final.mp3"):
     if not fragmentos_por_bloque:
-        print("❌ No hay fragmentos para unir.")
+        logger.error("No hay fragmentos para unir.")
         return
 
-    print("🎬 Iniciando montaje dinámico profesional...")
+    logger.info("Iniciando montaje dinámico profesional...")
     podcast_completo = AudioSegment.empty()
     ms_solapamiento = 250
 
@@ -42,7 +45,7 @@ def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_fi
         if not archivos:
             continue
 
-        print(f"🎵 Procesando bloque: {categoria}...")
+        logger.info("Procesando bloque: %s...", categoria)
 
         voces_bloque = AudioSegment.empty()
         for i, f in enumerate(archivos):
@@ -52,7 +55,8 @@ def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_fi
                     voces_bloque = segmento
                 else:
                     voces_bloque = voces_bloque.append(segmento, crossfade=ms_solapamiento)
-            except:
+            except Exception as exc:
+                logger.warning("No se pudo cargar el fragmento %s: %s", f, exc)
                 continue
 
         ruta_musica = settings.sintonias.get(categoria, settings.ruta_sintonia)
@@ -73,7 +77,8 @@ def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_fi
                 bloque_mezclado = musica_final.overlay(voces_bloque, position=500)
             else:
                 bloque_mezclado = voces_bloque
-        except:
+        except Exception as exc:
+            logger.warning("Fallo al mezclar música del bloque %s: %s", categoria, exc)
             bloque_mezclado = voces_bloque
 
         if len(podcast_completo) == 0:
@@ -96,10 +101,10 @@ def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_fi
         for f in fragmentos_por_bloque[cat]:
             try:
                 os.remove(f)
-            except:
-                pass
+            except Exception as exc:
+                logger.debug("No se pudo borrar el temporal %s: %s", f, exc)
 
-    print(f"✅ ¡MASTERING COMPLETADO! Podcast listo para subir: {archivo_salida}")
+    logger.info("¡MASTERING COMPLETADO! Podcast listo para subir: %s", archivo_salida)
 
 
 def ensamblar_podcast(fragmentos, archivo_salida="noticIA_final.mp3"):

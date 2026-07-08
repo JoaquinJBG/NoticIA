@@ -1,3 +1,5 @@
+import logging
+
 from groq import Groq
 
 from noticia.config import get_contexto, get_prompt_sistema, settings
@@ -5,11 +7,13 @@ from noticia.config import get_contexto, get_prompt_sistema, settings
 MODELO_GROQ = "llama-3.3-70b-versatile"
 _client: Groq | None = None
 
+logger = logging.getLogger("noticia.generador")
+
 
 def _get_client() -> Groq:
     global _client
     if settings.groq_api_key is None:
-        raise RuntimeError("❌ Falta GROQ_API_KEY en el .env")
+        raise RuntimeError("Falta GROQ_API_KEY en el .env")
     if _client is None:
         _client = Groq(api_key=settings.groq_api_key)
     return _client
@@ -19,22 +23,22 @@ def construir_guion(datos_noticias):
     guion_por_bloques = {}
 
     # 1. INTRO
-    print("🎙️ Generando Introducción Profesional...")
+    logger.info("Generando Introducción Profesional...")
     guion_por_bloques["intro"] = [generar_intro(datos_noticias)]
 
     # 2. BLOQUES DE NOTICIAS CON INVESTIGACIÓN
     categorias = ["espana", "geopolitica", "ia_y_actualidad", "ciencia", "friki", "futbol"]
     for cat in categorias:
         if cat in datos_noticias and datos_noticias[cat]:
-            print(f"🔍 Investigando contexto para {cat.upper()}...")
+            logger.info("Investigando contexto para %s...", cat.upper())
             briefing = generar_briefing_contexto(cat, datos_noticias[cat])
 
-            print(f"🧠 Generando tertulia con autoridad para {cat.upper()}...")
+            logger.info("Generando tertulia con autoridad para %s...", cat.upper())
             texto_bloque = construir_bloque_con_contexto(cat, datos_noticias[cat], briefing)
             guion_por_bloques[cat] = [texto_bloque]
 
     # 3. OUTRO
-    print("🎙️ Generando Despedida Profesional...")
+    logger.info("Generando Despedida Profesional...")
     guion_por_bloques["outro"] = [generar_outro()]
 
     return guion_por_bloques
@@ -53,7 +57,7 @@ def llamar_ia(system_prompt, user_prompt, temperature=0.85):
         )
         return completion.choices[0].message.content
     except Exception as e:
-        print(f"❌ Error llamando a Groq: {e}")
+        logger.error("Error llamando a Groq: %s", e)
         return ""
 
 
@@ -106,7 +110,10 @@ def generar_intro(datos_noticias):
 
     resumen_titulares = "\n".join(titulares[:3])
     prompt_sistema = get_prompt_sistema()
-    prompt_usuario = f"TAREA: Genera la introducción con este sumario de temas: {resumen_titulares}. Saludo carismático y hook inicial."
+    prompt_usuario = (
+        f"TAREA: Genera la introducción con este sumario de temas: {resumen_titulares}. "
+        "Saludo carismático y hook inicial."
+    )
 
     texto = llamar_ia(prompt_sistema, prompt_usuario)
     if texto:
