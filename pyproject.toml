@@ -9,6 +9,7 @@ dependencies = [
     "edge-tts>=6.1.12",
     "pydub>=0.25.1",
     "pydantic-settings>=2.5.2",
+    "rapidfuzz>=3.9.7",
 ]
 
 [project.scripts]
