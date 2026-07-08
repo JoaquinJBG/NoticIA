@@ -1,6 +1,9 @@
+import argparse
 import asyncio
 import logging
 import os
+from datetime import UTC, datetime
+from pathlib import Path
 
 from noticia.config import settings
 from noticia.editor import ensamblar_podcast_dinamico
@@ -14,9 +17,6 @@ logger = logging.getLogger("noticia.cli")
 
 async def producir_episodio():
     logger.info("--- INICIANDO PRODUCCIÓN DE NOTICIA: PROFESSIONAL EDITION ---")
-
-    if settings.groq_api_key is None:
-        raise RuntimeError("Falta GROQ_API_KEY en el .env: configúrala antes de ejecutar.")
 
     os.makedirs(settings.carpeta_output, exist_ok=True)
     os.makedirs(settings.carpeta_temp, exist_ok=True)
@@ -45,9 +45,65 @@ async def producir_episodio():
         logger.error("No se generaron audios para ensamblar.")
 
 
+_ORDEN_BLOQUES = [
+    "intro",
+    "espana",
+    "geopolitica",
+    "ia_y_actualidad",
+    "ciencia",
+    "friki",
+    "futbol",
+    "outro",
+]
+
+
+def _formatear_guion(guion: dict) -> str:
+    """Renderiza el guion a Markdown: un encabezado por bloque, en orden."""
+    partes = []
+    for bloque in _ORDEN_BLOQUES:
+        lineas = guion.get(bloque)
+        if not lineas:
+            continue
+        partes.append(f"## {bloque}\n\n" + "\n".join(lineas))
+    return "\n\n".join(partes) + "\n"
+
+
+def generar_solo_guion(salida: str | None = None) -> str:
+    """Corre ingesta + generación y vuelca el guion a fichero, sin audio."""
+    logger.info("Modo solo-guion: ingesta + generación, sin locución ni mastering.")
+    os.makedirs(settings.carpeta_output, exist_ok=True)
+    noticias = obtener_noticias()
+    guion = construir_guion(noticias)
+
+    if salida is None:
+        fecha = datetime.now(UTC).strftime("%Y-%m-%d")
+        salida = os.path.join(settings.carpeta_output, f"guion_{fecha}.md")
+
+    Path(salida).write_text(_formatear_guion(guion), encoding="utf-8")
+    logger.info("Guion escrito en %s", salida)
+    return salida
+
+
 def main():
     configurar_logging()
-    asyncio.run(producir_episodio())
+    parser = argparse.ArgumentParser(
+        prog="noticia", description="Podcast diario automatizado con IA"
+    )
+    parser.add_argument(
+        "--solo-guion",
+        action="store_true",
+        help="Genera solo el guion (sin audio) y lo vuelca a un fichero.",
+    )
+    parser.add_argument(
+        "--salida",
+        help="Ruta del fichero de guion (solo con --solo-guion).",
+    )
+    args = parser.parse_args()
+
+    if args.solo_guion:
+        generar_solo_guion(args.salida)
+    else:
+        asyncio.run(producir_episodio())
 
 
 if __name__ == "__main__":
