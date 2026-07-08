@@ -5,7 +5,6 @@ description = "Podcast diario automatizado con IA"
 requires-python = ">=3.12"
 dependencies = [
     "feedparser>=6.0.11",
-    "groq>=0.18.0",
     "edge-tts>=6.1.12",
     "pydub>=0.25.1",
     "pydantic-settings>=2.5.2",

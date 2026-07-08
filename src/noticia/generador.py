@@ -1,22 +1,9 @@
 import logging
 
-from groq import Groq
-
-from noticia.config import get_contexto, get_prompt_sistema, settings
-
-MODELO_GROQ = "llama-3.3-70b-versatile"
-_client: Groq | None = None
+from noticia.config import get_contexto, get_prompt_sistema
+from noticia.motor_claude import generar_texto
 
 logger = logging.getLogger("noticia.generador")
-
-
-def _get_client() -> Groq:
-    global _client
-    if settings.groq_api_key is None:
-        raise RuntimeError("Falta GROQ_API_KEY en el .env")
-    if _client is None:
-        _client = Groq(api_key=settings.groq_api_key)
-    return _client
 
 
 def construir_guion(datos_noticias):
@@ -44,21 +31,8 @@ def construir_guion(datos_noticias):
     return guion_por_bloques
 
 
-def llamar_ia(system_prompt, user_prompt, temperature=0.85):
-    try:
-        completion = _get_client().chat.completions.create(
-            model=MODELO_GROQ,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=temperature,
-            max_tokens=4096,
-        )
-        return completion.choices[0].message.content
-    except Exception as e:
-        logger.error("Error llamando a Groq: %s", e)
-        return ""
+def llamar_ia(system_prompt, user_prompt):
+    return generar_texto(system_prompt, user_prompt)
 
 
 def generar_briefing_contexto(categoria, noticias):
@@ -76,7 +50,7 @@ def generar_briefing_contexto(categoria, noticias):
     
     IMPORTANTE: No inventes hechos actuales, solo aporta contexto histórico y cultural real.
     """
-    return llamar_ia(prompt_sistema, prompt_usuario, temperature=0.5)
+    return llamar_ia(prompt_sistema, prompt_usuario)
 
 
 def construir_bloque_con_contexto(categoria, noticias, briefing):
