@@ -120,3 +120,14 @@ def obtener_pool(ventana_horas=48, timeout=10, max_workers=12):
         pool[categoria] = _dedup(recientes)
 
     return pool
+
+
+def obtener_noticias(**kwargs):
+    """PUENTE de compatibilidad: devuelve listas planas por categoría.
+
+    Mantiene la firma que espera el generador (listas planas por bloque)
+    mientras el generador no se adapte al contrato de clusters. El nuevo
+    pipeline con contraste se obtiene vía obtener_pool() + agrupador.agrupar().
+    """
+    pool = obtener_pool(**kwargs)
+    return dict(pool.items())

@@ -104,3 +104,23 @@ def test_obtener_pool_filtra_recencia_y_estructura(monkeypatch):
     titulares = [a["titular"] for a in pool["espana"]]
     assert "Nueva" in titulares
     assert "Vieja" not in titulares
+
+
+def test_obtener_noticias_puente_aplana_clusters(monkeypatch):
+    # Pool simulado: espana (contraste) + futbol (simple)
+    fake_pool = {
+        "espana": [
+            {"titular": "A", "resumen": "", "fuente": "f1", "url": "a", "fecha": None},
+            {"titular": "B", "resumen": "", "fuente": "f2", "url": "b", "fecha": None},
+        ],
+        "futbol": [
+            {"titular": "Gol", "resumen": "", "fuente": "marca", "url": "g", "fecha": None},
+        ],
+    }
+    monkeypatch.setattr(ingesta, "obtener_pool", lambda **kw: fake_pool)
+
+    noticias = ingesta.obtener_noticias()
+    # Todas las categorías devuelven listas planas (compatibilidad con generador actual)
+    assert isinstance(noticias["espana"], list)
+    assert isinstance(noticias["futbol"], list)
+    assert {a["titular"] for a in noticias["espana"]} == {"A", "B"}

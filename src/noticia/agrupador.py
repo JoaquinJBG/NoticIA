@@ -6,9 +6,31 @@ from rapidfuzz import fuzz
 from noticia.fuentes import CATEGORIAS_CON_CONTRASTE
 
 _STOPWORDS = {
-    "el", "la", "los", "las", "un", "una", "unos", "unas", "de", "del", "y",
-    "o", "a", "en", "que", "por", "con", "para", "su", "sus", "al", "se",
-    "lo", "es", "the",
+    "el",
+    "la",
+    "los",
+    "las",
+    "un",
+    "una",
+    "unos",
+    "unas",
+    "de",
+    "del",
+    "y",
+    "o",
+    "a",
+    "en",
+    "que",
+    "por",
+    "con",
+    "para",
+    "su",
+    "sus",
+    "al",
+    "se",
+    "lo",
+    "es",
+    "the",
 }
 _NO_ALFANUM = re.compile(r"[^a-z0-9\s]")
 
