@@ -17,8 +17,18 @@ class Settings(BaseSettings):
     gemini_api_key: str | None = None
     modelo_claude: str = "sonnet"
 
+    # edge-tts solo tiene una voz masculina de España (Alvaro), así que María
+    # es mujer. Ximena, la voz anterior de Santi, tiene acento colombiano.
     voz_alex: str = "es-ES-AlvaroNeural"
-    voz_santi: str = "es-ES-XimenaNeural"
+    voz_maria: str = "es-ES-ElviraNeural"
+
+    # Prosodia: Álex es el mentor reflexivo, María el motor de energía.
+    # No se toca el pitch: en voces neuronales suena artificial.
+    rate_alex: str = "-4%"
+    rate_maria: str = "+6%"
+
+    # Silencio entre turnos. El crossfade solapaba sílabas.
+    pausa_entre_turnos_ms: int = 350
 
     carpeta_output: str = "output"
     carpeta_temp: str = "temp"
