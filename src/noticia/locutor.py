@@ -1,11 +1,41 @@
 import logging
 import os
+import unicodedata
 
 import edge_tts
 
 from noticia.config import settings
 
 logger = logging.getLogger("noticia.locutor")
+
+_LOCUTORES = ("alex", "maria")
+
+
+def _normalizar(texto: str) -> str:
+    """minúsculas y sin tildes, para comparar el prefijo del locutor."""
+    texto = texto.strip().lower()
+    return "".join(
+        c for c in unicodedata.normalize("NFD", texto) if unicodedata.category(c) != "Mn"
+    )
+
+
+def _parsear_linea(linea: str) -> tuple[str, str] | None:
+    """ "Álex: hola" -> ("alex", "hola"). None si la línea no es diálogo.
+
+    El prefijo es lo que hay ANTES del primer dos puntos, y debe ser un locutor
+    conocido. Así una mención a otro locutor dentro de la frase no confunde la
+    atribución, y un dos puntos dentro del texto no rompe el corte.
+    """
+    if ":" not in linea:
+        return None
+    prefijo, resto = linea.split(":", 1)
+    locutor = _normalizar(prefijo)
+    if locutor not in _LOCUTORES:
+        return None
+    texto = resto.strip()
+    if not texto:
+        return None
+    return locutor, texto
 
 
 async def procesar_guion_a_audio(guion_texto):
