@@ -118,6 +118,11 @@ def obtener_pool(ventana_horas=48, timeout=10, max_workers=12):
     for categoria in pool:
         recientes = [a for a in pool[categoria] if es_reciente(a["fecha"], ventana_horas)]
         pool[categoria] = _dedup(recientes)
+        if not pool[categoria]:
+            logger.warning(
+                "Categoría sin noticias recientes: %s (¿feeds caídos o desactualizados?)",
+                categoria,
+            )
 
     return pool
 

@@ -1,3 +1,4 @@
+import logging
 import time as _time
 
 from noticia import ingesta
@@ -104,6 +105,19 @@ def test_obtener_pool_filtra_recencia_y_estructura(monkeypatch):
     titulares = [a["titular"] for a in pool["espana"]]
     assert "Nueva" in titulares
     assert "Vieja" not in titulares
+
+
+def test_obtener_pool_avisa_si_una_categoria_queda_vacia(monkeypatch, caplog):
+    """Un catálogo de feeds muerto no debe perder un bloque en silencio."""
+    monkeypatch.setattr(ingesta.feedparser, "parse", lambda url: _FakeFeed([]))
+    monkeypatch.setattr(ingesta.fuentes, "FEEDS_CURADOS", {"futbol": ["http://muerto"]})
+    monkeypatch.setattr(ingesta.fuentes, "SECCIONES_GOOGLE_NEWS", {})
+
+    with caplog.at_level(logging.WARNING, logger="noticia.ingesta"):
+        pool = ingesta.obtener_pool(timeout=1)
+
+    assert pool["futbol"] == []
+    assert any("futbol" in reg.getMessage() for reg in caplog.records)
 
 
 def test_obtener_noticias_puente_aplana_clusters(monkeypatch):
