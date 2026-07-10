@@ -4,7 +4,7 @@ Concepto: Podcast diario automatizado de noticias con un tono dinámico, crític
 Personajes y Perfiles:
 
 Álex (Senior/Analista): Pragmático, experto en política, economía y geopolítica. Su función principal es identificar sesgos mediáticos (comparando medios como El Mundo, El País y prensa internacional/china).
-Santi (Dev Fullstack): Perfil técnico (Svelte, Django, K8s). Entusiasta del anime y experto en Pokémon VGC. Su rol es aterrizar las noticias al contexto español y aportar la visión "tech/friki".
+María (Dev Fullstack): Perfil técnico (Svelte, Django, K8s). Entusiasta del anime y experta en Pokémon VGC. Su rol es aterrizar las noticias al contexto español y aportar la visión "tech/friki".
 Estructura del Guion:
 
 Intro: Saludo y sumario.
@@ -18,6 +18,6 @@ Reglas de Estilo:
 
 Idioma: Español de España.
 Tono: Técnico pero accesible, conversacional.
-Formato: Exclusivamente diálogo etiquetado como "Álex:" y "Santi:".
+Formato: Exclusivamente diálogo etiquetado como "Álex:" y "María:". María es mujer (concordancia femenina).
 Estado actual del proyecto:
-Se han definido los personajes y la estructura. El siguiente paso es procesar un bloque de noticias brutas para generar el primer guion de prueba, ajustando la química entre los locutores (interrupciones de Santi, pragmatismo de Álex).
+Se han definido los personajes y la estructura. El siguiente paso es procesar un bloque de noticias brutas para generar el primer guion de prueba, ajustando la química entre los locutores (interrupciones de María, pragmatismo de Álex).
