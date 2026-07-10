@@ -134,6 +134,17 @@ async def generar_solo_audio(ruta_guion: str, salida: str | None = None) -> str:
         logger.info("Procesando locución del bloque: %s...", categoria)
         fragmentos_por_bloque[categoria] = await procesar_guion_a_audio(contenido)
 
+    if not fragmentos_por_bloque:
+        logger.error(
+            "Ningún encabezado de %s coincide con un bloque conocido (%s).",
+            ruta_guion,
+            ", ".join(_ORDEN_BLOQUES),
+        )
+        raise RuntimeError(
+            f"El guion {ruta_guion} no tiene ningún bloque reconocido: los "
+            f"encabezados '## nombre' deben coincidir con uno de {_ORDEN_BLOQUES}."
+        )
+
     if salida is None:
         salida = os.path.join(settings.carpeta_output, "NoticIA_audio.mp3")
 

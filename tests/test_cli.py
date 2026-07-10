@@ -135,3 +135,30 @@ def test_solo_audio_guion_sin_bloques_falla(monkeypatch, tmp_path):
     guion.write_text("Álex: sin encabezados\n", encoding="utf-8")
     with pytest.raises(RuntimeError):
         asyncio.run(cli.generar_solo_audio(str(guion), str(tmp_path / "o.mp3")))
+
+
+def test_solo_audio_bloques_desconocidos_falla_y_no_escribe(monkeypatch, tmp_path):
+    llamadas = {"locucion": [], "ensamblado": []}
+
+    async def fake_locucion(texto):
+        llamadas["locucion"].append(texto)
+        return ["frag.mp3"]
+
+    monkeypatch.setattr(cli, "procesar_guion_a_audio", fake_locucion)
+    monkeypatch.setattr(
+        cli,
+        "ensamblar_podcast_dinamico",
+        lambda fragmentos, salida: llamadas["ensamblado"].append((fragmentos, salida)),
+    )
+    monkeypatch.setattr(cli.settings, "carpeta_temp", str(tmp_path))
+    monkeypatch.setattr(cli.settings, "carpeta_output", str(tmp_path))
+
+    guion = tmp_path / "g.md"
+    guion.write_text("## bloque_inventado\n\nÁlex: hola\n", encoding="utf-8")
+    salida = tmp_path / "out.mp3"
+
+    with pytest.raises(RuntimeError):
+        asyncio.run(cli.generar_solo_audio(str(guion), str(salida)))
+
+    assert llamadas["ensamblado"] == []
+    assert not salida.exists()
