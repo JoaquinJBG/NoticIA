@@ -13,56 +13,60 @@
 
 ## 🛠️ Requisitos Previos
 
-Antes de instalar, asegúrate de tener:
-
-1.  **Python 3.12 o superior.**
-2.  **FFmpeg:** Crucial para el procesamiento de audio.
-    - **Linux:** `sudo apt install ffmpeg`
+1.  **[uv](https://docs.astral.sh/uv/)** — instala Python y las dependencias:
+    `curl -LsSf https://astral.sh/uv/install.sh | sh`
+2.  **Python 3.12 o superior** (uv lo instala solo si no lo tienes).
+3.  **FFmpeg** — `pydub` lo necesita para leer y escribir MP3.
+    - **Linux / WSL:** `sudo apt install ffmpeg`
     - **macOS:** `brew install ffmpeg`
-    - **Windows:** Descargar de [ffmpeg.org](https://ffmpeg.org/download.html) y añadir a la variable de entorno PATH.
-3.  **API Keys:**
-    - Una cuenta en [Groq Cloud](https://console.groq.com/) para obtener una `GROQ_API_KEY`.
-    - (Opcional) `GEMINI_API_KEY` si se desea alternar el modelo.
+    - **Windows:** descargar de [ffmpeg.org](https://ffmpeg.org/download.html) y añadir al `PATH`.
+4.  **[Claude Code](https://claude.ai/download) con una sesión de Claude Max iniciada** — es el cerebro
+    que escribe el guion, vía el CLI headless `claude -p`.
+
+> **No hacen falta API keys.** El guion usa tu suscripción de Claude Max, no una API de pago.
+> La sesión vive en `~/.claude` (tu carpeta de usuario), **no en el repositorio**: al clonar el
+> proyecto en otra máquina tendrás que ejecutar `claude` una vez e iniciar sesión allí.
 
 ---
 
-## 📦 Instalación
+## 📦 Puesta en marcha
 
-1.  **Clona el repositorio:**
-    ```bash
-    git clone https://github.com/JoaquinJBG/NoticIA.git
-    cd NoticIA
-    ```
+```bash
+git clone https://github.com/JoaquinJBG/NoticIA.git
+cd NoticIA
+make preparar
+```
 
-2.  **Sincroniza las dependencias:**
-    ```bash
-    uv sync
-    ```
-
-3.  **Configura las variables de entorno:**
-    Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
-    ```env
-    GROQ_API_KEY=tu_api_key_aqui
-    GEMINI_API_KEY=tu_api_key_opcional
-    VOZ_ALEX=es-ES-AlvaroNeural
-    VOZ_MARIA=es-ES-ElviraNeural
-    ```
+`make preparar` instala las dependencias y comprueba que ffmpeg, el CLI de Claude y la GPU (si la hay)
+están donde deben. Si falta algo bloqueante, te lo dice y sale con error.
 
 ---
 
 ## 🎮 Uso
 
-Para generar un podcast completo con todas las noticias del día:
 ```bash
-uv run noticia
+make ayuda      # ver todos los atajos
 ```
 
-El resultado final se guardará en la carpeta `output/`.
+| Comando | Qué hace |
+|---|---|
+| `make guion` | Genera **solo el guion** con Claude, sin audio → `output/guion_<fecha>.md` |
+| `make audio` | Locuta y masteriza un guion **ya escrito**, sin regenerarlo |
+| `make episodio` | Pipeline completo: ingesta → guion → locución → mastering |
+| `make test` | Ejecuta la suite de tests |
+| `make lint` | `ruff check` + comprobación de formato |
+| `make limpiar` | Borra los fragmentos temporales de audio |
 
-Para ejecutar los tests:
+`make audio` toma por defecto el guion más reciente de `output/`. Para elegir otro:
+
 ```bash
-uv run pytest
+make audio GUION=output/guion_2026-07-10.md SALIDA=output/prueba.mp3
 ```
+
+Iterar sobre el audio con `make audio` cuesta segundos; regenerar el guion cuesta ~14 minutos y consume
+cuota de Claude Max. Por eso están separados.
+
+El resultado final se guarda en `output/`.
 
 ---
 
