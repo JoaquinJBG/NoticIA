@@ -10,6 +10,8 @@ logger = logging.getLogger("noticia.locutor")
 
 _LOCUTORES = ("alex", "maria")
 
+_NOMBRE_MOSTRADO = {"alex": "Álex", "maria": "María"}
+
 
 def _normalizar(texto: str) -> str:
     """minúsculas y sin tildes, para comparar el prefijo del locutor."""
@@ -62,11 +64,13 @@ async def procesar_guion_a_audio(guion_texto):
         voz, rate = _voz_y_rate(locutor_id)
         temp_file = os.path.join(settings.carpeta_temp, f"fragmento_{contador}.mp3")
 
+        nombre = _NOMBRE_MOSTRADO.get(locutor_id, locutor_id)
         try:
-            logger.info("Grabando a %s con voz %s (rate %s)...", locutor_id, voz, rate)
+            logger.info("Grabando a %s con voz %s (rate %s)...", nombre, voz, rate)
             communicate = edge_tts.Communicate(texto, voz, rate=rate)
             await communicate.save(temp_file)
             piezas_audio.append(temp_file)
+            logger.info("Fragmento %s grabado para %s.", contador, nombre)
             contador += 1
         except Exception as exc:
             logger.error("Error grabando la línea %s: %s", contador, exc)

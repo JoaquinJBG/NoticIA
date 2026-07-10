@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     modelo_claude: str = "sonnet"
 
     # edge-tts solo tiene una voz masculina de España (Alvaro), así que María
-    # es mujer. Ximena, la voz anterior de Santi, tiene acento colombiano.
+    # es mujer. Ximena, la voz del locutor anterior, tiene acento colombiano.
     voz_alex: str = "es-ES-AlvaroNeural"
     voz_maria: str = "es-ES-ElviraNeural"
 

@@ -142,7 +142,8 @@ async def generar_solo_audio(ruta_guion: str, salida: str | None = None) -> str:
         )
         raise RuntimeError(
             f"El guion {ruta_guion} no tiene ningún bloque reconocido: los "
-            f"encabezados '## nombre' deben coincidir con uno de {_ORDEN_BLOQUES}."
+            f"encabezados '## nombre' deben coincidir con uno de "
+            f"{', '.join(_ORDEN_BLOQUES)}."
         )
 
     if salida is None:

@@ -8,7 +8,7 @@ from noticia.config import settings
 logger = logging.getLogger("noticia.editor")
 
 
-def _unir_con_pausas(segmentos, pausa_ms):
+def _unir_con_pausas(segmentos: list[AudioSegment], pausa_ms: int) -> AudioSegment:
     """Concatena segmentos separándolos por silencio. Sin crossfade.
 
     El crossfade solapaba el final de cada frase con el principio de la
@@ -23,7 +23,7 @@ def _unir_con_pausas(segmentos, pausa_ms):
     return resultado
 
 
-def aplicar_mastering(audio):
+def aplicar_mastering(audio: AudioSegment) -> AudioSegment:
     """Cadena sobria: limpia graves, nivela, comprime suave y deja margen.
 
     La versión anterior sumaba una copia filtrada sobre el original

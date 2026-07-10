@@ -81,11 +81,11 @@ def construir_bloque_con_contexto(categoria, noticias, briefing):
     
     INSTRUCCIONES:
     - Álex debe usar los datos del BRIEFING para sonar como un experto mentor.
-    - Santi debe reaccionar a las curiosidades y analogías.
+    - María debe reaccionar a las curiosidades y analogías.
     - Evitad repeticiones robóticas. Charlad durante 8-10 minutos de forma apasionada.
 
     FORMATO DE RESPUESTA (obligatorio):
-    - Responde ÚNICAMENTE con el diálogo, empezando directamente por "Álex:" o "Santi:".
+    - Responde ÚNICAMENTE con el diálogo, empezando directamente por "Álex:" o "María:".
     - Sin preámbulo, sin explicar lo que vas a hacer, sin resumen final.
     - Sin encabezados, sin markdown, sin separadores.
     """
@@ -113,7 +113,7 @@ def generar_intro(datos_noticias):
     texto = llamar_ia(prompt_sistema, prompt_usuario)
     if texto:
         return _limpiar_markdown(texto)
-    return "Álex: ¡Bienvenidos! \nSanti: ¡Hola a todos!"
+    return "Álex: ¡Bienvenidos! \nMaría: ¡Hola a todos, encantada de estar aquí!"
 
 
 def generar_outro():
@@ -126,4 +126,4 @@ def generar_outro():
     texto = llamar_ia(prompt_sistema, prompt_usuario)
     if texto:
         return _limpiar_markdown(texto)
-    return "Álex: Gracias por escucharnos. \nSanti: ¡Hasta pronto!"
+    return "Álex: Gracias por escucharnos. \nMaría: ¡Hasta pronto!"
