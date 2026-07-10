@@ -48,10 +48,15 @@ FEEDS_CURADOS = {
         "https://vgc.news/feed/",
         "https://www.3djuegos.com/index.php?noticias=rss",
     ],
+    # Los feeds de marca/as/mundodeportivo-la-liga murieron (0 entradas o
+    # contenido congelado hace años). Estos están vivos y verificados, y
+    # mezclan órbita barcelonista, madridista y prensa europea.
     "futbol": [
-        "https://e00-marca.static.preney.com/rss/futbol/liga_campeones.xml",
-        "https://as.com/rss/futbol/primera.xml",
-        "https://www.mundodeportivo.com/rss/futbol/la-liga.xml",
+        "https://www.mundodeportivo.com/feed/rss/futbol/",
+        "https://www.sport.es/es/rss/futbol/rss.xml",
+        "https://www.libertaddigital.com/rss/deportes.xml",
+        "https://feeds.bbci.co.uk/sport/football/rss.xml",
+        "https://www.theguardian.com/football/rss",
     ],
 }
 

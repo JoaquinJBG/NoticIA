@@ -1,9 +1,24 @@
 import logging
+import re
 
 from noticia.config import get_contexto, get_prompt_sistema
 from noticia.motor_claude import generar_texto
 
 logger = logging.getLogger("noticia.generador")
+
+# Encabezados markdown ("# Bloque") y reglas horizontales ("---"): no son
+# diálogo, y el locutor los leería en voz alta.
+_ENCABEZADO_O_REGLA = re.compile(r"^\s{0,3}(#{1,6}\s|-{3,}\s*$|\*{3,}\s*$)")
+_SALTOS_DE_MAS = re.compile(r"\n{3,}")
+
+
+def _limpiar_markdown(texto: str) -> str:
+    """Deja solo el diálogo: fuera encabezados, reglas y marcas de énfasis."""
+    lineas = [ln for ln in texto.splitlines() if not _ENCABEZADO_O_REGLA.match(ln)]
+    limpio = "\n".join(lineas)
+    for marca in ("**", "__", "*"):
+        limpio = limpio.replace(marca, "")
+    return _SALTOS_DE_MAS.sub("\n\n", limpio).strip()
 
 
 def construir_guion(datos_noticias):
@@ -68,11 +83,16 @@ def construir_bloque_con_contexto(categoria, noticias, briefing):
     - Álex debe usar los datos del BRIEFING para sonar como un experto mentor.
     - Santi debe reaccionar a las curiosidades y analogías.
     - Evitad repeticiones robóticas. Charlad durante 8-10 minutos de forma apasionada.
+
+    FORMATO DE RESPUESTA (obligatorio):
+    - Responde ÚNICAMENTE con el diálogo, empezando directamente por "Álex:" o "Santi:".
+    - Sin preámbulo, sin explicar lo que vas a hacer, sin resumen final.
+    - Sin encabezados, sin markdown, sin separadores.
     """
 
     texto = llamar_ia(prompt_sistema, prompt_usuario)
     if texto:
-        return texto.replace("**", "").replace("__", "").replace("###", "").replace("*", "").strip()
+        return _limpiar_markdown(texto)
     return ""
 
 
@@ -86,22 +106,24 @@ def generar_intro(datos_noticias):
     prompt_sistema = get_prompt_sistema()
     prompt_usuario = (
         f"TAREA: Genera la introducción con este sumario de temas: {resumen_titulares}. "
-        "Saludo carismático y hook inicial."
+        "Saludo carismático y hook inicial. "
+        "Responde ÚNICAMENTE con el diálogo, sin preámbulo ni markdown."
     )
 
     texto = llamar_ia(prompt_sistema, prompt_usuario)
     if texto:
-        return texto.replace("**", "").replace("__", "").replace("###", "").replace("*", "").strip()
+        return _limpiar_markdown(texto)
     return "Álex: ¡Bienvenidos! \nSanti: ¡Hola a todos!"
 
 
 def generar_outro():
     prompt_sistema = get_prompt_sistema()
     prompt_usuario = (
-        "TAREA: Genera la despedida del podcast. Resumen breve, Call to Action y cierre: NoticIA."
+        "TAREA: Genera la despedida del podcast. Resumen breve, Call to Action y cierre: NoticIA. "
+        "Responde ÚNICAMENTE con el diálogo, sin preámbulo ni markdown."
     )
 
     texto = llamar_ia(prompt_sistema, prompt_usuario)
     if texto:
-        return texto.replace("**", "").replace("__", "").replace("###", "").replace("*", "").strip()
+        return _limpiar_markdown(texto)
     return "Álex: Gracias por escucharnos. \nSanti: ¡Hasta pronto!"

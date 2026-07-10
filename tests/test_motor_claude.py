@@ -60,6 +60,26 @@ def test_generar_texto_timeout_devuelve_vacio(monkeypatch):
     assert motor_claude.generar_texto("s", "u") == ""
 
 
+def test_generar_texto_desactiva_las_herramientas(monkeypatch):
+    """Sin herramientas, Claude no puede escribir el guion a un fichero.
+
+    Con las herramientas activas actuaba como agente: usaba Write para guardar
+    el bloque y devolvía solo un resumen.
+    """
+    capturado = {}
+
+    def fake_run(cmd, **kw):
+        capturado["cmd"] = cmd
+        return _Proc(returncode=0, stdout="Álex: hola")
+
+    monkeypatch.setattr(motor_claude.subprocess, "run", fake_run)
+    motor_claude.generar_texto("SYS", "USER")
+
+    cmd = capturado["cmd"]
+    i = cmd.index("--tools")
+    assert cmd[i + 1] == ""  # "" = desactivar todas las herramientas
+
+
 def test_generar_texto_aisla_cwd_en_directorio_temporal(monkeypatch):
     capturado = {}
 

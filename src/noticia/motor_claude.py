@@ -22,12 +22,18 @@ def generar_texto(system_prompt: str, user_prompt: str) -> str:
     Se ejecuta con `cwd` en un directorio temporal vacío para que `claude -p`
     no descubra el CLAUDE.md ni la configuración del propio proyecto NoticIA
     como contexto ambiental.
+
+    `--tools ""` desactiva todas las herramientas: sin ellas Claude no puede
+    actuar como agente (escribir el guion a un fichero y devolver un resumen)
+    y se limita a generar el texto pedido.
     """
     cmd = [
         "claude",
         "-p",
         "--model",
         settings.modelo_claude,
+        "--tools",
+        "",
         "--append-system-prompt",
         system_prompt,
     ]
