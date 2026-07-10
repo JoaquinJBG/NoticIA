@@ -3,9 +3,15 @@ import noticia.config as config
 
 def test_settings_valores_por_defecto():
     assert config.settings.voz_alex == "es-ES-AlvaroNeural"
-    assert config.settings.voz_santi == "es-ES-XimenaNeural"
+    assert config.settings.voz_maria == "es-ES-ElviraNeural"
     assert config.settings.carpeta_output == "output"
     assert config.settings.carpeta_temp == "temp"
+
+
+def test_prosodia_y_pausa_por_defecto():
+    assert config.settings.rate_alex == "-4%"
+    assert config.settings.rate_maria == "+6%"
+    assert config.settings.pausa_entre_turnos_ms == 350
 
 
 def test_sintonias_cubre_categorias_y_apunta_a_mp3():

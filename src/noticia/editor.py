@@ -8,28 +8,35 @@ from noticia.config import settings
 logger = logging.getLogger("noticia.editor")
 
 
-def aplicar_mastering_pro(audio):
-    """
-    Aplica una cadena de mastering: Normalización de pico,
-    compresión de rango dinámico y ganancia de calidez.
-    """
-    logger.info("Aplicando Mastering Profesional (EQ + Compresión)...")
+def _unir_con_pausas(segmentos: list[AudioSegment], pausa_ms: int) -> AudioSegment:
+    """Concatena segmentos separándolos por silencio. Sin crossfade.
 
-    # 1. Normalizar para asegurar que trabajamos con buen nivel
+    El crossfade solapaba el final de cada frase con el principio de la
+    siguiente: en voz eso pisa sílabas.
+    """
+    if not segmentos:
+        return AudioSegment.empty()
+    silencio = AudioSegment.silent(duration=pausa_ms)
+    resultado = segmentos[0]
+    for segmento in segmentos[1:]:
+        resultado = resultado + silencio + segmento
+    return resultado
+
+
+def aplicar_mastering(audio: AudioSegment) -> AudioSegment:
+    """Cadena sobria: limpia graves, nivela, comprime suave y deja margen.
+
+    La versión anterior sumaba una copia filtrada sobre el original
+    (low_pass_filter().apply_gain().overlay()), lo que enturbiaba y saturaba,
+    y normalizaba a 0.1 dB del máximo.
+    """
+    logger.info("Aplicando mastering...")
+    audio = audio.high_pass_filter(80)  # fuera el retumbe: esto sí es una EQ
     audio = effects.normalize(audio)
-
-    # 2. Compresión de rango dinámico (hace que las voces suenen constantes y potentes)
-    # Simulamos un compresor reduciendo los picos y subiendo el nivel medio
     audio = effects.compress_dynamic_range(
-        audio, threshold=-20.0, ratio=3.0, attack=5.0, release=50.0
+        audio, threshold=-18.0, ratio=2.5, attack=5.0, release=50.0
     )
-
-    # 3. Pequeño refuerzo de graves para dar calidez de estudio (EQ básica)
-    # Subimos un poco las frecuencias bajas (frecuencia de corte aproximada)
-    audio = audio.low_pass_filter(3000).apply_gain(1.5).overlay(audio)
-
-    # 4. Limitador final para evitar distorsión
-    return effects.normalize(audio, headroom=0.1)
+    return effects.normalize(audio, headroom=1.0)
 
 
 def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_final.mp3"):
@@ -39,7 +46,6 @@ def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_fi
 
     logger.info("Iniciando montaje dinámico profesional...")
     podcast_completo = AudioSegment.empty()
-    ms_solapamiento = 250
 
     for categoria, archivos in fragmentos_por_bloque.items():
         if not archivos:
@@ -47,17 +53,16 @@ def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_fi
 
         logger.info("Procesando bloque: %s...", categoria)
 
-        voces_bloque = AudioSegment.empty()
-        for i, f in enumerate(archivos):
+        segmentos = []
+        for f in archivos:
             try:
-                segmento = AudioSegment.from_mp3(f)
-                if i == 0:
-                    voces_bloque = segmento
-                else:
-                    voces_bloque = voces_bloque.append(segmento, crossfade=ms_solapamiento)
+                segmentos.append(AudioSegment.from_mp3(f))
             except Exception as exc:
                 logger.warning("No se pudo cargar el fragmento %s: %s", f, exc)
                 continue
+        voces_bloque = _unir_con_pausas(segmentos, settings.pausa_entre_turnos_ms)
+        if len(voces_bloque) == 0:
+            continue
 
         ruta_musica = settings.sintonias.get(categoria, settings.ruta_sintonia)
         try:
@@ -87,7 +92,7 @@ def ensamblar_podcast_dinamico(fragmentos_por_bloque, archivo_salida="noticIA_fi
             podcast_completo = podcast_completo.append(bloque_mezclado, crossfade=1000)
 
     # --- FASE DE MASTERING ---
-    podcast_final = aplicar_mastering_pro(podcast_completo)
+    podcast_final = aplicar_mastering(podcast_completo)
 
     # 4. Exportar y limpiar
     podcast_final.export(

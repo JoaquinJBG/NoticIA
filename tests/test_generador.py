@@ -1,4 +1,4 @@
-from noticia import generador
+from noticia import generador, locutor
 
 
 def test_llamar_ia_delega_en_motor(monkeypatch):
@@ -33,3 +33,25 @@ def test_construir_guion_mantiene_estructura_y_limpia_markdown(monkeypatch):
     assert "intro" in guion and "outro" in guion
     assert "espana" in guion
     assert guion["espana"] and "**" not in guion["espana"][0]
+
+
+def test_fallbacks_de_intro_y_outro_son_locutables(monkeypatch):
+    """Si Claude no responde, generar_intro/generar_outro caen a un texto fijo.
+
+    Ese texto fijo tiene que hablar con los locutores que el parser de
+    locutor.py reconoce de verdad (Álex/María), o la línea se descarta en
+    silencio y el fallback se queda mudo.
+    """
+    monkeypatch.setattr(generador, "llamar_ia", lambda s, u: "")
+
+    intro = generador.generar_intro({})
+    outro = generador.generar_outro()
+
+    for texto in (intro, outro):
+        for linea in texto.split("\n"):
+            if not linea.strip():
+                continue
+            parseada = locutor._parsear_linea(linea.strip())
+            assert parseada is not None, f"línea no locutable en el fallback: {linea!r}"
+            locutor_id, _ = parseada
+            assert locutor_id in ("alex", "maria")

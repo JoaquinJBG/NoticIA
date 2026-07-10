@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import logging
 import os
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -92,6 +93,67 @@ def generar_solo_guion(salida: str | None = None) -> str:
     return salida
 
 
+_ENCABEZADO_BLOQUE = re.compile(r"^##\s+(\w+)\s*$")
+
+
+def _trocear_guion(texto_md: str) -> dict[str, str]:
+    """Inverso de _formatear_guion: '## bloque' + texto -> {bloque: texto}."""
+    bloques: dict[str, str] = {}
+    actual = None
+    lineas: list[str] = []
+    for linea in texto_md.splitlines():
+        encabezado = _ENCABEZADO_BLOQUE.match(linea)
+        if encabezado:
+            if actual is not None:
+                bloques[actual] = "\n".join(lineas).strip()
+            actual = encabezado.group(1)
+            lineas = []
+        elif actual is not None:
+            lineas.append(linea)
+    if actual is not None:
+        bloques[actual] = "\n".join(lineas).strip()
+    return bloques
+
+
+async def generar_solo_audio(ruta_guion: str, salida: str | None = None) -> str:
+    """Locuta y masteriza un guion ya escrito, sin regenerarlo."""
+    logger.info("Modo solo-audio: locución + montaje desde %s", ruta_guion)
+    texto = Path(ruta_guion).read_text(encoding="utf-8")
+    bloques = _trocear_guion(texto)
+    if not bloques:
+        raise RuntimeError(f"El guion {ruta_guion} no tiene bloques '## nombre'.")
+
+    os.makedirs(settings.carpeta_temp, exist_ok=True)
+    os.makedirs(settings.carpeta_output, exist_ok=True)
+
+    fragmentos_por_bloque = {}
+    for categoria in _ORDEN_BLOQUES:
+        contenido = bloques.get(categoria)
+        if not contenido:
+            continue
+        logger.info("Procesando locución del bloque: %s...", categoria)
+        fragmentos_por_bloque[categoria] = await procesar_guion_a_audio(contenido)
+
+    if not fragmentos_por_bloque:
+        logger.error(
+            "Ningún encabezado de %s coincide con un bloque conocido (%s).",
+            ruta_guion,
+            ", ".join(_ORDEN_BLOQUES),
+        )
+        raise RuntimeError(
+            f"El guion {ruta_guion} no tiene ningún bloque reconocido: los "
+            f"encabezados '## nombre' deben coincidir con uno de "
+            f"{', '.join(_ORDEN_BLOQUES)}."
+        )
+
+    if salida is None:
+        salida = os.path.join(settings.carpeta_output, "NoticIA_audio.mp3")
+
+    ensamblar_podcast_dinamico(fragmentos_por_bloque, salida)
+    logger.info("Audio escrito en %s", salida)
+    return salida
+
+
 def main():
     configurar_logging()
     parser = argparse.ArgumentParser(
@@ -106,9 +168,22 @@ def main():
         "--salida",
         help="Ruta del fichero de guion (solo con --solo-guion).",
     )
+    parser.add_argument(
+        "--solo-audio",
+        action="store_true",
+        help="Locuta y masteriza un guion ya escrito (requiere --guion).",
+    )
+    parser.add_argument(
+        "--guion",
+        help="Ruta del guion .md de entrada (solo con --solo-audio).",
+    )
     args = parser.parse_args()
 
-    if args.solo_guion:
+    if args.solo_audio:
+        if not args.guion:
+            parser.error("--solo-audio requiere --guion RUTA")
+        asyncio.run(generar_solo_audio(args.guion, args.salida))
+    elif args.solo_guion:
         generar_solo_guion(args.salida)
     else:
         asyncio.run(producir_episodio())

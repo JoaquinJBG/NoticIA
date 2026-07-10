@@ -1,7 +1,7 @@
 # NoticIA — Instrucciones del proyecto
 
 NoticIA es un **podcast diario automatizado**: transforma la actualidad en una tertulia
-entre dos locutores (**Álex** y **Santi**) y produce un MP3 final.
+entre dos locutores (**Álex** y **María**) y produce un MP3 final.
 
 ## Pipeline
 

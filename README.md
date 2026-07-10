@@ -5,7 +5,7 @@
 ## 🚀 Características
 
 - **Ingesta Multi-fuente:** Captura noticias de RSS feeds organizados por categorías (España, Geopolítica, Ciencia, Tecnología, Friki, Fútbol).
-- **Cerebro Groq/Gemini:** Genera diálogos naturales entre dos locutores, **Álex** (el mentor experto) y **Santi** (el entusiasta tecnológico).
+- **Cerebro Claude:** Genera diálogos naturales entre dos locutores, **Álex** (el mentor experto) y **María** (la entusiasta tecnológica), vía el CLI headless `claude -p`.
 - **Voces Realistas:** Integración con `edge-tts` para una locución fluida con acento de España.
 - **Edición Pro:** Montaje automático con sintonías de fondo, transiciones dinámicas y una cadena de mastering (compresión, EQ y normalización) usando `pydub`.
 
@@ -45,7 +45,7 @@ Antes de instalar, asegúrate de tener:
     GROQ_API_KEY=tu_api_key_aqui
     GEMINI_API_KEY=tu_api_key_opcional
     VOZ_ALEX=es-ES-AlvaroNeural
-    VOZ_SANTI=es-ES-XimenaNeural
+    VOZ_MARIA=es-ES-ElviraNeural
     ```
 
 ---
@@ -81,7 +81,7 @@ uv run pytest
 ## 🎙️ Personajes
 
 - **Álex:** El veterano carismático. Aporta el contexto histórico y la reflexión profunda. Fanático del cine de culto.
-- **Santi:** El motor de energía. Experto en gadgets, Nintendo y Pokémon VGC. Siempre busca cómo la tecnología afecta al día a día.
+- **María:** El motor de energía. Experta en gadgets, Nintendo y Pokémon VGC. Siempre busca cómo la tecnología afecta al día a día.
 
 ---
 
