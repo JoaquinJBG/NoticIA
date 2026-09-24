@@ -150,6 +150,49 @@ def test_solo_audio_no_genera_guion(monkeypatch, tmp_path):
     assert llamadas["ensamblado"] == [({"intro": ["frag.mp3"]}, str(salida))]
 
 
+def test_solo_audio_borra_el_directorio_temporal_al_terminar(monkeypatch, tmp_path):
+    carpeta_temp = tmp_path / "temp"
+    carpeta_temp.mkdir()
+    monkeypatch.setattr(cli.settings, "carpeta_temp", str(carpeta_temp))
+    monkeypatch.setattr(cli.settings, "carpeta_output", str(tmp_path / "output"))
+
+    class _MotorFalso:
+        nombre = "edge"
+        extension = "mp3"
+        concurrencia_maxima = 1
+
+        async def cargar(self):
+            return None
+
+        async def cerrar(self):
+            return None
+
+    monkeypatch.setattr(cli, "resolver_motores", lambda motor_voz: [_MotorFalso()])
+
+    async def fake_preparar_cadena(motores):
+        return motores
+
+    monkeypatch.setattr(cli, "preparar_cadena", fake_preparar_cadena)
+
+    async def fake_locucion(bloques, motores, carpeta, **kwargs):
+        return type(
+            "ResultadoLocucionFalso",
+            (),
+            {"fragmentos_por_bloque": {b: ["frag.mp3"] for b in bloques}},
+        )()
+
+    monkeypatch.setattr(cli, "locutar_episodio", fake_locucion)
+    monkeypatch.setattr(cli, "ensamblar_podcast_dinamico", lambda fragmentos, salida: None)
+
+    guion = tmp_path / "g.md"
+    guion.write_text("## intro\n\nÁlex: hola\n", encoding="utf-8")
+    salida = tmp_path / "out.mp3"
+
+    asyncio.run(cli.generar_solo_audio(str(guion), str(salida)))
+
+    assert list(carpeta_temp.iterdir()) == []
+
+
 def test_solo_audio_guion_sin_bloques_falla(tmp_path):
     guion = tmp_path / "g.md"
     guion.write_text("Álex: sin encabezados\n", encoding="utf-8")

@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import logging
+import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -86,6 +87,7 @@ async def generar_solo_audio(
     finally:
         for motor in motores:
             await motor.cerrar()
+        shutil.rmtree(carpeta_temp, ignore_errors=True)
 
     if salida is None:
         salida = str(settings.ruta_output / "NoticIA_audio.mp3")
