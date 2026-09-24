@@ -2,13 +2,16 @@
 name = "noticia"
 version = "0.1.0"
 description = "Podcast diario automatizado con IA"
-requires-python = ">=3.12"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "feedparser>=6.0.11",
     "edge-tts>=6.1.12",
     "pydub>=0.25.1",
     "pydantic-settings>=2.5.2",
     "rapidfuzz>=3.9.7",
+    "audioop-lts>=0.2.1 ; python_full_version >= '3.13'",
+    "pillow>=12",
+    "mutagen>=1.48",
 ]
 
 [project.scripts]
@@ -19,6 +22,18 @@ dev = [
     "pytest>=8.3.4",
     "ruff>=0.8.0",
 ]
+voz-cpu = [
+    "kokoro-onnx==0.6.1",
+    "soundfile>=0.12",
+]
+voz-gpu = [
+    "chatterbox-tts==0.1.7",
+    "setuptools<81",
+    "soundfile>=0.12",
+]
+
+[tool.uv]
+default-groups = ["dev", "voz-cpu"]
 
 [build-system]
 requires = ["hatchling"]
@@ -29,7 +44,7 @@ packages = ["src/noticia"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

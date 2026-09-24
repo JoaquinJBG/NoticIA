@@ -26,3 +26,10 @@ output/
 
 # Log de ejecución
 produccion.log
+
+# Modelos y voces de referencia descargados/aportados a mano
+modelos/
+voces/*.wav
+
+# Lock del orquestador
+.noticia.lock

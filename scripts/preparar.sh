@@ -33,16 +33,61 @@ fi
 
 # ---------------------------------------------------------------- deps
 titulo "Dependencias de Python"
-if uv sync --quiet; then
-    ok "uv sync completado"
+gpu_visible=0
+if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1; then
+    gpu_visible=1
+fi
+
+if [ "$gpu_visible" -eq 1 ]; then
+    ok "GPU NVIDIA detectada: instalando también el grupo voz-gpu (torch + chatterbox)"
+    sync_cmd="uv sync --quiet --group voz-gpu"
+else
+    ok "Sin GPU NVIDIA visible: usando solo el grupo voz-cpu (Kokoro)"
+    sync_cmd="uv sync --quiet"
+fi
+
+if $sync_cmd; then
+    ok "$sync_cmd completado"
     version_py=$(uv run python -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)
-    if [ -n "$version_py" ]; then
-        ok "Python $version_py (requerido: >= 3.12)"
+    if [ "$version_py" = "3.13" ]; then
+        ok "Python $version_py"
+    elif [ -n "$version_py" ]; then
+        fallo "Python $version_py (el proyecto requiere 3.13)"
     else
         fallo "No se pudo determinar la versión de Python"
     fi
 else
-    fallo "uv sync falló"
+    fallo "$sync_cmd falló"
+fi
+
+if [ "$gpu_visible" -eq 1 ]; then
+    for ref in voces/alex_ref.wav voces/maria_ref.wav; do
+        if [ ! -f "$ref" ]; then
+            aviso "Falta $ref: Chatterbox (motor GPU) no se activará hasta que exista, con voz y derechos de España."
+        fi
+    done
+fi
+
+titulo "Pesos del motor de voz Kokoro (CPU)"
+if uv run python -m noticia.voz.modelos; then
+    ok "Modelos de Kokoro listos en modelos/kokoro/"
+else
+    fallo "No se pudieron descargar los modelos de Kokoro"
+fi
+
+titulo "Sintonías"
+sintonias_faltantes=$(uv run python -c '
+from noticia.config import settings
+from pathlib import Path
+faltan = sorted({r for r in settings.sintonias.values() if not Path(r).exists()})
+print("\n".join(faltan))
+' 2>/dev/null)
+if [ -n "$sintonias_faltantes" ]; then
+    while IFS= read -r ruta; do
+        aviso "Falta la sintonía $ruta (no está en git; el bloque irá sin música hasta que la copies)."
+    done <<< "$sintonias_faltantes"
+else
+    ok "Todas las sintonías están presentes"
 fi
 
 # ---------------------------------------------------------------- ffmpeg
@@ -69,19 +114,6 @@ else
     printf '      Instalación: https://claude.ai/download\n'
 fi
 printf '      No hacen falta API keys: el guion usa tu suscripción de Claude Max.\n'
-
-# ---------------------------------------------------------------- gpu
-titulo "GPU (solo para el futuro motor de voz, Fase 3C)"
-if command -v nvidia-smi >/dev/null 2>&1; then
-    tarjeta=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null | head -1)
-    if [ -n "$tarjeta" ]; then
-        ok "GPU detectada: $tarjeta"
-    else
-        aviso "nvidia-smi existe pero no reporta ninguna GPU"
-    fi
-else
-    aviso "Sin GPU NVIDIA. El motor de voz actual (edge-tts) funciona igual."
-fi
 
 # ---------------------------------------------------------------- tests
 titulo "Comprobación final"

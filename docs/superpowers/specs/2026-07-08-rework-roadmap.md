@@ -78,3 +78,15 @@ Se crean cuando surge la necesidad concreta, no todas de golpe.
 - Mastering con "EQ" mal planteada y `normalize(headroom=0.1)` agresivo → Fase 3.
 - Locutor usa `in` en vez de `startswith` para detectar hablante → Fase 3.
 - `except:` desnudos y `print` en vez de `logging` → Fase 0 (módulos actuales) y Fase 1 (ingesta).
+
+---
+
+## Estado 2026-09-24
+
+- **Fase 3 (Producción de audio):** hecha en su parte de código. Locución en paralelo,
+  parser de locutor robusto, tres motores enchufables (edge-tts, Kokoro, Chatterbox) con
+  selector automático por GPU y muestras comparativas, mastering con ffmpeg loudnorm.
+- **Fase 4 (Publicación):** publicación local hecha (feed RSS propio, ID3, portada, índice).
+  Pendiente: hosting del feed y del audio, y generación de vídeo + subida a YouTube.
+- **Fase 5 (Orquestación):** hecha salvo la programación por cron: el orquestador ya cubre
+  idempotencia, lock y resumen de la ejecución.
