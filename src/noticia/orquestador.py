@@ -19,7 +19,7 @@ from datetime import date
 from enum import IntEnum
 from pathlib import Path
 
-from noticia.bloques import ORDEN_BLOQUES
+from noticia.bloques import CATEGORIAS_NOTICIAS, ORDEN_BLOQUES
 from noticia.config import settings
 from noticia.editor import comprobar_sintonias, ensamblar_podcast_dinamico
 from noticia.generador import construir_guion
@@ -68,6 +68,19 @@ def formatear_guion(guion: dict[str, list[str]]) -> str:
             continue
         partes.append(f"## {bloque}\n\n" + "\n".join(lineas))
     return "\n\n".join(partes) + "\n"
+
+
+def guion_tiene_noticias(guion: dict[str, list[str]]) -> bool:
+    """True si algún bloque de `CATEGORIAS_NOTICIAS` tiene texto.
+
+    Intro y outro siempre traen texto de reserva (ver `generador.generar_intro`
+    y `generador.generar_outro`), así que no cuentan como contenido real: un
+    guion sin ninguna noticia no debe considerarse "con contenido".
+    """
+    return any(
+        any(linea.strip() for linea in guion.get(categoria, []))
+        for categoria in CATEGORIAS_NOTICIAS
+    )
 
 
 def trocear_guion(texto_md: str) -> dict[str, str]:
@@ -175,7 +188,7 @@ def generar_guion(fecha: date) -> tuple[dict[str, list[str]], dict[str, list[dic
         pool = obtener_pool()
         noticias = seleccionar_noticias(pool)
         guion = construir_guion(noticias, fecha)
-        if any(linea.strip() for lineas in guion.values() for linea in lineas):
+        if guion_tiene_noticias(guion):
             return guion, noticias
         ultimo = intento == intentos - 1
         logger.warning(
@@ -398,5 +411,6 @@ __all__ = [
     "ejecutar",
     "formatear_guion",
     "generar_guion",
+    "guion_tiene_noticias",
     "trocear_guion",
 ]

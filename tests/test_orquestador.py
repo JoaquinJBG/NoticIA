@@ -169,16 +169,54 @@ def test_regenerar_guion_llama_de_nuevo_al_generador(entorno):
     assert entorno["construir_guion"] == 2
 
 
+def _guion_solo_reserva() -> dict[str, list[str]]:
+    """Comportamiento real de `construir_guion` sin ninguna noticia: intro y outro
+    siempre traen texto de reserva (ver `generador.generar_intro`/`generar_outro`),
+    y ningún bloque de `CATEGORIAS_NOTICIAS` se añade al guion."""
+    return {
+        "intro": ["Álex: ¡Bienvenidos! \nMaría: ¡Hola a todos, encantada de estar aquí!"],
+        "outro": ["Álex: Gracias por escucharnos. \nMaría: ¡Hasta pronto!"],
+    }
+
+
+def test_guion_tiene_noticias_ignora_intro_y_outro():
+    assert orquestador.guion_tiene_noticias(_guion_solo_reserva()) is False
+
+
+def test_guion_tiene_noticias_true_si_hay_bloque_de_noticias_con_texto():
+    guion = {**_guion_solo_reserva(), "espana": ["Álex: bla"]}
+    assert orquestador.guion_tiene_noticias(guion) is True
+
+
+def test_generar_guion_con_intro_outro_de_reserva_y_sin_noticias_lanza_guion_vacio(
+    entorno, monkeypatch
+):
+    """Regresión: antes, `generar_guion` consideraba "con contenido" cualquier guion
+    con texto en CUALQUIER bloque, incluidos intro/outro -- que siempre lo tienen
+    (texto de reserva). Eso hacía que GuionVacio nunca saltara de verdad."""
+    monkeypatch.setattr(orquestador.settings, "reintentos_guion", 0)
+    monkeypatch.setattr(orquestador.settings, "espera_reintento_guion_s", 0)
+    monkeypatch.setattr(
+        orquestador, "construir_guion", lambda noticias, fecha=None: _guion_solo_reserva()
+    )
+
+    with pytest.raises(orquestador.GuionVacio):
+        orquestador.generar_guion(FECHA)
+
+
 def test_guion_vacio_tras_reintentos_no_crea_ni_mp3_ni_guion(entorno, monkeypatch):
     monkeypatch.setattr(orquestador.settings, "reintentos_guion", 0)
     monkeypatch.setattr(orquestador.settings, "espera_reintento_guion_s", 0)
-    monkeypatch.setattr(orquestador, "construir_guion", lambda noticias, fecha=None: {})
+    monkeypatch.setattr(
+        orquestador, "construir_guion", lambda noticias, fecha=None: _guion_solo_reserva()
+    )
 
     with pytest.raises(orquestador.GuionVacio):
         asyncio.run(orquestador.ejecutar(FECHA, publicar=False))
 
     carpeta = orquestador.carpeta_episodio(FECHA)
     assert not (carpeta / "guion.md").exists()
+    assert not (carpeta / "noticias.json").exists()
     assert not (carpeta / f"NoticIA_{FECHA.isoformat()}.mp3").exists()
 
 
