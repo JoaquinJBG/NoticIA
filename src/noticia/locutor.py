@@ -18,6 +18,10 @@ logger = logging.getLogger("noticia.locutor")
 
 _LOCUTORES = ("alex", "maria")
 
+# Líneas que hablan "los dos a la vez" (p.ej. el eslogan final): se asignan a
+# Álex en vez de descartarse como locutor desconocido.
+_PREFIJOS_AMBOS = frozenset({"alex y maria", "maria y alex", "ambos", "los dos"})
+
 _RE_PARENTESIS = re.compile(r"\([^)]*\)")
 # Una palabra sola (sin espacios) seguida de dos puntos: "Santi:", "IMPORTANTE:".
 # Indica un intento de atribución (a un locutor desconocido o un encabezado),
@@ -51,7 +55,9 @@ def _parsear_linea(linea: str) -> tuple[str, str] | None:
         return None
     prefijo, resto = linea.split(":", 1)
     locutor = _normalizar(_limpiar_prefijo(prefijo))
-    if locutor not in _LOCUTORES:
+    if locutor in _PREFIJOS_AMBOS:
+        locutor = "alex"
+    elif locutor not in _LOCUTORES:
         return None
     texto = resto.strip()
     if not texto:

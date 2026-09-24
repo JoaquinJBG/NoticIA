@@ -33,6 +33,13 @@ def test_parsear_linea_dos_puntos_en_la_frase():
     )
 
 
+def test_parsear_linea_ambos_locutores_se_asigna_a_alex():
+    assert locutor._parsear_linea("Álex y María: ¡NoticIA!") == ("alex", "¡NoticIA!")
+    assert locutor._parsear_linea("María y Álex: ¡NoticIA!") == ("alex", "¡NoticIA!")
+    assert locutor._parsear_linea("Ambos: ¡NoticIA!") == ("alex", "¡NoticIA!")
+    assert locutor._parsear_linea("Los dos: ¡NoticIA!") == ("alex", "¡NoticIA!")
+
+
 def test_parsear_linea_no_dialogo_devuelve_none():
     assert locutor._parsear_linea("IMPORTANTE: no inventes hechos") is None
     assert locutor._parsear_linea("una línea cualquiera") is None
