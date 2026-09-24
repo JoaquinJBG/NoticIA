@@ -271,10 +271,14 @@ async def ejecutar(
             resumen = await _ejecutar_bloqueado(
                 fecha, publicar, forzar, regenerar_guion, motor_voz, carpeta, inicio
             )
+        except Exception:
+            logger.exception("Fallo produciendo el episodio de %s", fecha.isoformat())
+            raise
+        else:
+            resumen.registrar()
         finally:
             quitar_handler(handler)
 
-    resumen.registrar()
     return resumen
 
 

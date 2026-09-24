@@ -274,6 +274,36 @@ def test_resumen_aparece_en_el_log(entorno, caplog):
     assert any("RESUMEN" in registro.message for registro in caplog.records)
 
 
+def test_resumen_se_escribe_en_el_produccion_log_del_episodio(entorno, caplog):
+    """Regresión: el resumen se registraba DESPUÉS de quitar el handler del
+    episodio, así que nunca llegaba a produccion.log."""
+    with caplog.at_level(logging.INFO):
+        asyncio.run(orquestador.ejecutar(FECHA, publicar=False))
+    carpeta = orquestador.carpeta_episodio(FECHA)
+    contenido = (carpeta / "produccion.log").read_text(encoding="utf-8")
+    assert "RESUMEN" in contenido
+
+
+def test_fallo_al_producir_se_registra_en_el_produccion_log_del_episodio(
+    entorno, monkeypatch, caplog
+):
+    """Regresión: el motivo del fallo (logger.exception) debe quedar en el
+    produccion.log del episodio, no perderse tras quitar el handler."""
+    monkeypatch.setattr(orquestador.settings, "reintentos_guion", 0)
+    monkeypatch.setattr(orquestador.settings, "espera_reintento_guion_s", 0)
+    monkeypatch.setattr(
+        orquestador, "construir_guion", lambda noticias, fecha=None: _guion_solo_reserva()
+    )
+
+    with caplog.at_level(logging.INFO), pytest.raises(orquestador.GuionVacio):
+        asyncio.run(orquestador.ejecutar(FECHA, publicar=False))
+
+    carpeta = orquestador.carpeta_episodio(FECHA)
+    contenido = (carpeta / "produccion.log").read_text(encoding="utf-8")
+    assert "Fallo produciendo el episodio" in contenido
+    assert "GuionVacio" in contenido
+
+
 # --------------------------------------------------------------- bloqueo_exclusivo
 
 
