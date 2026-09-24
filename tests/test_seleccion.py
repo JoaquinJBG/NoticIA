@@ -1,5 +1,8 @@
 import json
+import logging
 import time
+
+import pytest
 
 from noticia import seleccion
 
@@ -110,3 +113,86 @@ def test_epoch_o_menos_infinito_orden():
     antigua = seleccion._epoch_o_menos_infinito(_fecha(5))
     assert reciente > antigua
     assert seleccion._epoch_o_menos_infinito(None) < antigua
+
+
+# --------------------------------------------------------------- es_contenido_comercial
+
+
+def _noticia(titular, resumen=""):
+    return {"titular": titular, "resumen": resumen}
+
+
+CASOS_COMERCIALES = [
+    "Las primeras ofertas de Prime Day de Roborock",
+    "TurboTax lanza cupones para septiembre",
+    "Black Friday: los mejores chollos en portátiles",
+    "Cyber Monday 2026: hasta el 70% de descuento en electrónica",
+    "Rebajas de verano: precio mínimo histórico para este móvil",
+    "Este código promocional te da un 20% off en tu próxima compra",
+    "El mejor deal del día: auriculares a mitad de precio",
+    "Amazon Sale: los mejores chollos de la semana",
+    "Estas son las mejores ofertas para el regreso al cole",
+]
+
+CASOS_NO_COMERCIALES = [
+    "El Gobierno amplía la oferta de vivienda pública",
+    "Oferta pública de empleo de 2026",
+    "El ministerio publica la oferta de empleo de bombero",
+    "Las universidades amplían su oferta de plazas para el curso que viene",
+    "El PIB sale disparado tras el dato de empleo",
+    "El paciente sale del hospital tras la operación",
+    "España sale de la recesión según el último informe económico",
+    "Un estudio confirma que el cambio climático avanza más rápido de lo previsto",
+]
+
+
+@pytest.mark.parametrize("titular", CASOS_COMERCIALES)
+def test_es_contenido_comercial_detecta_casos_reales(titular):
+    assert seleccion.es_contenido_comercial(_noticia(titular)) is True
+
+
+@pytest.mark.parametrize("titular", CASOS_NO_COMERCIALES)
+def test_es_contenido_comercial_no_marca_falsos_positivos(titular):
+    assert seleccion.es_contenido_comercial(_noticia(titular)) is False
+
+
+def test_es_contenido_comercial_sin_distinguir_mayusculas_ni_tildes():
+    assert seleccion.es_contenido_comercial(_noticia("CUPÓN de descuento del 50%")) is True
+    assert seleccion.es_contenido_comercial(_noticia("cupon de descuento del 50%")) is True
+
+
+def test_es_contenido_comercial_mira_tambien_el_resumen():
+    noticia = _noticia("Nueva colección de zapatillas", resumen="chollo: 30% de descuento hoy")
+    assert seleccion.es_contenido_comercial(noticia) is True
+
+
+def test_es_contenido_comercial_resumen_none_no_rompe():
+    noticia = {"titular": "Oferta pública de empleo de 2026", "resumen": None}
+    assert seleccion.es_contenido_comercial(noticia) is False
+
+
+def test_seleccionar_noticias_descarta_contenido_comercial_antes_de_seleccionar():
+    pool = {
+        "espana": [
+            _art("Las primeras ofertas de Prime Day de Roborock", "elpais.com"),
+            _art("El Gobierno amplía la oferta de vivienda pública", "elmundo.es"),
+        ],
+    }
+    resultado = seleccion.seleccionar_noticias(pool, max_por_categoria=8)
+    titulares = [n["titular"] for n in resultado["espana"]]
+    assert titulares == ["El Gobierno amplía la oferta de vivienda pública"]
+
+
+def test_seleccionar_noticias_registra_las_descartadas_por_categoria(caplog):
+    pool = {
+        "espana": [
+            _art("Las primeras ofertas de Prime Day de Roborock", "elpais.com"),
+            _art("TurboTax lanza cupones para septiembre", "abc.es"),
+            _art("El Gobierno amplía la oferta de vivienda pública", "elmundo.es"),
+        ],
+    }
+    with caplog.at_level(logging.INFO, logger="noticia.seleccion"):
+        seleccion.seleccionar_noticias(pool, max_por_categoria=8)
+
+    mensajes = [r.message for r in caplog.records]
+    assert any("2" in m and "espana" in m for m in mensajes)
