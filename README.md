@@ -15,7 +15,7 @@
 
 1.  **[uv](https://docs.astral.sh/uv/)** — instala Python y las dependencias:
     `curl -LsSf https://astral.sh/uv/install.sh | sh`
-2.  **Python 3.12 o superior** (uv lo instala solo si no lo tienes).
+2.  **Python 3.13** (uv lo instala solo si no lo tienes).
 3.  **FFmpeg** — `pydub` lo necesita para leer y escribir MP3.
     - **Linux / WSL:** `sudo apt install ffmpeg`
     - **macOS:** `brew install ffmpeg`
@@ -53,8 +53,13 @@ make ayuda      # ver todos los atajos
 | `make guion` | Genera **solo el guion** con Claude, sin audio → `output/guion_<fecha>.md` |
 | `make audio` | Locuta y masteriza un guion **ya escrito**, sin regenerarlo |
 | `make episodio` | Pipeline completo: ingesta → guion → locución → mastering |
+| `make publicar` | Pipeline completo + publicación local (feed.xml, ID3, portada) |
+| `make modelos-voz` | Descarga los pesos del motor de voz Kokoro |
+| `make muestras-voz` | Genera una muestra de cada motor de voz y locutor, para escuchar |
+| `make servir` | Sirve `output/publicacion/` en `http://localhost:8000` |
 | `make test` | Ejecuta la suite de tests |
 | `make lint` | `ruff check` + comprobación de formato |
+| `make formato` | Aplica `ruff format` |
 | `make limpiar` | Borra los fragmentos temporales de audio |
 
 `make audio` toma por defecto el guion más reciente de `output/`. Para elegir otro:
@@ -73,10 +78,16 @@ El resultado final se guarda en `output/`.
 ## 📂 Estructura del Proyecto
 
 - `src/noticia/cli.py`: Punto de entrada principal (comando `uv run noticia`).
-- `src/noticia/`: Lógica del sistema (config, ingesta, generador, locutor, editor).
+- `src/noticia/orquestador.py`: Orquesta el episodio diario (guion → locución → montaje →
+  publicación), con lock e idempotencia.
+- `src/noticia/`: Lógica del sistema (config, ingesta, generador, locutor, editor,
+  masterizado, seleccion, publicador, bloques, fechas).
+- `src/noticia/voz/`: Motores de voz (edge-tts, Kokoro, Chatterbox), selector por GPU y
+  utilidades de texto para locución.
 - `reglas/`: Prompts de sistema y contexto que definen la personalidad de los locutores.
 - `sintonias/`: Archivos MP3 con la música de fondo para cada bloque.
-- `output/`: Carpeta donde se generan los podcasts finales.
+- `output/`: Carpeta donde se generan los podcasts finales y `output/publicacion/` (feed
+  RSS, ID3, portada).
 - `temp/`: Carpeta temporal para fragmentos de audio (se limpia automáticamente).
 - `tests/`: Pruebas automatizadas con pytest.
 
