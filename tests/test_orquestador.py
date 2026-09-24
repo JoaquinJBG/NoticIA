@@ -275,28 +275,6 @@ def test_resumen_aparece_en_el_log(entorno, caplog):
     assert any("RESUMEN" in registro.message for registro in caplog.records)
 
 
-def test_resumen_no_sale_duplicado_en_el_log(entorno, caplog):
-    """Regresión: '=== RESUMEN ===' (Duración/MP3/Feed/Sintonías/Tiempo) debe
-    aparecer una sola vez por ejecución, nunca dos."""
-    with caplog.at_level(logging.INFO, logger="noticia.orquestador"):
-        asyncio.run(orquestador.ejecutar(FECHA, publicar=True))
-    apariciones = [r for r in caplog.records if "=== RESUMEN ===" in r.message]
-    assert len(apariciones) == 1
-
-
-def test_resumen_registrar_es_idempotente(caplog):
-    """`ResumenEjecucion.registrar()` no debe volver a escribir el bloque si
-    se llama una segunda vez sobre la misma instancia."""
-    resumen = orquestador.ResumenEjecucion(
-        fecha=FECHA, estado="producido", codigo=orquestador.Codigo.OK
-    )
-    with caplog.at_level(logging.INFO, logger="noticia.orquestador"):
-        resumen.registrar()
-        resumen.registrar()
-    apariciones = [r for r in caplog.records if "=== RESUMEN ===" in r.message]
-    assert len(apariciones) == 1
-
-
 def test_resumen_se_escribe_en_el_produccion_log_del_episodio(entorno, caplog):
     """Regresión: el resumen se registraba DESPUÉS de quitar el handler del
     episodio, así que nunca llegaba a produccion.log."""

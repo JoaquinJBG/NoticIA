@@ -118,14 +118,8 @@ class ResumenEjecucion:
     ruta_feed: Path | None = None
     sintonias_faltantes: list[str] = field(default_factory=list)
     segundos_totales: float = 0.0
-    _registrado: bool = field(default=False, init=False, repr=False, compare=False)
 
     def registrar(self) -> None:
-        """Escribe el bloque `=== RESUMEN ===` en el log. Idempotente: una
-        segunda llamada sobre la misma instancia no vuelve a escribirlo."""
-        if self._registrado:
-            return
-        self._registrado = True
         logger.info(
             "=== RESUMEN ===\n"
             "Fecha: %s\n"
