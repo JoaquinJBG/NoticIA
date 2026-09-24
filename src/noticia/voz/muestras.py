@@ -64,7 +64,7 @@ def main() -> int:
     from noticia.config import settings
 
     configurar_logging()
-    carpeta = Path(settings.carpeta_output) / "muestras"
+    carpeta = settings.ruta_output / "muestras"
     logger.info("Generando muestras de voz en %s", carpeta)
     try:
         generadas = asyncio.run(generar_muestras(carpeta))
