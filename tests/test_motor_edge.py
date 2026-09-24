@@ -43,7 +43,7 @@ def test_voz_y_rate_alex():
 
 
 def test_voz_y_rate_maria():
-    assert voz_y_rate("maria") == ("es-ES-ElviraNeural", "+6%")
+    assert voz_y_rate("maria") == ("es-ES-XimenaNeural", "+0%")
 
 
 def test_sintetizar_alex_usa_su_voz_y_rate(tmp_path, edge_tts_falso):
@@ -62,7 +62,7 @@ def test_sintetizar_maria_usa_su_voz_y_rate(tmp_path, edge_tts_falso):
 
     asyncio.run(motor.sintetizar("Hola", "maria", ruta))
 
-    assert edge_tts_falso.llamadas == [("Hola", "es-ES-ElviraNeural", "+6%")]
+    assert edge_tts_falso.llamadas == [("Hola", "es-ES-XimenaNeural", "+0%")]
 
 
 def test_fichero_vacio_lanza_error(tmp_path, edge_tts_falso):

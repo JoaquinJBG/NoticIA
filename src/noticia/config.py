@@ -16,15 +16,15 @@ class Settings(BaseSettings):
 
     modelo_claude: str = "sonnet"
 
-    # edge-tts solo tiene una voz masculina de España (Alvaro), así que María
-    # es mujer. Ximena, la voz del locutor anterior, tiene acento colombiano.
+    # Voces edge-tts. María: Ximena, elegida de oído por el usuario tras
+    # comparar muestras (antes Elvira +6%; Ximena suena más natural a +0%).
     voz_alex: str = "es-ES-AlvaroNeural"
-    voz_maria: str = "es-ES-ElviraNeural"
+    voz_maria: str = "es-ES-XimenaNeural"
 
     # Prosodia: Álex es el mentor reflexivo, María el motor de energía.
     # No se toca el pitch: en voces neuronales suena artificial.
     rate_alex: str = "-4%"
-    rate_maria: str = "+6%"
+    rate_maria: str = "+0%"
 
     # Silencio entre turnos. El crossfade solapaba sílabas.
     pausa_entre_turnos_ms: int = 350

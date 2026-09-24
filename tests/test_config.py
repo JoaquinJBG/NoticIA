@@ -6,14 +6,14 @@ import noticia.config as config
 
 def test_settings_valores_por_defecto():
     assert config.settings.voz_alex == "es-ES-AlvaroNeural"
-    assert config.settings.voz_maria == "es-ES-ElviraNeural"
+    assert config.settings.voz_maria == "es-ES-XimenaNeural"
     assert config.settings.carpeta_output == "output"
     assert config.settings.carpeta_temp == "temp"
 
 
 def test_prosodia_y_pausa_por_defecto():
     assert config.settings.rate_alex == "-4%"
-    assert config.settings.rate_maria == "+6%"
+    assert config.settings.rate_maria == "+0%"
     assert config.settings.pausa_entre_turnos_ms == 350
 
 
