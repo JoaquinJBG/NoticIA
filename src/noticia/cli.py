@@ -9,8 +9,6 @@ from noticia.bloques import ORDEN_BLOQUES
 from noticia.config import settings
 from noticia.editor import ErrorMontaje, ensamblar_podcast_dinamico
 from noticia.fechas import hoy_madrid, parsear_fecha
-from noticia.generador import construir_guion
-from noticia.ingesta import obtener_noticias
 from noticia.locutor import ErrorLocucion, locutar_episodio
 from noticia.logging_setup import configurar_logging
 from noticia.masterizado import ErrorMasterizado
@@ -20,6 +18,7 @@ from noticia.orquestador import (
     GuionVacio,
     ejecutar,
     formatear_guion,
+    generar_guion,
     trocear_guion,
 )
 from noticia.voz.selector import preparar_cadena, resolver_motores
@@ -28,18 +27,16 @@ logger = logging.getLogger("noticia.cli")
 
 
 def generar_solo_guion(salida: str | None = None) -> str:
-    """Corre ingesta + generación y vuelca el guion a fichero, sin audio."""
+    """Corre ingesta + generación y vuelca el guion a fichero, sin audio.
+
+    Reutiliza `orquestador.generar_guion` (ingesta -> selección -> generador),
+    así que el criterio de "guion vacío" (`GuionVacio`) es el mismo que en el
+    pipeline completo.
+    """
     logger.info("Modo solo-guion: ingesta + generación, sin locución ni mastering.")
     settings.ruta_output.mkdir(parents=True, exist_ok=True)
     fecha = hoy_madrid()
-    noticias = obtener_noticias()
-    guion = construir_guion(noticias, fecha)
-
-    if not any(linea.strip() for lineas in guion.values() for linea in lineas):
-        logger.error("Guion vacío: ¿sesión de Claude iniciada?")
-        raise RuntimeError(
-            "Guion vacío: ningún bloque tiene contenido. ¿Sesión de Claude iniciada?"
-        )
+    guion, _noticias = generar_guion(fecha)
 
     if salida is None:
         salida = str(settings.ruta_output / f"guion_{fecha.isoformat()}.md")

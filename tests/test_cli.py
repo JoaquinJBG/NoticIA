@@ -8,20 +8,17 @@ from noticia.orquestador import BloqueoOcupado, Codigo, GuionVacio
 
 
 def test_solo_guion_escribe_fichero_y_no_toca_audio(monkeypatch, tmp_path):
-    monkeypatch.setattr(
-        cli,
-        "obtener_noticias",
-        lambda: {"espana": [{"titular": "T", "resumen": "", "fuente": "f"}]},
-    )
-    monkeypatch.setattr(
-        cli,
-        "construir_guion",
-        lambda noticias, fecha=None: {
-            "intro": ["Álex: hola"],
-            "espana": ["Álex: bla bla"],
-            "outro": ["Santi: chao"],
-        },
-    )
+    def _fake_generar_guion(fecha):
+        return (
+            {
+                "intro": ["Álex: hola"],
+                "espana": ["Álex: bla bla"],
+                "outro": ["Santi: chao"],
+            },
+            {"espana": [{"titular": "T", "fuente": "f", "url": "", "otras_fuentes": []}]},
+        )
+
+    monkeypatch.setattr(cli, "generar_guion", _fake_generar_guion)
     salida = tmp_path / "guion.md"
 
     ruta = cli.generar_solo_guion(str(salida))
@@ -34,35 +31,28 @@ def test_solo_guion_escribe_fichero_y_no_toca_audio(monkeypatch, tmp_path):
 
 
 def test_solo_guion_con_guion_vacio_lanza_y_no_escribe_fichero(monkeypatch, tmp_path):
-    monkeypatch.setattr(
-        cli,
-        "obtener_noticias",
-        lambda: {"espana": [{"titular": "T", "resumen": "", "fuente": "f"}]},
-    )
-    monkeypatch.setattr(
-        cli,
-        "construir_guion",
-        lambda noticias, fecha=None: {"intro": [""], "espana": [""], "outro": [""]},
-    )
+    """Regresión: `generar_guion` (compartido con el orquestador) es quien decide si
+    el guion está vacío, y su criterio ignora intro/outro (que siempre traen texto
+    de reserva). `generar_solo_guion` no debe atrapar ni reescribir esa excepción.
+    """
+
+    def _fake_generar_guion(fecha):
+        raise GuionVacio("El guion generado no tiene contenido en ningún bloque de noticias")
+
+    monkeypatch.setattr(cli, "generar_guion", _fake_generar_guion)
     salida = tmp_path / "guion.md"
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(GuionVacio):
         cli.generar_solo_guion(str(salida))
 
     assert not salida.exists()
 
 
 def test_solo_guion_crea_directorio_padre_de_salida(monkeypatch, tmp_path):
-    monkeypatch.setattr(
-        cli,
-        "obtener_noticias",
-        lambda: {"espana": [{"titular": "T", "resumen": "", "fuente": "f"}]},
-    )
-    monkeypatch.setattr(
-        cli,
-        "construir_guion",
-        lambda noticias, fecha=None: {"intro": ["Álex: hola"], "espana": ["Álex: bla"]},
-    )
+    def _fake_generar_guion(fecha):
+        return {"intro": ["Álex: hola"], "espana": ["Álex: bla"]}, {}
+
+    monkeypatch.setattr(cli, "generar_guion", _fake_generar_guion)
     salida = tmp_path / "sub" / "anidado" / "guion.md"
 
     ruta = cli.generar_solo_guion(str(salida))
@@ -73,14 +63,13 @@ def test_solo_guion_crea_directorio_padre_de_salida(monkeypatch, tmp_path):
 
 def test_solo_guion_usa_fecha_de_hoy_en_madrid(monkeypatch, tmp_path):
     fechas_recibidas = []
-    monkeypatch.setattr(cli, "obtener_noticias", lambda: {})
     monkeypatch.setattr(cli, "hoy_madrid", lambda: date(2026, 9, 24))
 
-    def _construir_guion(noticias, fecha=None):
+    def _fake_generar_guion(fecha):
         fechas_recibidas.append(fecha)
-        return {"intro": ["Álex: hola"]}
+        return {"intro": ["Álex: hola"]}, {}
 
-    monkeypatch.setattr(cli, "construir_guion", _construir_guion)
+    monkeypatch.setattr(cli, "generar_guion", _fake_generar_guion)
     monkeypatch.setattr(cli.settings, "carpeta_output", str(tmp_path))
 
     ruta = cli.generar_solo_guion()
@@ -89,14 +78,31 @@ def test_solo_guion_usa_fecha_de_hoy_en_madrid(monkeypatch, tmp_path):
     assert ruta == str(tmp_path / "guion_2026-09-24.md")
 
 
+def test_solo_guion_pasa_por_generar_guion_con_la_fecha(monkeypatch, tmp_path):
+    """`generar_solo_guion` reutiliza `orquestador.generar_guion` (ingesta ->
+    seleccionar_noticias -> construir_guion), como el orquestador."""
+    llamadas = []
+
+    def _fake_generar_guion(fecha):
+        llamadas.append(fecha)
+        return {"intro": ["Álex: hola"]}, {}
+
+    monkeypatch.setattr(cli, "generar_guion", _fake_generar_guion)
+    monkeypatch.setattr(cli, "hoy_madrid", lambda: date(2026, 9, 24))
+    monkeypatch.setattr(cli.settings, "carpeta_output", str(tmp_path))
+
+    cli.generar_solo_guion()
+
+    assert llamadas == [date(2026, 9, 24)]
+
+
 def test_solo_audio_no_genera_guion(monkeypatch, tmp_path):
     llamadas = {"locucion": [], "ensamblado": []}
 
     def _no_llamar(*_a, **_k):  # el modo solo-audio NO debe tocar la generación
-        raise AssertionError("construir_guion no debe invocarse en --solo-audio")
+        raise AssertionError("generar_guion no debe invocarse en --solo-audio")
 
-    monkeypatch.setattr(cli, "construir_guion", _no_llamar)
-    monkeypatch.setattr(cli, "obtener_noticias", _no_llamar)
+    monkeypatch.setattr(cli, "generar_guion", _no_llamar)
 
     class _MotorFalso:
         nombre = "edge"
