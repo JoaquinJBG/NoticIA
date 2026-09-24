@@ -1,3 +1,6 @@
+import pytest
+from pydantic import ValidationError
+
 import noticia.config as config
 
 
@@ -32,3 +35,24 @@ def test_sintonias_cubre_categorias_y_apunta_a_mp3():
 def test_get_prompt_sistema_lee_las_reglas():
     txt = config.get_prompt_sistema()
     assert isinstance(txt, str) and len(txt) > 0
+
+
+def test_motor_voz_y_objetivo_lufs_por_defecto():
+    assert config.settings.motor_voz == "auto"
+    assert config.settings.objetivo_lufs == -16.0
+
+
+def test_motor_voz_desde_entorno(monkeypatch):
+    monkeypatch.setenv("MOTOR_VOZ", "kokoro")
+    s = config.Settings()
+    assert s.motor_voz == "kokoro"
+
+
+def test_motor_voz_invalido_lanza_validation_error(monkeypatch):
+    monkeypatch.setenv("MOTOR_VOZ", "inventado")
+    with pytest.raises(ValidationError):
+        config.Settings()
+
+
+def test_carpeta_episodios():
+    assert config.settings.carpeta_episodios == config.ROOT / "output" / "episodios"
