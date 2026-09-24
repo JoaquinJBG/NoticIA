@@ -8,7 +8,7 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 
-logger = logging.getLogger("noticia.gpu")
+logger = logging.getLogger("noticia.voz.gpu")
 
 _RUTAS_NVIDIA_SMI = ("/usr/lib/wsl/lib/nvidia-smi", "/usr/bin/nvidia-smi")
 
