@@ -76,3 +76,7 @@ def test_ruta_temp_relativa_se_resuelve_desde_root(monkeypatch):
 def test_ruta_temp_absoluta_se_mantiene(tmp_path, monkeypatch):
     monkeypatch.setattr(config.settings, "carpeta_temp", str(tmp_path))
     assert config.settings.ruta_temp == tmp_path
+
+
+def test_pronunciacion_extra_por_defecto_vacio():
+    assert config.settings.pronunciacion_extra == {}

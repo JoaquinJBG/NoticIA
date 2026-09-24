@@ -1,4 +1,4 @@
-from noticia.voz.texto import limpiar_texto_locucion, trocear_frases
+from noticia.voz.texto import aplicar_pronunciacion, limpiar_texto_locucion, trocear_frases
 
 
 def test_limpiar_texto_locucion_quita_acotaciones():
@@ -37,6 +37,44 @@ def test_limpiar_texto_locucion_colapsa_espacios():
     texto = "Hola   (risas)     mundo"
     resultado = limpiar_texto_locucion(texto)
     assert "  " not in resultado
+
+
+# --- Diccionario de pronunciación ---------------------------------------
+
+
+def test_aplicar_pronunciacion_sustituye_podcast_y_podcasts():
+    assert aplicar_pronunciacion("Esto es un podcast") == "Esto es un pódcast"
+    assert aplicar_pronunciacion("Escucháis varios podcasts") == "Escucháis varios pódcasts"
+
+
+def test_aplicar_pronunciacion_no_distingue_mayusculas_y_conserva_inicial():
+    assert aplicar_pronunciacion("Podcast del día") == "Pódcast del día"
+    assert aplicar_pronunciacion("PODCAST") == "Pódcast"
+
+
+def test_aplicar_pronunciacion_solo_palabra_completa():
+    texto = "Esto no es podcastero ni superpodcast"
+    assert aplicar_pronunciacion(texto) == texto
+
+
+def test_aplicar_pronunciacion_admite_diccionario_propio():
+    assert aplicar_pronunciacion("hola ia", diccionario={"ia": "i a"}) == "hola i a"
+
+
+def test_aplicar_pronunciacion_diccionario_vacio_no_toca_el_texto():
+    texto = "un podcast cualquiera"
+    assert aplicar_pronunciacion(texto, diccionario={}) == texto
+
+
+def test_aplicar_pronunciacion_usa_pronunciacion_extra_de_settings(monkeypatch):
+    from noticia.config import settings
+
+    monkeypatch.setattr(settings, "pronunciacion_extra", {"IA": "i a"})
+    assert aplicar_pronunciacion("la ia de hoy") == "la i a de hoy"
+
+
+def test_limpiar_texto_locucion_aplica_pronunciacion():
+    assert limpiar_texto_locucion("Bienvenidos al podcast") == "Bienvenidos al pódcast"
 
 
 def test_trocear_frases_texto_corto_devuelve_una_lista_con_el_texto():

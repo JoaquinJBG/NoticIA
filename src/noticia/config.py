@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     carpeta_output: str = "output"
     carpeta_temp: str = "temp"
 
+    # Pronunciación: pares palabra -> grafía fonética que se añaden a
+    # `noticia.voz.texto.PRONUNCIACION` para el motor de voz. Solo afecta al
+    # audio (no al guion.md ni a las notas del feed). Vía env: JSON en
+    # PRONUNCIACION_EXTRA, p.ej. PRONUNCIACION_EXTRA='{"ia": "i a"}'.
+    pronunciacion_extra: dict[str, str] = {}
+
     # Selección de motor de voz y control de la locución en paralelo.
     motor_voz: Literal["auto", "edge", "kokoro", "chatterbox"] = "auto"
     concurrencia_locucion: int = 6
