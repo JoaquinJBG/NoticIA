@@ -1,9 +1,11 @@
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
 
+from noticia import masterizado
 from noticia.masterizado import (
     ErrorMasterizado,
     MedicionLoudness,
@@ -143,3 +145,114 @@ def test_medir_ebur128_con_ffmpeg_que_falla_lanza_error(monkeypatch, tmp_path):
     monkeypatch.setattr(subprocess, "run", _falla)
     with pytest.raises(ErrorMasterizado):
         medir_ebur128(tmp_path / "cualquiera.mp3")
+
+
+# --------------------------------------------------------------- pasada 2: ganancia + limiter
+
+
+def test_ganancia_db_es_la_diferencia_entre_objetivo_y_medido():
+    assert masterizado._ganancia_db(-16.0, -20.0) == pytest.approx(4.0)
+    assert masterizado._ganancia_db(-16.0, -10.0) == pytest.approx(-6.0)
+    assert masterizado._ganancia_db(-16.0, -16.0) == pytest.approx(0.0)
+
+
+def test_limite_lineal_convierte_dbtp_a_amplitud():
+    assert masterizado._limite_lineal(0.0) == pytest.approx(1.0)
+    assert masterizado._limite_lineal(-1.5) == pytest.approx(10 ** (-1.5 / 20))
+    assert 0.0 < masterizado._limite_lineal(-1.5) < 1.0
+
+
+def test_construir_filtro_pasada_2_usa_volume_y_alimiter_sin_linear():
+    filtro = masterizado._construir_filtro_pasada_2(4.0, 0.8414)
+    assert "volume=4.000dB" in filtro
+    assert "alimiter=limit=0.841400:level=false" in filtro
+    assert "aresample=44100" in filtro
+    # La pasada 2 ya no debe usar el modo `linear=true` de loudnorm (la parte
+    # lenta que sobremuestrea a 192k): no debe quedar ni rastro de loudnorm.
+    assert "loudnorm" not in filtro
+    assert "linear=true" not in filtro
+
+
+def test_masterizar_a_mp3_una_sola_codificacion_si_no_hace_falta_corregir(monkeypatch, tmp_path):
+    entrada = tmp_path / "tono.wav"
+    entrada.write_bytes(b"contenido de prueba")
+    salida = tmp_path / "salida.mp3"
+
+    llamadas_encode = []
+
+    def _fake_ejecutar_ffmpeg(args):
+        llamadas_encode.append(args)
+        return subprocess.CompletedProcess(args, returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(masterizado, "_ejecutar_ffmpeg", _fake_ejecutar_ffmpeg)
+    monkeypatch.setattr(
+        masterizado,
+        "medir_loudnorm",
+        lambda *a, **k: MedicionLoudness(
+            lufs_integrados=-23.0, true_peak_dbtp=-10.0, lra=5.0, umbral=-30.0, offset=0.0
+        ),
+    )
+    monkeypatch.setattr(masterizado, "medir_ebur128", lambda ruta: (-16.1, -1.3))
+
+    resultado = masterizar_a_mp3(entrada, salida, objetivo_lufs=-16.0, true_peak=-1.5)
+
+    assert len(llamadas_encode) == 1
+    assert resultado.lufs_integrados == -16.1
+    assert resultado.true_peak_dbtp == -1.3
+
+
+def test_masterizar_a_mp3_corrige_con_una_segunda_pasada_si_el_limiter_se_desvia(
+    monkeypatch, tmp_path
+):
+    """Si el `alimiter` recorta tanto que el LUFS final se desvía >0.5 LU del
+    objetivo, se corrige con una segunda medición barata y una única
+    iteración de ganancia (una segunda codificación), no con un bucle."""
+    entrada = tmp_path / "tono.wav"
+    entrada.write_bytes(b"contenido de prueba")
+    salida = tmp_path / "salida.mp3"
+
+    llamadas_encode = []
+
+    def _fake_ejecutar_ffmpeg(args):
+        llamadas_encode.append(args)
+        return subprocess.CompletedProcess(args, returncode=0, stdout="", stderr="")
+
+    medidas = iter([(-18.0, -2.0), (-16.05, -1.3)])
+
+    monkeypatch.setattr(masterizado, "_ejecutar_ffmpeg", _fake_ejecutar_ffmpeg)
+    monkeypatch.setattr(
+        masterizado,
+        "medir_loudnorm",
+        lambda *a, **k: MedicionLoudness(
+            lufs_integrados=-23.0, true_peak_dbtp=-10.0, lra=5.0, umbral=-30.0, offset=0.0
+        ),
+    )
+    monkeypatch.setattr(masterizado, "medir_ebur128", lambda ruta: next(medidas))
+
+    resultado = masterizar_a_mp3(entrada, salida, objetivo_lufs=-16.0, true_peak=-1.5)
+
+    assert len(llamadas_encode) == 2
+    # La segunda pasada de ganancia compensa exactamente la desviación medida.
+    ganancia_1 = next(a for a in llamadas_encode[0] if a.startswith("highpass"))
+    ganancia_2 = next(a for a in llamadas_encode[1] if a.startswith("highpass"))
+    assert ganancia_1 != ganancia_2
+    assert resultado.lufs_integrados == -16.05
+    assert resultado.true_peak_dbtp == -1.3
+
+
+@requiere_ffmpeg
+def test_masterizar_a_mp3_es_mucho_mas_rapido_que_loudnorm_lineal_en_dos_pasadas(tmp_path):
+    """Regresión de rendimiento: la pasada 2 ya no debe sobremuestrear a 192k
+    con `loudnorm(linear=true)` (varios minutos para un episodio real). Con
+    volume+alimiter, masterizar un clip de 60s debe tardar unos pocos
+    segundos, no decenas."""
+    entrada = tmp_path / "tono.wav"
+    _generar_tono(entrada, duracion_s=60)
+    salida = tmp_path / "salida.mp3"
+
+    inicio = time.monotonic()
+    masterizar_a_mp3(entrada, salida)
+    duracion = time.monotonic() - inicio
+
+    assert salida.exists()
+    assert duracion < 15.0
