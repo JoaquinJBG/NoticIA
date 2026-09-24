@@ -134,7 +134,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--regenerar-guion",
         action="store_true",
-        help="Vuelve a generar el guion con Claude aunque ya exista uno para esa fecha.",
+        help=(
+            "Vuelve a generar el guion con Claude aunque ya exista uno para esa fecha "
+            "(implica --forzar)."
+        ),
     )
     parser.add_argument(
         "--fecha",
@@ -149,6 +152,7 @@ def main(argv: list[str] | None = None) -> int:
         help="Motor de voz a usar (por defecto: el configurado en settings.motor_voz).",
     )
     args = parser.parse_args(argv)
+    forzar = args.forzar or args.regenerar_guion
 
     try:
         if args.solo_audio:
@@ -163,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
                 ejecutar(
                     fecha,
                     publicar=args.publicar,
-                    forzar=args.forzar,
+                    forzar=forzar,
                     regenerar_guion=args.regenerar_guion,
                     motor_voz=args.motor_voz,
                 )

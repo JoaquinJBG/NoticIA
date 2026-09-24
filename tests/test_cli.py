@@ -258,6 +258,22 @@ def test_main_pasa_forzar_regenerar_guion_y_motor_voz(monkeypatch):
     assert motor_voz == "kokoro"
 
 
+def test_main_regenerar_guion_sin_forzar_implica_forzar(monkeypatch):
+    """Regresión: pedir --regenerar-guion sin --forzar con episodio ya existente no
+    debe quedarse en 'ya_existia' sin regenerar nada: --regenerar-guion implica
+    --forzar."""
+    llamadas = []
+
+    async def _fake_ejecutar(fecha, publicar, forzar, regenerar_guion, motor_voz):
+        llamadas.append((forzar, regenerar_guion))
+        return object()
+
+    monkeypatch.setattr(cli, "ejecutar", _fake_ejecutar)
+
+    assert cli.main(["--regenerar-guion"]) == int(Codigo.OK)
+    assert llamadas == [(True, True)]
+
+
 def test_main_fecha_explicita_se_pasa_a_ejecutar(monkeypatch):
     llamadas = []
 
