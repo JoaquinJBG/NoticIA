@@ -246,8 +246,8 @@ async def procesar_guion_a_audio(
 
         motores = [MotorEdge()]
 
-    Path(settings.carpeta_temp).mkdir(parents=True, exist_ok=True)
-    carpeta = Path(tempfile.mkdtemp(dir=settings.carpeta_temp))
+    settings.ruta_temp.mkdir(parents=True, exist_ok=True)
+    carpeta = Path(tempfile.mkdtemp(dir=settings.ruta_temp))
 
     resultado = await locutar_episodio({bloque: guion_texto}, motores, carpeta)
     return [str(ruta) for ruta in resultado.fragmentos_por_bloque.get(bloque, [])]

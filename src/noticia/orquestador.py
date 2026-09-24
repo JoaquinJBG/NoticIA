@@ -261,7 +261,7 @@ async def ejecutar(
 ) -> ResumenEjecucion:
     """Produce (o reanuda) el episodio de `fecha` y, si se pide, lo publica."""
     inicio = time.monotonic()
-    ruta_lock = Path(settings.carpeta_output) / ".noticia.lock"
+    ruta_lock = settings.ruta_output / ".noticia.lock"
 
     with bloqueo_exclusivo(ruta_lock):
         carpeta = carpeta_episodio(fecha)
@@ -343,7 +343,7 @@ async def _ejecutar_bloqueado(
     motores = await preparar_cadena(motores)
     motor_voz_usado = motores[0].nombre if motores else ""
 
-    carpeta_temp_episodio = Path(settings.carpeta_temp) / fecha.isoformat()
+    carpeta_temp_episodio = settings.ruta_temp / fecha.isoformat()
     if carpeta_temp_episodio.exists():
         shutil.rmtree(carpeta_temp_episodio)
     carpeta_temp_episodio.mkdir(parents=True, exist_ok=True)

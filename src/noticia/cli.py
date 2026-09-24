@@ -1,7 +1,6 @@
 import argparse
 import asyncio
 import logging
-import os
 import sys
 import tempfile
 from pathlib import Path
@@ -31,7 +30,7 @@ logger = logging.getLogger("noticia.cli")
 def generar_solo_guion(salida: str | None = None) -> str:
     """Corre ingesta + generación y vuelca el guion a fichero, sin audio."""
     logger.info("Modo solo-guion: ingesta + generación, sin locución ni mastering.")
-    os.makedirs(settings.carpeta_output, exist_ok=True)
+    settings.ruta_output.mkdir(parents=True, exist_ok=True)
     fecha = hoy_madrid()
     noticias = obtener_noticias()
     guion = construir_guion(noticias, fecha)
@@ -43,7 +42,7 @@ def generar_solo_guion(salida: str | None = None) -> str:
         )
 
     if salida is None:
-        salida = os.path.join(settings.carpeta_output, f"guion_{fecha.isoformat()}.md")
+        salida = str(settings.ruta_output / f"guion_{fecha.isoformat()}.md")
 
     ruta_salida = Path(salida)
     ruta_salida.parent.mkdir(parents=True, exist_ok=True)
@@ -77,14 +76,14 @@ async def generar_solo_audio(
             f"{', '.join(ORDEN_BLOQUES)}."
         )
 
-    os.makedirs(settings.carpeta_temp, exist_ok=True)
-    os.makedirs(settings.carpeta_output, exist_ok=True)
+    settings.ruta_temp.mkdir(parents=True, exist_ok=True)
+    settings.ruta_output.mkdir(parents=True, exist_ok=True)
 
     motores = resolver_motores(motor_voz)
     motores = await preparar_cadena(motores)
 
     logger.info("Locutando bloques: %s", ", ".join(bloques_reconocidos))
-    carpeta_temp = Path(tempfile.mkdtemp(dir=settings.carpeta_temp))
+    carpeta_temp = Path(tempfile.mkdtemp(dir=settings.ruta_temp))
     try:
         resultado = await locutar_episodio(bloques_reconocidos, motores, carpeta_temp)
     finally:
@@ -92,7 +91,7 @@ async def generar_solo_audio(
             await motor.cerrar()
 
     if salida is None:
-        salida = os.path.join(settings.carpeta_output, "NoticIA_audio.mp3")
+        salida = str(settings.ruta_output / "NoticIA_audio.mp3")
 
     ensamblar_podcast_dinamico(resultado.fragmentos_por_bloque, salida)
     logger.info("Audio escrito en %s", salida)

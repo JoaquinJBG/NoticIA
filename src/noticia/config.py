@@ -79,6 +79,18 @@ class Settings(BaseSettings):
     max_items_feed: int = 300
 
     @property
+    def ruta_output(self) -> Path:
+        """`carpeta_output` como ruta absoluta, resuelta desde ROOT si es relativa."""
+        ruta = Path(self.carpeta_output)
+        return ruta if ruta.is_absolute() else ROOT / ruta
+
+    @property
+    def ruta_temp(self) -> Path:
+        """`carpeta_temp` como ruta absoluta, resuelta desde ROOT si es relativa."""
+        ruta = Path(self.carpeta_temp)
+        return ruta if ruta.is_absolute() else ROOT / ruta
+
+    @property
     def carpeta_episodios(self) -> Path:
         return ROOT / "output" / "episodios"
 

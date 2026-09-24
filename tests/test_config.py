@@ -56,3 +56,23 @@ def test_motor_voz_invalido_lanza_validation_error(monkeypatch):
 
 def test_carpeta_episodios():
     assert config.settings.carpeta_episodios == config.ROOT / "output" / "episodios"
+
+
+def test_ruta_output_relativa_se_resuelve_desde_root(monkeypatch):
+    monkeypatch.setattr(config.settings, "carpeta_output", "salida")
+    assert config.settings.ruta_output == config.ROOT / "salida"
+
+
+def test_ruta_output_absoluta_se_mantiene(tmp_path, monkeypatch):
+    monkeypatch.setattr(config.settings, "carpeta_output", str(tmp_path))
+    assert config.settings.ruta_output == tmp_path
+
+
+def test_ruta_temp_relativa_se_resuelve_desde_root(monkeypatch):
+    monkeypatch.setattr(config.settings, "carpeta_temp", "tmp")
+    assert config.settings.ruta_temp == config.ROOT / "tmp"
+
+
+def test_ruta_temp_absoluta_se_mantiene(tmp_path, monkeypatch):
+    monkeypatch.setattr(config.settings, "carpeta_temp", str(tmp_path))
+    assert config.settings.ruta_temp == tmp_path

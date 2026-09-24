@@ -1,6 +1,7 @@
 """Tests del orquestador: idempotencia, lock, reanudación y resumen."""
 
 import asyncio
+import contextlib
 import json
 import logging
 from collections import Counter
@@ -302,6 +303,24 @@ def test_fallo_al_producir_se_registra_en_el_produccion_log_del_episodio(
     contenido = (carpeta / "produccion.log").read_text(encoding="utf-8")
     assert "Fallo produciendo el episodio" in contenido
     assert "GuionVacio" in contenido
+
+
+def test_ejecutar_usa_ruta_output_absoluta_para_el_lock(entorno, monkeypatch):
+    """Regresión: el lock debe tomarse en una ruta absoluta (resuelta desde ROOT si
+    `carpeta_output` es relativa), no en una ruta relativa al cwd del proceso."""
+    capturado = {}
+
+    @contextlib.contextmanager
+    def _fake_bloqueo(ruta):
+        capturado["ruta"] = ruta
+        yield
+
+    monkeypatch.setattr(orquestador, "bloqueo_exclusivo", _fake_bloqueo)
+
+    asyncio.run(orquestador.ejecutar(FECHA, publicar=False))
+
+    assert capturado["ruta"] == orquestador.settings.ruta_output / ".noticia.lock"
+    assert capturado["ruta"].is_absolute()
 
 
 # --------------------------------------------------------------- bloqueo_exclusivo
