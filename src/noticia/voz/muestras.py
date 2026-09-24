@@ -5,6 +5,7 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 
+from noticia.logging_setup import configurar_logging
 from noticia.voz.base import LOCUTORES
 from noticia.voz.selector import MOTORES, crear_motor
 
@@ -62,7 +63,9 @@ def main() -> int:
     """Punto de entrada de `python -m noticia.voz.muestras`."""
     from noticia.config import settings
 
+    configurar_logging()
     carpeta = Path(settings.carpeta_output) / "muestras"
+    logger.info("Generando muestras de voz en %s", carpeta)
     try:
         generadas = asyncio.run(generar_muestras(carpeta))
     except Exception as exc:
@@ -75,6 +78,7 @@ def main() -> int:
 
     for ruta in generadas:
         logger.info("Muestra generada: %s", ruta)
+    logger.info("Muestras dejadas en %s", carpeta)
     return 0
 
 

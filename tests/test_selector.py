@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from pathlib import Path
 
 import pytest
 
@@ -233,3 +234,42 @@ def test_generar_muestras_omite_motor_no_disponible(registro_motores, tmp_path, 
 
     assert len(rutas) == len(LOCUTORES)
     assert any("sin GPU" in registro.message for registro in caplog.records)
+
+
+def test_muestras_main_configura_logging_y_dice_donde_deja_los_ficheros(
+    tmp_path, monkeypatch, caplog
+):
+    import noticia.config as config
+    from noticia.voz import muestras
+
+    llamadas = []
+    monkeypatch.setattr(muestras, "configurar_logging", lambda: llamadas.append("log"))
+    monkeypatch.setattr(config.settings, "carpeta_output", str(tmp_path))
+
+    async def _fake_generar_muestras(carpeta, nombres=("edge", "kokoro", "chatterbox")):
+        return [Path(carpeta) / "edge_alex.wav"]
+
+    monkeypatch.setattr(muestras, "generar_muestras", _fake_generar_muestras)
+
+    with caplog.at_level(logging.INFO):
+        codigo = muestras.main()
+
+    assert codigo == 0
+    assert llamadas == ["log"]
+    carpeta_esperada = str(tmp_path / "muestras")
+    assert any(carpeta_esperada in registro.message for registro in caplog.records)
+
+
+def test_muestras_main_devuelve_1_si_no_hay_ninguna_muestra(tmp_path, monkeypatch):
+    import noticia.config as config
+    from noticia.voz import muestras
+
+    monkeypatch.setattr(muestras, "configurar_logging", lambda: None)
+    monkeypatch.setattr(config.settings, "carpeta_output", str(tmp_path))
+
+    async def _sin_muestras(carpeta, nombres=("edge", "kokoro", "chatterbox")):
+        return []
+
+    monkeypatch.setattr(muestras, "generar_muestras", _sin_muestras)
+
+    assert muestras.main() == 1

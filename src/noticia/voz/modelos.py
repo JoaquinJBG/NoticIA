@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from noticia.config import settings
+from noticia.logging_setup import configurar_logging
 
 logger = logging.getLogger("noticia.voz.modelos")
 
@@ -109,6 +110,7 @@ def asegurar_modelos_kokoro(directorio: Path | None = None) -> list[Path]:
 
 def main() -> int:
     """Punto de entrada de `python -m noticia.voz.modelos`."""
+    configurar_logging()
     try:
         asegurar_modelos_kokoro()
     except Exception as exc:

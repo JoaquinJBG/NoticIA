@@ -6,11 +6,13 @@ from urllib.error import URLError
 
 import pytest
 
+from noticia.voz import modelos as modulo_modelos
 from noticia.voz.modelos import (
     FICHEROS_KOKORO,
     FicheroModelo,
     asegurar_modelos_kokoro,
     descargar_fichero,
+    main,
     modelos_kokoro_presentes,
     rutas_kokoro,
 )
@@ -102,3 +104,26 @@ def test_descargar_fichero_error_de_red_no_deja_parcial(tmp_path, monkeypatch):
         descargar_fichero(fichero, destino)
 
     assert not destino.with_suffix(".part").exists()
+
+
+# --------------------------------------------------------------- main()
+
+
+def test_main_configura_el_logging_antes_de_descargar(monkeypatch):
+    llamadas = []
+    monkeypatch.setattr(modulo_modelos, "configurar_logging", lambda: llamadas.append("log"))
+    monkeypatch.setattr(modulo_modelos, "asegurar_modelos_kokoro", lambda: llamadas.append("ok"))
+
+    assert main() == 0
+    assert llamadas == ["log", "ok"]
+
+
+def test_main_devuelve_1_si_falla_la_descarga(monkeypatch):
+    monkeypatch.setattr(modulo_modelos, "configurar_logging", lambda: None)
+
+    def _falla():
+        raise RuntimeError("sin red")
+
+    monkeypatch.setattr(modulo_modelos, "asegurar_modelos_kokoro", _falla)
+
+    assert main() == 1
