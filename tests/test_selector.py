@@ -137,6 +137,24 @@ def test_resolver_motores_descarta_no_disponibles_y_loguea(registro_motores, cap
     assert any("faltan los pesos" in registro.message for registro in caplog.records)
 
 
+def test_resolver_motores_preferencia_explicita_no_disponible_loguea_warning(
+    registro_motores, caplog
+):
+    from noticia.voz import selector
+
+    selector.MOTORES["kokoro"] = lambda: _MotorFalso(
+        "kokoro", disponible=False, motivo="faltan los pesos"
+    )
+
+    with caplog.at_level(logging.INFO):
+        cadena = selector.resolver_motores("kokoro", _gpu(False))
+
+    assert [m.nombre for m in cadena] == ["edge"]
+    registros_kokoro = [r for r in caplog.records if "faltan los pesos" in r.message]
+    assert len(registros_kokoro) == 1
+    assert registros_kokoro[0].levelname == "WARNING"
+
+
 def test_resolver_motores_sin_edge_disponible_lanza(registro_motores):
     from noticia.voz import selector
 

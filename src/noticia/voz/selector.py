@@ -59,6 +59,10 @@ def resolver_motores(
         ok, motivo = motor.disponible()
         if ok:
             cadena.append(motor)
+        elif pref != "auto" and nombre == pref:
+            logger.warning(
+                "Motor de voz %s (preferencia explícita) no disponible: %s", nombre, motivo
+            )
         else:
             logger.info("Motor de voz %s descartado: %s", nombre, motivo)
 
