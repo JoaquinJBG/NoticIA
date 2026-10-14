@@ -2,16 +2,16 @@
 
 Es idempotente: una segunda ejecución del mismo día no repite trabajo ya hecho
 (ni gasta cuota de Claude) salvo que se le pida explícitamente con
-`forzar`/`regenerar_guion`. Un `fcntl.flock` evita que dos ejecuciones
+`forzar`/`regenerar_guion`. Un lock de fichero (`fcntl`/`msvcrt`) evita que dos ejecuciones
 concurrentes pisen la misma carpeta de episodio.
 """
 
 import contextlib
-import fcntl
 import json
 import logging
 import re
 import shutil
+import sys
 import time
 from collections.abc import Iterator
 from dataclasses import dataclass, field
@@ -148,6 +148,25 @@ class ResumenEjecucion:
         )
 
 
+if sys.platform == "win32":
+    import msvcrt
+
+    def _tomar_lock(fh) -> None:
+        msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+
+    def _soltar_lock(fh) -> None:
+        fh.seek(0)
+        msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+else:
+    import fcntl
+
+    def _tomar_lock(fh) -> None:
+        fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+    def _soltar_lock(fh) -> None:
+        fcntl.flock(fh, fcntl.LOCK_UN)
+
+
 @contextlib.contextmanager
 def bloqueo_exclusivo(ruta: Path) -> Iterator[None]:
     """Toma un lock exclusivo y no bloqueante sobre `ruta`.
@@ -158,13 +177,13 @@ def bloqueo_exclusivo(ruta: Path) -> Iterator[None]:
     fh = ruta.open("w")
     try:
         try:
-            fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            _tomar_lock(fh)
         except OSError as exc:
             raise BloqueoOcupado(f"NoticIA ya se está ejecutando (lock: {ruta})") from exc
         yield
     finally:
         try:
-            fcntl.flock(fh, fcntl.LOCK_UN)
+            _soltar_lock(fh)
         except OSError as exc:
             logger.debug("No se pudo liberar el lock %s: %s", ruta, exc)
         fh.close()
