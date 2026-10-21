@@ -29,5 +29,7 @@ def test_estructura_de_contexto_usa_los_bloques_del_codigo():
 
 def test_instrucciones_prohibe_risas_escritas():
     entretenimiento = _seccion(INSTRUCCIONES, "# PAUTAS DE ENTRETENIMIENTO", "# ESTILO").lower()
-    assert "jaja" in entretenimiento
-    assert "(risas)" in entretenimiento
+    reglas = [linea for linea in entretenimiento.splitlines() if "jaja" in linea]
+    assert len(reglas) == 1
+    assert "prohibido" in reglas[0]
+    assert "(risas)" in reglas[0]
