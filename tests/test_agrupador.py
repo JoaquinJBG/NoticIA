@@ -1,3 +1,7 @@
+import itertools
+
+import pytest
+
 from noticia import agrupador
 
 
@@ -35,7 +39,7 @@ def test_agrupar_categoria_clusters_tienen_tema():
     arts = [_art("Noticia única importante", "medio.com")]
     clusters = agrupador.agrupar_categoria(arts)
     assert clusters[0]["tema"] == "Noticia única importante"
-    assert "_norm" not in clusters[0]  # campo interno no se filtra
+    assert not any(k.startswith("_") for k in clusters[0])
 
 
 def test_agrupar_categoria_vacia_devuelve_lista_vacia():
@@ -105,3 +109,55 @@ def test_empate_de_similitud_se_resuelve_por_fuente_alfabetica():
 
 def test_agrupar_ya_no_existe():
     assert not hasattr(agrupador, "agrupar")
+
+
+def _n_clusters(t1, t2):
+    return len(agrupador.agrupar_categoria([_art(t1, "x"), _art(t2, "y")]))
+
+
+@pytest.mark.parametrize(
+    "t1, t2",
+    [
+        ("Rusia ataca Kiev con drones", "Ucrania ataca Moscú con drones"),
+        ("Muere el actor Robert Redford", "Muere el actor Gene Hackman"),
+    ],
+)
+def test_dos_palabras_genericas_comunes_no_funden_hechos_distintos(t1, t2):
+    assert _n_clusters(t1, t2) == 2
+
+
+@pytest.mark.parametrize(
+    "t1, t2",
+    [
+        (
+            "Feijóo pide elecciones anticipadas",
+            "Feijóo pide elecciones anticipadas tras la derrota del PP en Galicia y anuncia "
+            "una ofensiva parlamentaria contra el Gobierno de Sánchez",
+        ),
+        (
+            "Feijóo pide unas elecciones anticipadas",
+            "Feijóo pide elección anticipada tras la derrota del PP en Galicia",
+        ),
+        (
+            "Feijóo pide elecciones anticipadas",
+            "Feijóo, tras la derrota en Galicia: «Hay que ir a elecciones anticipadas ya»",
+        ),
+    ],
+)
+def test_titular_ampliado_o_con_otro_numero_sigue_siendo_la_misma_historia(t1, t2):
+    assert _n_clusters(t1, t2) == 1
+
+
+def test_composicion_del_cluster_no_depende_del_orden_de_entrada():
+    arts = [
+        _art("Feijóo pide elecciones anticipadas", "elpais"),
+        _art("Feijóo pide elecciones anticipadas tras la derrota del PP en Galicia", "abc"),
+        _art("Derrota del PP en Galicia", "eldiario"),
+    ]
+    resultados = set()
+    for orden in itertools.permutations(arts):
+        clusters = agrupador.agrupar_categoria(list(orden))
+        resultados.add(
+            tuple((c["tema"], tuple(a["fuente"] for a in c["articulos"])) for c in clusters)
+        )
+    assert len(resultados) == 1

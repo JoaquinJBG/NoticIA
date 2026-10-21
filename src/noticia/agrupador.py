@@ -42,17 +42,30 @@ def _normalizar(texto):
     return " ".join(palabras)
 
 
-_MIN_TOKENS_COMPARTIDOS = 2
+_MIN_TOKENS_COMPARTIDOS = 3
+_MIN_COBERTURA_CORTO = 0.6
+
+
+def _raiz(palabra):
+    """Quita el plural para que 'elecciones' y 'elección' coincidan."""
+    if len(palabra) > 5 and palabra.endswith("es"):
+        return palabra[:-2]
+    if len(palabra) > 3 and palabra.endswith("s"):
+        return palabra[:-1]
+    return palabra
 
 
 def _tokens(norm):
-    return frozenset(norm.split())
+    return frozenset(_raiz(p) for p in norm.split())
 
 
 def _similitud(a, b):
-    """Dice sobre tokens (0-100): una palabra suelta no se funde con un titular que la contiene."""
+    """Dice sobre tokens (0-100), exigiendo tokens comunes suficientes y cubrir el titular corto.
+
+    Dos comunes genéricos ("ataca ... drones") no bastan para fundir hechos distintos.
+    """
     comunes = len(a & b)
-    if comunes < _MIN_TOKENS_COMPARTIDOS:
+    if comunes < _MIN_TOKENS_COMPARTIDOS or comunes < _MIN_COBERTURA_CORTO * min(len(a), len(b)):
         return 0.0
     return 200 * comunes / (len(a) + len(b))
 
@@ -69,7 +82,7 @@ def _elegir_principal(articulos, tokens):
     return articulos[min(range(len(articulos)), key=clave)]
 
 
-def agrupar_categoria(articulos, umbral=50):
+def agrupar_categoria(articulos, umbral=40):
     """Agrupa artículos por similitud léxica de titulares (Dice sobre tokens, 0-100).
 
     Devuelve [{"tema": str, "articulos": [...]}], priorizando los clusters
@@ -77,7 +90,7 @@ def agrupar_categoria(articulos, umbral=50):
     cluster va el primero y da el `tema`.
     """
     clusters = []
-    for art in articulos:
+    for art in sorted(articulos, key=lambda a: (a["fuente"], a["titular"])):
         tokens = _tokens(_normalizar(art["titular"]))
         destino = None
         for cluster in clusters:
