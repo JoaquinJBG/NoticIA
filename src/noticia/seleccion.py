@@ -168,15 +168,23 @@ def seleccionar_noticias(
     return resultado
 
 
+def _sanear_linea(texto: str) -> str:
+    """Una sola línea sin caracteres de control y sin `<`/`>` (el titular es dato de terceros)."""
+    sin_control = "".join(
+        " " if unicodedata.category(c) in ("Cc", "Zl", "Zp") else c for c in texto
+    )
+    return " ".join(sin_control.split()).replace("<", "&lt;").replace(">", "&gt;")
+
+
 def formatear_noticias_prompt(noticias: list[dict]) -> str:
     """Una línea por noticia, lista para pegar en el prompt del bloque."""
     lineas = []
     for noticia in noticias:
-        titular = noticia.get("titular", "")
-        fuente = noticia.get("fuente", "")
-        otras = noticia.get("otras_fuentes") or []
+        titular = _sanear_linea(noticia.get("titular", ""))
+        fuente = _sanear_linea(noticia.get("fuente", ""))
+        otras = [_sanear_linea(o) for o in noticia.get("otras_fuentes") or []]
         sufijo_fuentes = f"; también: {', '.join(otras)}" if otras else ""
-        resumen = (noticia.get("resumen") or "")[:300]
+        resumen = _sanear_linea((noticia.get("resumen") or "")[:300])
         lineas.append(f"- {titular} ({fuente}{sufijo_fuentes}): {resumen}")
     return "\n".join(lineas)
 
