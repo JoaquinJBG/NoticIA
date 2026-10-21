@@ -50,11 +50,7 @@ def _tokens(norm):
 
 
 def _similitud(a, b):
-    """Dice sobre tokens (0-100); 0 si comparten menos de _MIN_TOKENS_COMPARTIDOS.
-
-    A diferencia de un ratio de subconjunto, un titular de una palabra no se
-    funde con otro largo que la contiene.
-    """
+    """Dice sobre tokens (0-100): una palabra suelta no se funde con un titular que la contiene."""
     comunes = len(a & b)
     if comunes < _MIN_TOKENS_COMPARTIDOS:
         return 0.0
@@ -62,10 +58,7 @@ def _similitud(a, b):
 
 
 def _elegir_principal(articulos, tokens):
-    """Titular con mayor similitud media con el resto; empate: fuente y titular alfabéticos.
-
-    No depende del orden de entrada ni pondera medios.
-    """
+    """Titular con mayor similitud media con el resto; empate: fuente y titular alfabéticos."""
     if len(articulos) == 1:
         return articulos[0]
 
