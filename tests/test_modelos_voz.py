@@ -56,6 +56,22 @@ def test_descargar_fichero_verifica_hash_y_escribe(tmp_path, monkeypatch):
     assert not destino.with_suffix(".part").exists()
 
 
+def test_descargar_fichero_pone_timeout_en_la_red(tmp_path, monkeypatch):
+    contenido = b"contenido de prueba"
+    fichero = _fichero_falso(contenido)
+    argumentos = {}
+
+    def _urlopen(_url, **kwargs):
+        argumentos.update(kwargs)
+        return io.BytesIO(contenido)
+
+    monkeypatch.setattr("urllib.request.urlopen", _urlopen)
+
+    descargar_fichero(fichero, tmp_path / fichero.nombre)
+
+    assert argumentos["timeout"] > 0
+
+
 def test_descargar_fichero_hash_incorrecto_lanza_y_no_deja_fichero(tmp_path, monkeypatch):
     fichero = _fichero_falso(b"esperado")
     destino = tmp_path / fichero.nombre
