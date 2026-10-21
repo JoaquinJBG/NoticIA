@@ -32,7 +32,7 @@ Orden de emisión, con los nombres que usa el código (`src/noticia/bloques.py`)
 1.  **[uv](https://docs.astral.sh/uv/)** — instala Python y las dependencias:
     `curl -LsSf https://astral.sh/uv/install.sh | sh`
 2.  **Python 3.13** (uv lo instala solo si no lo tienes).
-3.  **FFmpeg** — necesario para leer y escribir MP3 (lo usa `pydub`) y para el masterizado.
+3.  **FFmpeg** — necesario para leer y escribir MP3 y para el masterizado (loudnorm).
     - **Linux / WSL:** `sudo apt install ffmpeg`
     - **macOS:** `brew install ffmpeg`
     - **Windows:** descargar de [ffmpeg.org](https://ffmpeg.org/download.html) y añadir al `PATH`.

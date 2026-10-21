@@ -81,7 +81,7 @@ Se crean cuando surge la necesidad concreta, no todas de golpe.
 
 ---
 
-## Estado 2026-09-24
+## Estado (revisado 2026-10-21)
 
 - **Fase 3 (Producción de audio):** hecha en su parte de código. Locución en paralelo,
   parser de locutor robusto, tres motores enchufables (edge-tts, Kokoro, Chatterbox) con
@@ -91,7 +91,8 @@ Se crean cuando surge la necesidad concreta, no todas de golpe.
   de vídeo + subida a YouTube.
 - **Fase 5 (Orquestación):** hecha salvo la programación por cron: el orquestador ya cubre
   idempotencia, lock y resumen de la ejecución.
-- **Contraste a ciegas (Fase 2): no implementado.** `seleccion.py` solo pasa al modelo el titular
-  principal de cada cluster y la lista de nombres de medios; no pasa todas las versiones de la noticia.
-- **Spec de duración, fútbol y ritmo (2026-09-24): no implementada.** El objetivo de 40-50 minutos
-  aún no se cumple; la spec sigue pendiente de implementar.
+- **Contraste a ciegas (Fase 2): no implementado.** Por noticia, el prompt recibe el titular, el resumen
+  (300 caracteres) y los nombres de las otras fuentes del artículo principal del cluster
+  (`src/noticia/seleccion.py:131-134`, `:179-189`). Los titulares y resúmenes de las demás versiones no llegan al modelo.
+- **Spec de duración, fútbol y ritmo (2026-09-24): no implementada.** El guion sigue pidiendo
+  «8-10 minutos» (`src/noticia/generador.py:120`) y no hay módulo de resultados de fútbol.

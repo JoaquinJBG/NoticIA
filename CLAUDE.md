@@ -10,7 +10,7 @@ entre dos locutores (**Álex** y **María**) y produce un MP3 final.
 `masterizado` (ffmpeg loudnorm) → `publicador` (feed RSS local) → `output/*.mp3`.
 `orquestador` coordina todo el episodio diario (idempotencia, lock, resumen).
 
-Bloques: España, Geopolítica, IA y Actualidad, Ciencia, Friki, Fútbol (+ intro/outro),
+Bloques: España, Geopolítica, IA y actualidad, Ciencia, Friki, Fútbol (+ intro/outro),
 definidos en `bloques.py`. `fechas.py` resuelve "hoy en Madrid" y el parseo de fechas de la CLI.
 
 ## Estructura
