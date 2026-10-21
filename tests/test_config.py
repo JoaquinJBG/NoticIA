@@ -100,3 +100,47 @@ def test_ruta_temp_absoluta_se_mantiene(tmp_path, monkeypatch):
 
 def test_pronunciacion_extra_por_defecto_vacio():
     assert config.settings.pronunciacion_extra == {}
+
+
+def test_carpeta_publicacion_y_episodios_derivan_de_carpeta_output(tmp_path, monkeypatch):
+    monkeypatch.delenv("CARPETA_PUBLICACION", raising=False)
+    s = config.Settings(_env_file=None, carpeta_output=str(tmp_path / "salida"))
+    assert s.carpeta_publicacion == tmp_path / "salida" / "publicacion"
+    assert s.carpeta_episodios == tmp_path / "salida" / "episodios"
+
+
+def test_carpeta_publicacion_explicita_se_respeta(tmp_path, monkeypatch):
+    monkeypatch.delenv("CARPETA_PUBLICACION", raising=False)
+    s = config.Settings(_env_file=None, carpeta_output=str(tmp_path), carpeta_publicacion="pub")
+    assert s.carpeta_publicacion == config.ROOT / "pub"
+
+
+def test_carpeta_publicacion_desde_entorno_resuelve_desde_root(monkeypatch):
+    monkeypatch.setenv("CARPETA_PUBLICACION", "pub_env")
+    s = config.Settings(_env_file=None)
+    assert s.carpeta_publicacion == config.ROOT / "pub_env"
+
+
+def test_rutas_de_voz_relativas_se_resuelven_desde_root(monkeypatch):
+    for clave in ("KOKORO_DIR", "CHATTERBOX_REF_ALEX", "CHATTERBOX_REF_MARIA"):
+        monkeypatch.delenv(clave, raising=False)
+    s = config.Settings(
+        _env_file=None,
+        kokoro_dir="modelos/otro",
+        chatterbox_ref_alex="voces/a.wav",
+        chatterbox_ref_maria="voces/m.wav",
+    )
+    assert s.kokoro_dir == config.ROOT / "modelos" / "otro"
+    assert s.chatterbox_ref_alex == config.ROOT / "voces" / "a.wav"
+    assert s.chatterbox_ref_maria == config.ROOT / "voces" / "m.wav"
+
+
+def test_get_prompt_sistema_sin_instrucciones_lanza_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "_dir_reglas", lambda: tmp_path)
+    with pytest.raises(FileNotFoundError, match="instrucciones.md"):
+        config.get_prompt_sistema()
+
+
+def test_get_contexto_sin_fichero_devuelve_vacio(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "_dir_reglas", lambda: tmp_path)
+    assert config.get_contexto() == ""
