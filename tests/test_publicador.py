@@ -10,6 +10,7 @@ import pytest
 from noticia.config import settings
 from noticia.publicador import (
     EpisodioPublicable,
+    IndiceCorrupto,
     NoticiaCitada,
     asegurar_portada,
     cargar_indice,
@@ -130,10 +131,12 @@ def test_cargar_indice_inexistente(tmp_path):
     assert cargar_indice(tmp_path / "no-existe.json") == {"version": 1, "episodios": []}
 
 
-def test_cargar_indice_corrupto_no_rompe(tmp_path):
+def test_cargar_indice_corrupto_lanza_y_no_toca_el_fichero(tmp_path):
     ruta = tmp_path / "episodios.json"
     ruta.write_text("no es json", encoding="utf-8")
-    assert cargar_indice(ruta) == {"version": 1, "episodios": []}
+    with pytest.raises(IndiceCorrupto):
+        cargar_indice(ruta)
+    assert ruta.read_text(encoding="utf-8") == "no es json"
 
 
 def test_registrar_episodio_conserva_guid_y_publicado():
@@ -302,3 +305,78 @@ def test_episodio_publicado_pasa_de_false_a_true(tmp_path, mp3_de_prueba, monkey
     assert episodio_publicado(fecha, carpeta=carpeta) is False
     publicar_episodio(_episodio_publicable(mp3_de_prueba, fecha), carpeta=carpeta)
     assert episodio_publicado(fecha, carpeta=carpeta) is True
+
+
+def test_publicar_episodio_con_indice_corrupto_aborta_sin_sobrescribirlo(
+    tmp_path, mp3_de_prueba, monkeypatch
+):
+    monkeypatch.setattr(settings, "publicacion_url_base", "http://localhost:8000")
+    carpeta = tmp_path / "publicacion"
+    carpeta.mkdir()
+    ruta_indice = carpeta / "episodios.json"
+    ruta_indice.write_text('{"episodios": [truncado', encoding="utf-8")
+
+    with pytest.raises(IndiceCorrupto):
+        publicar_episodio(_episodio_publicable(mp3_de_prueba), carpeta=carpeta)
+
+    assert ruta_indice.read_text(encoding="utf-8") == '{"episodios": [truncado'
+    assert not (carpeta / "feed.xml").exists()
+
+
+@pytest.mark.parametrize("url_peligrosa", ["javascript:alert(1)", "data:text/html,<b>x</b>"])
+def test_construir_notas_descarta_urls_no_http(url_peligrosa):
+    noticias = [
+        NoticiaCitada(bloque="espana", titular="Titular", fuente="A", url=url_peligrosa),
+        NoticiaCitada(bloque="futbol", titular="Otro", fuente="B", url="https://b.test/x"),
+    ]
+    texto, html_ = construir_notas(noticias, date(2026, 9, 24))
+    assert url_peligrosa not in texto
+    assert url_peligrosa not in html_
+    assert "javascript" not in html_ and "data:" not in html_
+    assert "Titular" in html_
+    assert 'href="https://b.test/x"' in html_
+
+
+def test_titulo_episodio_incluye_titular_y_se_recorta():
+    fecha = date(2026, 9, 24)
+    noticia = NoticiaCitada(bloque="espana", titular="Gran titular", fuente="A", url="https://a")
+    assert titulo_episodio(fecha, [noticia]) == f"{titulo_episodio(fecha)}: Gran titular"
+
+    larga = NoticiaCitada(bloque="espana", titular="x" * 300, fuente="A", url="https://a")
+    titulo = titulo_episodio(fecha, [larga])
+    assert len(titulo) <= 120
+    assert titulo.startswith(titulo_episodio(fecha))
+
+
+def test_descripcion_sin_urls_y_content_encoded_con_urls(tmp_path, mp3_de_prueba, monkeypatch):
+    monkeypatch.setattr(settings, "publicacion_url_base", "http://localhost:8000")
+    carpeta = tmp_path / "publicacion"
+    ruta_feed = publicar_episodio(_episodio_publicable(mp3_de_prueba), carpeta=carpeta)
+
+    item = ET.fromstring(ruta_feed.read_text(encoding="utf-8")).find("channel/item")
+    assert "http" not in item.find("description").text
+    contenido = item.find("{http://purl.org/rss/1.0/modules/content/}encoded").text
+    assert "https://a.test" in contenido
+    assert "Titular uno" in item.find("title").text
+
+
+def test_transcripcion_publicada_es_legible(tmp_path, mp3_de_prueba, monkeypatch):
+    monkeypatch.setattr(settings, "publicacion_url_base", "http://localhost:8000")
+    carpeta = tmp_path / "publicacion"
+    guion = tmp_path / "guion.md"
+    guion.write_text(
+        "## intro\n\nÁlex: Hola (risas) a todos.\nMaría: Buenas.\n\n"
+        "## ia_y_actualidad\n\nÁlex: Hoy (pausa breve) hablamos de IA.\n",
+        encoding="utf-8",
+    )
+    ep = EpisodioPublicable(
+        fecha=date(2026, 9, 24), mp3=mp3_de_prueba, noticias=[], capitulos=[], guion=guion
+    )
+    publicar_episodio(ep, carpeta=carpeta)
+
+    texto = (carpeta / "episodios" / "2026-09-24.txt").read_text(encoding="utf-8")
+    assert not any(linea.startswith("## ") for linea in texto.splitlines())
+    assert "Introducción" in texto and "IA y actualidad" in texto
+    assert "ia_y_actualidad" not in texto
+    assert "(" not in texto and ")" not in texto
+    assert "Álex: Hola a todos." in texto
