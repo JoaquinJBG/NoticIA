@@ -50,7 +50,7 @@ muchas fuentes → agrupar la misma noticia entre medios → clusters para contr
 
 ### Fase 2 — Cerebro Claude (Max vía Agent SDK) ⭐
 Sustituir Groq/Llama 3.3 por Claude. Rediseñar la generación del guion: contraste real
-a ciegas para neutralidad, personalidades de Álex y Santi, estructura y química. Es el
+a ciegas para neutralidad, personalidades de Álex y María, estructura y química. Es el
 salto de calidad principal. Primera skill de Claude Code natural aquí ("generar episodio
 de prueba").
 
@@ -87,6 +87,11 @@ Se crean cuando surge la necesidad concreta, no todas de golpe.
   parser de locutor robusto, tres motores enchufables (edge-tts, Kokoro, Chatterbox) con
   selector automático por GPU y muestras comparativas, mastering con ffmpeg loudnorm.
 - **Fase 4 (Publicación):** publicación local hecha (feed RSS propio, ID3, portada, índice).
-  Pendiente: hosting del feed y del audio, y generación de vídeo + subida a YouTube.
+  Hosting del feed y del audio: no previsto (proyecto personal, solo feed local). Pendiente: generación
+  de vídeo + subida a YouTube.
 - **Fase 5 (Orquestación):** hecha salvo la programación por cron: el orquestador ya cubre
   idempotencia, lock y resumen de la ejecución.
+- **Contraste a ciegas (Fase 2): no implementado.** `seleccion.py` solo pasa al modelo el titular
+  principal de cada cluster y la lista de nombres de medios; no pasa todas las versiones de la noticia.
+- **Spec de duración, fútbol y ritmo (2026-09-24): no implementada.** El objetivo de 40-50 minutos
+  aún no se cumple; la spec sigue pendiente de implementar.

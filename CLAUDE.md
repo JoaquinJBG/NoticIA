@@ -18,7 +18,7 @@ definidos en `bloques.py`. `fechas.py` resuelve "hoy en Madrid" y el parseo de f
 - `src/noticia/config.py` — `Settings` (pydantic-settings) + `get_prompt_sistema`/`get_contexto`.
 - `src/noticia/logging_setup.py` — configuración de logging.
 - `src/noticia/orquestador.py` — orquesta el episodio: guion → locución → montaje →
-  publicación, con lock (`fcntl.flock`) e idempotencia por fecha.
+  publicación, con lock (`fcntl.flock` o `msvcrt.locking`) e idempotencia por fecha.
 - `src/noticia/{ingesta,seleccion,generador,locutor,editor,masterizado,publicador}.py` — el pipeline.
 - `src/noticia/bloques.py` — orden de emisión y categorías de noticias.
 - `src/noticia/fechas.py` — fecha de "hoy" en Madrid y parseo de fechas.
@@ -27,7 +27,7 @@ definidos en `bloques.py`. `fechas.py` resuelve "hoy en Madrid" y el parseo de f
   pronunciación) y `modelos.py`/`muestras.py` (descarga de pesos y muestras de audio).
 - `src/noticia/cli.py` — punto de entrada (`main`, modos `--solo-guion`/`--solo-audio`).
 - `reglas/` — prompts de personalidad y contexto.
-- `sintonias/` — músicas de fondo por bloque.
+- `sintonias/` — músicas de fondo por bloque (no están en git).
 - `tests/` — pytest.
 - `docs/superpowers/` — specs y planes (hoja de ruta del rework incluida).
 
@@ -40,6 +40,7 @@ definidos en `bloques.py`. `fechas.py` resuelve "hoy en Madrid" y el parseo de f
 - Comparar motores de voz de oído: `make muestras-voz`
 - Servir el feed/publicación local: `make servir`
 - Tests: `uv run pytest` (o `make test`)
+- Verificación completa, igual que CI: `make ci`
 - Lint y formato: `uv run ruff check` · `uv run ruff format` (o `make lint` / `make formato`)
 
 ## Convenciones
