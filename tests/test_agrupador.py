@@ -65,13 +65,23 @@ def test_titular_ampliado_se_agrupa_con_el_corto():
 
 
 def test_un_solo_token_compartido_no_agrupa():
+    arts = [_art("Gobierno", "x"), _art("Gobierno aprueba presupuestos", "z")]
+    assert len(agrupador.agrupar_categoria(arts)) == 2
+
+
+def test_titular_corto_identico_de_varias_fuentes_se_agrupa():
+    arts = [_art("Dimite Mazón", f) for f in ("x", "y", "z")]
+    clusters = agrupador.agrupar_categoria(arts)
+    assert len(clusters) == 1
+    assert len(clusters[0]["articulos"]) == 3
+
+
+def test_titular_corto_no_se_funde_con_el_largo_que_lo_contiene():
     arts = [
-        _art("Gobierno", "x"),
-        _art("Gobierno", "y"),
-        _art("Gobierno aprueba presupuestos", "z"),
+        _art("Pedro Sánchez", "x"),
+        _art("Pedro Sánchez anuncia un nuevo plan de vivienda", "y"),
     ]
-    # Los dos primeros comparten todo (1 token) pero no alcanzan el mínimo de tokens.
-    assert len(agrupador.agrupar_categoria(arts)) == 3
+    assert len(agrupador.agrupar_categoria(arts)) == 2
 
 
 def test_principal_no_depende_del_orden_de_entrada():

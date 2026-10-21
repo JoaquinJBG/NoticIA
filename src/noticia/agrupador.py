@@ -64,6 +64,8 @@ def _similitud(a, b):
 
     Dos comunes genéricos ("ataca ... drones") no bastan para fundir hechos distintos.
     """
+    if a and a == b:
+        return 100.0
     comunes = len(a & b)
     if comunes < _MIN_TOKENS_COMPARTIDOS or comunes < _MIN_COBERTURA_CORTO * min(len(a), len(b)):
         return 0.0
