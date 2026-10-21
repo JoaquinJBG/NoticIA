@@ -40,6 +40,19 @@ lint:
 formato:
 	@uv run ruff format src/noticia tests
 
+.PHONY: e2e ci
+
+e2e:
+	uv run pytest -q -m e2e -rs
+
+ci: export NOTICIA_E2E_OBLIGATORIO = 1
+ci:
+	uv sync --locked
+	uv run ruff check
+	uv run ruff format --check src/noticia tests
+	uv run pytest -q -rs
+	uv build
+
 guion:
 	@uv run noticia --solo-guion
 

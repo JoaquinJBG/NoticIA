@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    env:
+      NOTICIA_E2E_OBLIGATORIO: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.0"
+      - run: uv python install 3.13
+      - run: sudo apt-get install -y ffmpeg
+      - run: uv sync --locked
+      - run: uv run ruff check
+      - run: uv run ruff format --check src/noticia tests
+      - run: uv run pytest -q -rs
+      - run: uv build
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.0"
+      - run: uv python install 3.13
+      - run: uv sync --locked
+      - run: uv run pytest -q -rs
