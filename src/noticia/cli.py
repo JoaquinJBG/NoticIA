@@ -22,6 +22,7 @@ from noticia.orquestador import (
     generar_guion,
     trocear_guion,
 )
+from noticia.voz.base import ErrorMotorVoz
 from noticia.voz.selector import preparar_cadena, resolver_motores
 
 logger = logging.getLogger("noticia.cli")
@@ -177,7 +178,7 @@ def main(argv: list[str] | None = None) -> int:
     except GuionVacio as exc:
         logger.error("Guion vacío: %s", exc)
         return int(Codigo.GUION_VACIO)
-    except (ErrorLocucion, ErrorMontaje, ErrorMasterizado) as exc:
+    except (ErrorLocucion, ErrorMontaje, ErrorMasterizado, ErrorMotorVoz) as exc:
         logger.error("Fallo produciendo el audio: %s", exc)
         return int(Codigo.AUDIO)
     except Exception:

@@ -123,3 +123,35 @@ def test_ensamblar_podcast_dinamico_avisa_de_sintonias_faltantes(tmp_path, monke
 
     assert resultado.sintonias_faltantes == [ruta_falta]
     assert "Falta la sintonía" in caplog.text
+
+
+def _fragmentos_con_corruptos(tmp_path, buenos, corruptos):
+    rutas = [_escribir(tmp_path, f"ok_{i}.wav", _tono(500)) for i in range(buenos)]
+    for i in range(corruptos):
+        ruta = tmp_path / f"mal_{i}.wav"
+        ruta.write_bytes(b"no es audio")
+        rutas.append(ruta)
+    return {"espana": rutas}
+
+
+@requiere_ffmpeg
+def test_ensamblar_lanza_error_si_fallan_demasiados_fragmentos(tmp_path, monkeypatch):
+    monkeypatch.setattr(type(editor.settings), "sintonias", property(lambda self: {}))
+    monkeypatch.setattr(editor.settings, "max_fraccion_fallos_locucion", 0.10)
+    fragmentos = _fragmentos_con_corruptos(tmp_path, buenos=3, corruptos=1)  # 25 %
+
+    with pytest.raises(editor.ErrorMontaje, match="1/4"):
+        editor.ensamblar_podcast_dinamico(fragmentos, tmp_path / "podcast.mp3")
+
+    assert not (tmp_path / "podcast.mp3").exists()
+
+
+@requiere_ffmpeg
+def test_ensamblar_registra_fragmentos_fallidos_bajo_el_umbral(tmp_path, monkeypatch):
+    monkeypatch.setattr(type(editor.settings), "sintonias", property(lambda self: {}))
+    monkeypatch.setattr(editor.settings, "max_fraccion_fallos_locucion", 0.25)
+    fragmentos = _fragmentos_con_corruptos(tmp_path, buenos=3, corruptos=1)  # 25 % = umbral
+
+    resultado = editor.ensamblar_podcast_dinamico(fragmentos, tmp_path / "podcast.mp3")
+
+    assert resultado.fragmentos_fallidos == 1

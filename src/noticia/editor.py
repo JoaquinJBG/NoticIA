@@ -35,6 +35,7 @@ class ResultadoMontaje:
     capitulos: list[tuple[str, float]]
     sintonias_faltantes: list[str]
     loudness: MedicionLoudness
+    fragmentos_fallidos: int = 0
 
 
 def _unir_con_pausas(segmentos: list[AudioSegment], pausa_ms: int) -> AudioSegment:
@@ -99,14 +100,17 @@ def _bucle_musica(
     return resultado[:duracion_ms]
 
 
-def _cargar_fragmentos(rutas: Sequence[str | Path]) -> list[AudioSegment]:
+def _cargar_fragmentos(rutas: Sequence[str | Path]) -> tuple[list[AudioSegment], int]:
+    """Carga los fragmentos de audio. Devuelve (segmentos, nº de fragmentos que no cargan)."""
     segmentos = []
+    fallidos = 0
     for ruta in rutas:
         try:
             segmentos.append(AudioSegment.from_file(ruta))
         except Exception as exc:
+            fallidos += 1
             logger.warning("No se pudo cargar el fragmento %s: %s", ruta, exc)
-    return segmentos
+    return segmentos, fallidos
 
 
 def _mezclar_musica(bloque: str, voces_bloque: AudioSegment) -> AudioSegment:
@@ -125,12 +129,12 @@ def _mezclar_musica(bloque: str, voces_bloque: AudioSegment) -> AudioSegment:
         return voces_bloque
 
 
-def _montar_bloque(bloque: str, archivos: Sequence[str | Path]) -> AudioSegment:
-    segmentos = _cargar_fragmentos(archivos)
+def _montar_bloque(bloque: str, archivos: Sequence[str | Path]) -> tuple[AudioSegment, int]:
+    segmentos, fallidos = _cargar_fragmentos(archivos)
     voces_bloque = _unir_con_pausas(segmentos, settings.pausa_entre_turnos_ms)
     if len(voces_bloque) == 0:
-        return voces_bloque
-    return _mezclar_musica(bloque, voces_bloque)
+        return voces_bloque, fallidos
+    return _mezclar_musica(bloque, voces_bloque), fallidos
 
 
 def _anadir_bloque(podcast: AudioSegment, bloque_audio: AudioSegment) -> tuple[AudioSegment, float]:
@@ -159,16 +163,28 @@ def ensamblar_podcast_dinamico(
 
     podcast_completo = AudioSegment.empty()
     capitulos: list[tuple[str, float]] = []
+    total_fragmentos = 0
+    fragmentos_fallidos = 0
 
     for bloque, archivos in fragmentos_por_bloque.items():
         if not archivos:
             continue
         logger.info("Procesando bloque: %s...", bloque)
-        bloque_audio = _montar_bloque(bloque, archivos)
+        bloque_audio, fallidos = _montar_bloque(bloque, archivos)
+        total_fragmentos += len(archivos)
+        fragmentos_fallidos += fallidos
         if len(bloque_audio) == 0:
             continue
         podcast_completo, inicio_s = _anadir_bloque(podcast_completo, bloque_audio)
         capitulos.append((bloque, inicio_s))
+
+    if (
+        total_fragmentos
+        and fragmentos_fallidos / total_fragmentos > settings.max_fraccion_fallos_locucion
+    ):
+        raise ErrorMontaje(
+            f"Demasiados fragmentos de audio no cargan: {fragmentos_fallidos}/{total_fragmentos}"
+        )
 
     if len(podcast_completo) == 0:
         raise ErrorMontaje("El montaje no ha producido ningún audio.")
@@ -200,4 +216,5 @@ def ensamblar_podcast_dinamico(
         capitulos=capitulos,
         sintonias_faltantes=sintonias_faltantes,
         loudness=loudness,
+        fragmentos_fallidos=fragmentos_fallidos,
     )

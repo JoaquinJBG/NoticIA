@@ -5,6 +5,7 @@ import pytest
 
 from noticia import cli
 from noticia.orquestador import BloqueoOcupado, Codigo, GuionVacio
+from noticia.voz.base import MotorNoDisponible
 
 
 def test_solo_guion_escribe_fichero_y_no_toca_audio(monkeypatch, tmp_path):
@@ -335,3 +336,16 @@ def test_main_fecha_explicita_se_pasa_a_ejecutar(monkeypatch):
     cli.main(["--fecha", "2026-01-15"])
 
     assert llamadas == [date(2026, 1, 15)]
+
+
+def test_main_devuelve_codigo_audio_si_no_hay_motor_de_voz(monkeypatch, tmp_path):
+    def _sin_motores(motor_voz):
+        raise MotorNoDisponible("ningún motor disponible")
+
+    monkeypatch.setattr(cli, "resolver_motores", _sin_motores)
+    monkeypatch.setattr(cli.settings, "carpeta_temp", str(tmp_path))
+    monkeypatch.setattr(cli.settings, "carpeta_output", str(tmp_path))
+    guion = tmp_path / "g.md"
+    guion.write_text("## intro\n\nÁlex: hola\n", encoding="utf-8")
+
+    assert cli.main(["--solo-audio", "--guion", str(guion)]) == int(Codigo.AUDIO)

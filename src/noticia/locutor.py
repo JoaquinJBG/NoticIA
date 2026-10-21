@@ -3,7 +3,6 @@
 import asyncio
 import logging
 import re
-import tempfile
 import unicodedata
 from collections import Counter
 from collections.abc import Mapping, Sequence
@@ -241,24 +240,6 @@ async def locutar_episodio(
     )
 
 
-async def procesar_guion_a_audio(
-    guion_texto: str,
-    bloque: str = "bloque",
-    motores: Sequence[MotorVoz] | None = None,
-) -> list[str]:
-    """Locuta un único bloque de guion. Compatibilidad para cli.py hasta T11."""
-    if motores is None:
-        from noticia.voz.motor_edge import MotorEdge
-
-        motores = [MotorEdge()]
-
-    settings.ruta_temp.mkdir(parents=True, exist_ok=True)
-    carpeta = Path(tempfile.mkdtemp(dir=settings.ruta_temp))
-
-    resultado = await locutar_episodio({bloque: guion_texto}, motores, carpeta)
-    return [str(ruta) for ruta in resultado.fragmentos_por_bloque.get(bloque, [])]
-
-
 __all__ = [
     "ErrorLocucion",
     "Locutor",
@@ -266,5 +247,4 @@ __all__ = [
     "Turno",
     "locutar_episodio",
     "parsear_turnos",
-    "procesar_guion_a_audio",
 ]
