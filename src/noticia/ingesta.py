@@ -85,7 +85,8 @@ def _dominio(url):
 
 
 def _descargar_bytes(url, timeout):
-    with urllib.request.urlopen(url, timeout=timeout) as respuesta:
+    peticion = urllib.request.Request(url, headers={"User-Agent": feedparser.USER_AGENT})
+    with urllib.request.urlopen(peticion, timeout=timeout) as respuesta:
         return respuesta.read()
 
 
@@ -95,14 +96,8 @@ def _descargar_feed(url, fuente_por_defecto, timeout=10, max_entradas=15):
         feed = feedparser.parse(_descargar_bytes(url, timeout))
     else:
         feed = feedparser.parse(url)
-    estado = feed.get("status")
-    if (estado is not None and estado >= 400) or (feed.get("bozo") and not feed.entries):
-        logger.warning(
-            "Feed sin contenido %s: estado=%s, motivo=%s",
-            url,
-            estado,
-            feed.get("bozo_exception", "sin entradas"),
-        )
+    if feed.get("bozo") and not feed.entries:
+        logger.warning("Feed sin contenido %s: %s", url, feed.get("bozo_exception", "sin entradas"))
     articulos = []
     for entry in feed.entries[:max_entradas]:
         art = _parsear_entrada(entry, fuente_por_defecto)

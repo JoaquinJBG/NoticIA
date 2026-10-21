@@ -24,8 +24,8 @@ def urlopen_falso(monkeypatch):
     """Sin red: registra (url, timeout) de cada descarga."""
     llamadas = []
 
-    def _urlopen(url, timeout=None):
-        llamadas.append((url, timeout))
+    def _urlopen(peticion, timeout=None):
+        llamadas.append((peticion.full_url, timeout, peticion.get_header("User-agent")))
         return _Respuesta()
 
     monkeypatch.setattr(ingesta.urllib.request, "urlopen", _urlopen)
@@ -128,7 +128,7 @@ def test_descargar_feed_parsea_entradas(monkeypatch):
 def test_descargar_feed_pasa_el_timeout_a_la_descarga(monkeypatch, urlopen_falso):
     monkeypatch.setattr(ingesta.feedparser, "parse", lambda datos: _FakeFeed([]))
     ingesta._descargar_feed("http://x", "x.com", timeout=7)
-    assert urlopen_falso == [("http://x", 7)]
+    assert urlopen_falso == [("http://x", 7, feedparser.USER_AGENT)]
 
 
 def test_obtener_pool_propaga_el_timeout(monkeypatch, urlopen_falso):
@@ -136,7 +136,7 @@ def test_obtener_pool_propaga_el_timeout(monkeypatch, urlopen_falso):
     monkeypatch.setattr(ingesta.fuentes, "FEEDS_CURADOS", {"espana": ["http://x"]})
     monkeypatch.setattr(ingesta.fuentes, "SECCIONES_GOOGLE_NEWS", {})
     ingesta.obtener_pool(timeout=3)
-    assert urlopen_falso == [("http://x", 3)]
+    assert urlopen_falso == [("http://x", 3, feedparser.USER_AGENT)]
 
 
 def test_feed_bozo_sin_entradas_avisa_con_url_y_motivo(monkeypatch, caplog):
@@ -150,17 +150,9 @@ def test_feed_bozo_sin_entradas_avisa_con_url_y_motivo(monkeypatch, caplog):
     assert any("http://roto" in m and "XML mal formado" in m for m in mensajes)
 
 
-def test_feed_con_estado_http_de_error_avisa(monkeypatch, caplog):
-    feed = feedparser.FeedParserDict(status=503, entries=[])
-    monkeypatch.setattr(ingesta.feedparser, "parse", lambda datos: feed)
-    with caplog.at_level(logging.WARNING, logger="noticia.ingesta"):
-        ingesta._descargar_feed("http://caido", "caido")
-    assert any("http://caido" in r.getMessage() and "503" in r.getMessage() for r in caplog.records)
-
-
 def test_obtener_pool_avisa_si_la_descarga_devuelve_error_http(monkeypatch, caplog):
-    def _urlopen(url, timeout=None):
-        raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+    def _urlopen(peticion, timeout=None):
+        raise urllib.error.HTTPError(peticion.full_url, 404, "Not Found", {}, None)
 
     monkeypatch.setattr(ingesta.urllib.request, "urlopen", _urlopen)
     monkeypatch.setattr(ingesta.fuentes, "FEEDS_CURADOS", {"espana": ["http://x404"]})
