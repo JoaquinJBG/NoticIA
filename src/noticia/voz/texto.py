@@ -73,8 +73,8 @@ def limpiar_texto_locucion(texto: str) -> str:
     """
     texto = _RE_ACOTACION_PARENTESIS.sub(" ", texto)
     texto = _RE_ACOTACION_CORCHETE.sub(" ", texto)
-    texto = _RE_RISA.sub(" ", texto)
     texto = _RE_URL.sub(" ", texto)
+    texto = _RE_RISA.sub(" ", texto)
     texto = "".join(
         caracter for caracter in texto if unicodedata.category(caracter) not in ("So", "Cs")
     )
