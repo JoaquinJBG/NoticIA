@@ -16,8 +16,7 @@ logger = logging.getLogger("noticia.generador")
 _ENCABEZADO_O_REGLA = re.compile(r"^\s{0,3}(#{1,6}\s|-{3,}\s*$|\*{3,}\s*$)")
 _SALTOS_DE_MAS = re.compile(r"\n{3,}")
 
-# Varias respuestas vacías seguidas suelen ser una sesión de Claude caída: cortar
-# evita gastar más llamadas en un guion que no va a salir.
+# Varias respuestas vacías seguidas suelen ser una sesión de Claude caída.
 MAX_FALLOS_SEGUIDOS = 3
 
 _INSTRUCCION_DATOS = (
@@ -41,8 +40,6 @@ def _limpiar_markdown(texto: str) -> str:
 
 
 class _Racha:
-    """Cuenta las respuestas vacías seguidas de la IA para cortar la generación."""
-
     def __init__(self) -> None:
         self.fallos = 0
 
@@ -57,8 +54,7 @@ def _con_reintento(
     """Reintenta `fn()` mientras devuelva una cadena vacía.
 
     Hace como mucho `reintentos` reintentos (además del intento inicial),
-    usando `settings.reintentos_guion` si no se indica otro valor. Si `racha`
-    se ha cortado, no vuelve a llamar a `fn`.
+    usando `settings.reintentos_guion` si no se indica otro valor.
     """
     racha = racha if racha is not None else _Racha()
     total_intentos = (reintentos if reintentos is not None else settings.reintentos_guion) + 1
