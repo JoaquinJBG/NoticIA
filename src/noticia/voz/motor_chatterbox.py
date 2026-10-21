@@ -24,8 +24,7 @@ _REPO_ES = "ResembleAI/Chatterbox-Multilingual-es-es"
 _REVISION_BASE = "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18"
 _REVISION_ES = "7262b364e3222ba9446c9289e7485eadc47ed902"
 
-# Fichero -> (repo, revisión, sha256). Los sha256 de los ficheros LFS vienen de la API
-# de Hugging Face; ve.pt, conds.pt y el de grafemas se han descargado y medido.
+# sha256 de la API de Hugging Face (LFS) o medidos tras descargar (ve.pt, conds.pt, grafemas).
 _FICHEROS_CHATTERBOX: dict[str, tuple[str, str, str]] = {
     "ve.pt": (
         _REPO_BASE,
