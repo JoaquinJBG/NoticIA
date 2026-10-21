@@ -2,8 +2,8 @@ import calendar
 import html
 import logging
 import re
-import socket
 import time
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 
@@ -14,6 +14,7 @@ from noticia import fuentes
 logger = logging.getLogger("noticia.ingesta")
 
 _TAGS = re.compile(r"<[^>]+>")
+_CONTROL = re.compile(r"[\x00-\x1f\x7f]")
 
 
 def limpiar_html(texto):
@@ -22,6 +23,11 @@ def limpiar_html(texto):
         return ""
     sin_tags = _TAGS.sub("", texto)
     return html.unescape(sin_tags).strip()
+
+
+def limpiar_titular(texto):
+    """Titular en una sola línea: sin HTML, entidades, saltos ni caracteres de control."""
+    return " ".join(_CONTROL.sub(" ", limpiar_html(texto)).split())
 
 
 def es_reciente(fecha_struct, ventana_horas=48, ahora=None):
@@ -39,7 +45,7 @@ def es_reciente(fecha_struct, ventana_horas=48, ahora=None):
 
 def _parsear_entrada(entry, fuente_por_defecto):
     """Convierte una entrada de feedparser en un dict de artículo, o None."""
-    titular = entry.get("title")
+    titular = limpiar_titular(entry.get("title"))
     if not titular:
         return None
 
@@ -52,7 +58,7 @@ def _parsear_entrada(entry, fuente_por_defecto):
             titular = titular[: -len(sufijo)]
 
     return {
-        "titular": titular.strip(),
+        "titular": titular,
         "resumen": limpiar_html(entry.get("summary", ""))[:500],
         "fuente": fuente,
         "url": entry.get("link", ""),
@@ -78,8 +84,20 @@ def _dominio(url):
     return net[4:] if net.startswith("www.") else net
 
 
-def _descargar_feed(url, fuente_por_defecto, max_entradas=15):
-    feed = feedparser.parse(url)
+def _descargar_bytes(url, timeout):
+    peticion = urllib.request.Request(url, headers={"User-Agent": feedparser.USER_AGENT})
+    with urllib.request.urlopen(peticion, timeout=timeout) as respuesta:
+        return respuesta.read()
+
+
+def _descargar_feed(url, fuente_por_defecto, timeout=10, max_entradas=15):
+    # feedparser no admite timeout; las rutas locales (e2e) se le pasan tal cual.
+    if urlparse(url).scheme in ("http", "https"):
+        feed = feedparser.parse(_descargar_bytes(url, timeout))
+    else:
+        feed = feedparser.parse(url)
+    if feed.get("bozo") and not feed.entries:
+        logger.warning("Feed sin contenido %s: %s", url, feed.get("bozo_exception", "sin entradas"))
     articulos = []
     for entry in feed.entries[:max_entradas]:
         art = _parsear_entrada(entry, fuente_por_defecto)
@@ -90,8 +108,6 @@ def _descargar_feed(url, fuente_por_defecto, max_entradas=15):
 
 def obtener_pool(ventana_horas=48, timeout=10, max_workers=12):
     """Devuelve {categoria: [articulo, ...]} limpio, reciente y sin duplicados."""
-    socket.setdefaulttimeout(timeout)
-
     # (categoria, url, fuente_por_defecto)
     tareas = []
     for categoria, urls in fuentes.FEEDS_CURADOS.items():
@@ -106,7 +122,7 @@ def obtener_pool(ventana_horas=48, timeout=10, max_workers=12):
     def _trabajo(tarea):
         categoria, url, fuente = tarea
         try:
-            return categoria, _descargar_feed(url, fuente)
+            return categoria, _descargar_feed(url, fuente, timeout)
         except Exception as exc:
             logger.warning("Feed fallido %s: %s", url, exc)
             return categoria, []
@@ -125,14 +141,3 @@ def obtener_pool(ventana_horas=48, timeout=10, max_workers=12):
             )
 
     return pool
-
-
-def obtener_noticias(**kwargs):
-    """PUENTE de compatibilidad: devuelve listas planas por categoría.
-
-    Mantiene la firma que espera el generador (listas planas por bloque)
-    mientras el generador no se adapte al contrato de clusters. El nuevo
-    pipeline con contraste se obtiene vía obtener_pool() + agrupador.agrupar().
-    """
-    pool = obtener_pool(**kwargs)
-    return dict(pool.items())

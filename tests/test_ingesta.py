@@ -1,7 +1,35 @@
 import logging
 import time as _time
+import urllib.error
+
+import feedparser
+import pytest
 
 from noticia import ingesta
+
+
+class _Respuesta:
+    def read(self):
+        return b""
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+@pytest.fixture(autouse=True)
+def urlopen_falso(monkeypatch):
+    """Sin red: registra (url, timeout) de cada descarga."""
+    llamadas = []
+
+    def _urlopen(peticion, timeout=None):
+        llamadas.append((peticion.full_url, timeout, peticion.get_header("User-agent")))
+        return _Respuesta()
+
+    monkeypatch.setattr(ingesta.urllib.request, "urlopen", _urlopen)
+    return llamadas
 
 
 def test_limpiar_html_quita_tags_y_entidades():
@@ -12,6 +40,15 @@ def test_limpiar_html_quita_tags_y_entidades():
 def test_limpiar_html_vacio():
     assert ingesta.limpiar_html("") == ""
     assert ingesta.limpiar_html(None) == ""
+
+
+def test_limpiar_titular_quita_html_control_y_saltos():
+    assert ingesta.limpiar_titular("<b>Hola</b>\nmundo\x07") == "Hola mundo"
+
+
+def test_parsear_entrada_sanea_el_titular():
+    entry = {"title": "<i>Sube</i>\r\nel paro\x00", "link": "u"}
+    assert ingesta._parsear_entrada(entry, "x.com")["titular"] == "Sube el paro"
 
 
 def test_es_reciente_dentro_de_ventana():
@@ -72,9 +109,9 @@ def test_dedup_por_url_y_titular():
     assert [a["titular"] for a in out] == ["A", "B", "C"]
 
 
-class _FakeFeed:
+class _FakeFeed(feedparser.FeedParserDict):
     def __init__(self, entries):
-        self.entries = entries
+        super().__init__(entries=entries)
 
 
 def test_descargar_feed_parsea_entradas(monkeypatch):
@@ -82,10 +119,47 @@ def test_descargar_feed_parsea_entradas(monkeypatch):
         {"title": "N1", "summary": "s1", "link": "u1", "published_parsed": _time.gmtime()},
         {"title": "N2", "summary": "s2", "link": "u2", "published_parsed": _time.gmtime()},
     ]
-    monkeypatch.setattr(ingesta.feedparser, "parse", lambda url: _FakeFeed(entradas))
+    monkeypatch.setattr(ingesta.feedparser, "parse", lambda datos: _FakeFeed(entradas))
     arts = ingesta._descargar_feed("http://x", "x.com")
     assert [a["titular"] for a in arts] == ["N1", "N2"]
     assert arts[0]["fuente"] == "x.com"
+
+
+def test_descargar_feed_pasa_el_timeout_a_la_descarga(monkeypatch, urlopen_falso):
+    monkeypatch.setattr(ingesta.feedparser, "parse", lambda datos: _FakeFeed([]))
+    ingesta._descargar_feed("http://x", "x.com", timeout=7)
+    assert urlopen_falso == [("http://x", 7, feedparser.USER_AGENT)]
+
+
+def test_obtener_pool_propaga_el_timeout(monkeypatch, urlopen_falso):
+    monkeypatch.setattr(ingesta.feedparser, "parse", lambda datos: _FakeFeed([]))
+    monkeypatch.setattr(ingesta.fuentes, "FEEDS_CURADOS", {"espana": ["http://x"]})
+    monkeypatch.setattr(ingesta.fuentes, "SECCIONES_GOOGLE_NEWS", {})
+    ingesta.obtener_pool(timeout=3)
+    assert urlopen_falso == [("http://x", 3, feedparser.USER_AGENT)]
+
+
+def test_feed_bozo_sin_entradas_avisa_con_url_y_motivo(monkeypatch, caplog):
+    feed = feedparser.FeedParserDict(
+        bozo=1, entries=[], bozo_exception=ValueError("XML mal formado")
+    )
+    monkeypatch.setattr(ingesta.feedparser, "parse", lambda datos: feed)
+    with caplog.at_level(logging.WARNING, logger="noticia.ingesta"):
+        assert ingesta._descargar_feed("http://roto", "roto") == []
+    mensajes = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
+    assert any("http://roto" in m and "XML mal formado" in m for m in mensajes)
+
+
+def test_obtener_pool_avisa_si_la_descarga_devuelve_error_http(monkeypatch, caplog):
+    def _urlopen(peticion, timeout=None):
+        raise urllib.error.HTTPError(peticion.full_url, 404, "Not Found", {}, None)
+
+    monkeypatch.setattr(ingesta.urllib.request, "urlopen", _urlopen)
+    monkeypatch.setattr(ingesta.fuentes, "FEEDS_CURADOS", {"espana": ["http://x404"]})
+    monkeypatch.setattr(ingesta.fuentes, "SECCIONES_GOOGLE_NEWS", {})
+    with caplog.at_level(logging.WARNING, logger="noticia.ingesta"):
+        ingesta.obtener_pool(timeout=1)
+    assert any("http://x404" in r.getMessage() and "404" in r.getMessage() for r in caplog.records)
 
 
 def test_obtener_pool_filtra_recencia_y_estructura(monkeypatch):
@@ -95,7 +169,7 @@ def test_obtener_pool_filtra_recencia_y_estructura(monkeypatch):
         {"title": "Nueva", "summary": "s", "link": "u-nueva", "published_parsed": reciente},
         {"title": "Vieja", "summary": "s", "link": "u-vieja", "published_parsed": viejo},
     ]
-    monkeypatch.setattr(ingesta.feedparser, "parse", lambda url: _FakeFeed(entradas))
+    monkeypatch.setattr(ingesta.feedparser, "parse", lambda datos: _FakeFeed(entradas))
     # Catálogos mínimos para no depender de la lista real ni de la red
     monkeypatch.setattr(ingesta.fuentes, "FEEDS_CURADOS", {"espana": ["http://x"]})
     monkeypatch.setattr(ingesta.fuentes, "SECCIONES_GOOGLE_NEWS", {})
@@ -109,7 +183,7 @@ def test_obtener_pool_filtra_recencia_y_estructura(monkeypatch):
 
 def test_obtener_pool_avisa_si_una_categoria_queda_vacia(monkeypatch, caplog):
     """Un catálogo de feeds muerto no debe perder un bloque en silencio."""
-    monkeypatch.setattr(ingesta.feedparser, "parse", lambda url: _FakeFeed([]))
+    monkeypatch.setattr(ingesta.feedparser, "parse", lambda datos: _FakeFeed([]))
     monkeypatch.setattr(ingesta.fuentes, "FEEDS_CURADOS", {"futbol": ["http://muerto"]})
     monkeypatch.setattr(ingesta.fuentes, "SECCIONES_GOOGLE_NEWS", {})
 
@@ -118,23 +192,3 @@ def test_obtener_pool_avisa_si_una_categoria_queda_vacia(monkeypatch, caplog):
 
     assert pool["futbol"] == []
     assert any("futbol" in reg.getMessage() for reg in caplog.records)
-
-
-def test_obtener_noticias_puente_aplana_clusters(monkeypatch):
-    # Pool simulado: espana (contraste) + futbol (simple)
-    fake_pool = {
-        "espana": [
-            {"titular": "A", "resumen": "", "fuente": "f1", "url": "a", "fecha": None},
-            {"titular": "B", "resumen": "", "fuente": "f2", "url": "b", "fecha": None},
-        ],
-        "futbol": [
-            {"titular": "Gol", "resumen": "", "fuente": "marca", "url": "g", "fecha": None},
-        ],
-    }
-    monkeypatch.setattr(ingesta, "obtener_pool", lambda **kw: fake_pool)
-
-    noticias = ingesta.obtener_noticias()
-    # Todas las categorías devuelven listas planas (compatibilidad con generador actual)
-    assert isinstance(noticias["espana"], list)
-    assert isinstance(noticias["futbol"], list)
-    assert {a["titular"] for a in noticias["espana"]} == {"A", "B"}
