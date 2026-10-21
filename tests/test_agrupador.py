@@ -38,20 +38,70 @@ def test_agrupar_categoria_clusters_tienen_tema():
     assert "_norm" not in clusters[0]  # campo interno no se filtra
 
 
-def test_agrupar_categorias_de_contraste_devuelven_clusters():
-    pool = {
-        "espana": [_art("Sube el IPC en abril", "elpais.com")],
-        "futbol": [_art("El Madrid gana la liga", "marca.com")],
-    }
-    resultado = agrupador.agrupar(pool)
-    # España (contraste) -> dict con clusters
-    assert "clusters" in resultado["espana"]
-    assert isinstance(resultado["espana"]["clusters"], list)
-    # Fútbol (simple) -> lista plana sin tocar
-    assert resultado["futbol"] == pool["futbol"]
+def test_agrupar_categoria_vacia_devuelve_lista_vacia():
+    assert agrupador.agrupar_categoria([]) == []
 
 
-def test_agrupar_categoria_vacia_devuelve_estructura_valida():
-    resultado = agrupador.agrupar({"ciencia": [], "friki": []})
-    assert resultado["ciencia"] == {"clusters": []}
-    assert resultado["friki"] == []
+def test_titular_de_una_palabra_no_se_funde_con_el_que_lo_contiene():
+    arts = [
+        _art("Sánchez", "x"),
+        _art("Sánchez anuncia un nuevo plan de vivienda para jóvenes", "y"),
+    ]
+    assert len(agrupador.agrupar_categoria(arts)) == 2
+
+
+def test_titular_ampliado_se_agrupa_con_el_corto():
+    arts = [
+        _art("Feijóo pide elecciones anticipadas", "x"),
+        _art("Feijóo pide elecciones anticipadas tras la derrota del PP en Galicia", "y"),
+    ]
+    clusters = agrupador.agrupar_categoria(arts)
+    assert len(clusters) == 1
+    assert len(clusters[0]["articulos"]) == 2
+
+
+def test_un_solo_token_compartido_no_agrupa():
+    arts = [
+        _art("Gobierno", "x"),
+        _art("Gobierno", "y"),
+        _art("Gobierno aprueba presupuestos", "z"),
+    ]
+    # Los dos primeros comparten todo (1 token) pero no alcanzan el mínimo de tokens.
+    assert len(agrupador.agrupar_categoria(arts)) == 3
+
+
+def test_principal_no_depende_del_orden_de_entrada():
+    arts = [
+        _art("Feijóo pide elecciones anticipadas", "elpais.com"),
+        _art("Feijóo pide elecciones anticipadas tras la derrota del PP en Galicia", "abc.es"),
+        _art("Feijóo pide elecciones anticipadas tras la derrota en Galicia", "elmundo.es"),
+    ]
+    directo = agrupador.agrupar_categoria(arts)
+    inverso = agrupador.agrupar_categoria(list(reversed(arts)))
+    assert len(directo) == len(inverso) == 1
+    assert directo[0]["articulos"][0] == inverso[0]["articulos"][0]
+    assert directo[0]["tema"] == inverso[0]["tema"]
+
+
+def test_principal_es_el_de_mayor_similitud_media():
+    arts = [
+        _art("Feijóo pide elecciones anticipadas", "a.com"),
+        _art("Feijóo pide elecciones anticipadas tras la derrota del PP en Galicia", "b.com"),
+        _art("Feijóo pide elecciones anticipadas derrota PP Galicia", "c.com"),
+    ]
+    principal = agrupador.agrupar_categoria(arts)[0]["articulos"][0]
+    assert principal["fuente"] == "c.com"
+
+
+def test_empate_de_similitud_se_resuelve_por_fuente_alfabetica():
+    arts = [
+        _art("El Gobierno aprueba la reforma laboral", "zeta.com"),
+        _art("El Gobierno aprueba la reforma laboral", "alfa.com"),
+    ]
+    for orden in (arts, list(reversed(arts))):
+        principal = agrupador.agrupar_categoria(orden)[0]["articulos"][0]
+        assert principal["fuente"] == "alfa.com"
+
+
+def test_agrupar_ya_no_existe():
+    assert not hasattr(agrupador, "agrupar")

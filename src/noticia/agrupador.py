@@ -1,10 +1,6 @@
 import re
 import unicodedata
 
-from rapidfuzz import fuzz
-
-from noticia.fuentes import CATEGORIAS_CON_CONTRASTE
-
 _STOPWORDS = {
     "el",
     "la",
@@ -46,41 +42,69 @@ def _normalizar(texto):
     return " ".join(palabras)
 
 
-def agrupar_categoria(articulos, umbral=70):
-    """Agrupa artículos por similitud léxica de titulares.
+_MIN_TOKENS_COMPARTIDOS = 2
+
+
+def _tokens(norm):
+    return frozenset(norm.split())
+
+
+def _similitud(a, b):
+    """Dice sobre tokens (0-100); 0 si comparten menos de _MIN_TOKENS_COMPARTIDOS.
+
+    A diferencia de un ratio de subconjunto, un titular de una palabra no se
+    funde con otro largo que la contiene.
+    """
+    comunes = len(a & b)
+    if comunes < _MIN_TOKENS_COMPARTIDOS:
+        return 0.0
+    return 200 * comunes / (len(a) + len(b))
+
+
+def _elegir_principal(articulos, tokens):
+    """Titular con mayor similitud media con el resto; empate: fuente y titular alfabéticos.
+
+    No depende del orden de entrada ni pondera medios.
+    """
+    if len(articulos) == 1:
+        return articulos[0]
+
+    def clave(i):
+        otros = [_similitud(tokens[i], tokens[j]) for j in range(len(articulos)) if j != i]
+        return (-sum(otros) / len(otros), articulos[i]["fuente"], articulos[i]["titular"])
+
+    return articulos[min(range(len(articulos)), key=clave)]
+
+
+def agrupar_categoria(articulos, umbral=50):
+    """Agrupa artículos por similitud léxica de titulares (Dice sobre tokens, 0-100).
 
     Devuelve [{"tema": str, "articulos": [...]}], priorizando los clusters
-    con más fuentes distintas (más contrastables).
+    con más fuentes distintas (más contrastables). El principal de cada
+    cluster va el primero y da el `tema`.
     """
     clusters = []
     for art in articulos:
-        norm = _normalizar(art["titular"])
+        tokens = _tokens(_normalizar(art["titular"]))
         destino = None
         for cluster in clusters:
-            if fuzz.token_set_ratio(norm, cluster["_norm"]) >= umbral:
+            if _similitud(tokens, cluster["_fundador"]) >= umbral:
                 destino = cluster
                 break
         if destino is not None:
             destino["articulos"].append(art)
+            destino["_tokens"].append(tokens)
         else:
-            clusters.append({"tema": art["titular"], "_norm": norm, "articulos": [art]})
+            clusters.append({"_fundador": tokens, "_tokens": [tokens], "articulos": [art]})
 
     for cluster in clusters:
-        del cluster["_norm"]
+        principal = _elegir_principal(cluster["articulos"], cluster["_tokens"])
+        cluster["articulos"] = [principal] + [a for a in cluster["articulos"] if a is not principal]
+        cluster["tema"] = principal["titular"]
+        del cluster["_fundador"], cluster["_tokens"]
 
     clusters.sort(
         key=lambda c: len({a["fuente"] for a in c["articulos"]}),
         reverse=True,
     )
     return clusters
-
-
-def agrupar(pool):
-    """Aplica clustering a las categorías de contraste; deja el resto plano."""
-    resultado = {}
-    for categoria, articulos in pool.items():
-        if categoria in CATEGORIAS_CON_CONTRASTE:
-            resultado[categoria] = {"clusters": agrupar_categoria(articulos)}
-        else:
-            resultado[categoria] = articulos
-    return resultado
