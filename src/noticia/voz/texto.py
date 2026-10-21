@@ -5,6 +5,8 @@ import unicodedata
 
 _RE_ACOTACION_PARENTESIS = re.compile(r"\([^)]*\)")
 _RE_ACOTACION_CORCHETE = re.compile(r"\[[^\]]*\]")
+# Risas escritas ("ja", "jaja", "jeje"…): el motor las leería literalmente.
+_RE_RISA = re.compile(r"\b(?:ja|je)+\b", re.IGNORECASE)
 _RE_URL = re.compile(r"https?://\S+")
 _RE_MARKDOWN = re.compile(r"[*_#`]")
 _RE_ESPACIOS = re.compile(r"\s+")
@@ -63,7 +65,7 @@ def aplicar_pronunciacion(texto: str, diccionario: dict[str, str] | None = None)
 
 
 def limpiar_texto_locucion(texto: str) -> str:
-    """Deja el texto listo para locutarlo: sin acotaciones, URL, emojis ni markdown.
+    """Deja el texto listo para locutarlo: sin acotaciones, risas escritas, URL, emojis ni markdown.
 
     Aplica también el diccionario de pronunciación (`aplicar_pronunciacion`): es
     el único punto por el que pasa el texto de todos los motores de voz antes
@@ -72,6 +74,7 @@ def limpiar_texto_locucion(texto: str) -> str:
     texto = _RE_ACOTACION_PARENTESIS.sub(" ", texto)
     texto = _RE_ACOTACION_CORCHETE.sub(" ", texto)
     texto = _RE_URL.sub(" ", texto)
+    texto = _RE_RISA.sub(" ", texto)
     texto = "".join(
         caracter for caracter in texto if unicodedata.category(caracter) not in ("So", "Cs")
     )

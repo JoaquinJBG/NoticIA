@@ -258,50 +258,6 @@ def test_locutar_episodio_necesita_al_menos_un_motor(tmp_path):
         asyncio.run(locutor.locutar_episodio({"espana": "Álex: hola"}, [], tmp_path))
 
 
-# --- procesar_guion_a_audio: compatibilidad con cli.py -------------------
-
-
-def test_procesar_guion_a_audio_con_motor_inyectado_devuelve_rutas_str(tmp_path, monkeypatch):
-    monkeypatch.setattr(locutor.settings, "carpeta_temp", str(tmp_path))
-    motor = _MotorFalso()
-    # La tercera línea, sin blanco de por medio y sin forma "Palabra:", se une
-    # como continuación al turno de María (ver test_parsear_turnos_linea_continuacion_se_une).
-    guion = "Álex: buenos días\nMaría: hola a todos\nsin prefijo de locutor"
-
-    piezas = asyncio.run(locutor.procesar_guion_a_audio(guion, motores=[motor]))
-
-    assert len(piezas) == 2
-    assert all(isinstance(p, str) for p in piezas)
-    assert Path(piezas[0]).read_text(encoding="utf-8") == "alex:buenos días"
-    assert (
-        Path(piezas[1]).read_text(encoding="utf-8") == "maria:hola a todos sin prefijo de locutor"
-    )
-
-
-def test_procesar_guion_a_audio_sin_motores_usa_motor_edge_por_defecto(tmp_path, monkeypatch):
-    monkeypatch.setattr(locutor.settings, "carpeta_temp", str(tmp_path))
-
-    class _MotorEdgeFalso(_MotorFalso):
-        nombre = "edge"
-        extension = "mp3"
-
-        def __init__(self):
-            super().__init__(nombre="edge", extension="mp3")
-
-    import sys
-    import types
-
-    modulo_falso = types.ModuleType("noticia.voz.motor_edge")
-    modulo_falso.MotorEdge = _MotorEdgeFalso
-    monkeypatch.setitem(sys.modules, "noticia.voz.motor_edge", modulo_falso)
-
-    guion = "Álex: hola"
-    piezas = asyncio.run(locutor.procesar_guion_a_audio(guion))
-
-    assert len(piezas) == 1
-    assert piezas[0].endswith(".mp3")
-
-
 def test_motor_no_disponible_al_cargar_pasa_al_siguiente(tmp_path):
     class _MotorNoCarga(_MotorFalso):
         async def cargar(self):

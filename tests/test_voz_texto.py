@@ -39,6 +39,22 @@ def test_limpiar_texto_locucion_colapsa_espacios():
     assert "  " not in resultado
 
 
+def test_limpiar_texto_locucion_quita_risas_escritas():
+    for risa in ("ja", "jaja", "JAJAJA", "jeje", "Jajaja", "(risas)"):
+        resultado = limpiar_texto_locucion(f"Buenas {risa} qué tal")
+        assert resultado == "Buenas qué tal", risa
+
+
+def test_limpiar_texto_locucion_conserva_palabras_con_ja_je():
+    texto = "El jefe comió jamón en Jaén"
+    assert limpiar_texto_locucion(texto) == texto
+
+
+def test_limpiar_texto_locucion_borra_urls_con_segmento_ja_je():
+    for url in ("https://ja.example.com/x", "https://example.com/ja/noticia", "https://x.es/je"):
+        assert limpiar_texto_locucion(f"Mira {url} y listo") == "Mira y listo", url
+
+
 # --- Diccionario de pronunciación ---------------------------------------
 
 
