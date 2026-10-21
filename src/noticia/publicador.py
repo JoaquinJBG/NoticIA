@@ -20,6 +20,7 @@ from datetime import date, datetime
 from email.utils import format_datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from noticia.bloques import NOMBRE_BLOQUE, ORDEN_BLOQUES
 from noticia.config import settings
@@ -59,8 +60,26 @@ class EpisodioPublicable:
     motor_voz: str = ""
 
 
-def titulo_episodio(fecha: date) -> str:
-    return f"NoticIA · {formatear_fecha_larga(fecha)}"
+_MAX_TITULO = 120
+
+
+class IndiceCorrupto(Exception):
+    """`episodios.json` existe pero no se puede leer; se aborta sin sobrescribirlo."""
+
+
+def titulo_episodio(fecha: date, noticias: list[NoticiaCitada] | None = None) -> str:
+    """Fecha larga y, si hay noticias, el primer titular; recortado a 120 caracteres."""
+    titulo = f"NoticIA · {formatear_fecha_larga(fecha)}"
+    if noticias:
+        titulo = f"{titulo}: {noticias[0].titular.strip()}"
+    if len(titulo) > _MAX_TITULO:
+        titulo = titulo[: _MAX_TITULO - 1].rstrip() + "…"
+    return titulo
+
+
+def _url_segura(url: str) -> bool:
+    partes = urlparse(url.strip())
+    return partes.scheme in ("http", "https") and bool(partes.netloc)
 
 
 def construir_notas(noticias: list[NoticiaCitada], fecha: date) -> tuple[str, str]:
@@ -86,11 +105,13 @@ def construir_notas(noticias: list[NoticiaCitada], fecha: date) -> tuple[str, st
         lineas_texto.append(f"\n{nombre}:")
         html_items = []
         for noticia in items:
-            lineas_texto.append(f"- {noticia.titular} — {noticia.fuente} ({noticia.url})")
-            url_escapada = html.escape(noticia.url)
+            lineas_texto.append(f"- {noticia.titular} — {noticia.fuente}")
+            enlace = ""
+            if _url_segura(noticia.url):
+                url_escapada = html.escape(noticia.url.strip())
+                enlace = f' (<a href="{url_escapada}">{url_escapada}</a>)'
             html_items.append(
-                f"<li>{html.escape(noticia.titular)} — {html.escape(noticia.fuente)} "
-                f'(<a href="{url_escapada}">{url_escapada}</a>)</li>'
+                f"<li>{html.escape(noticia.titular)} — {html.escape(noticia.fuente)}{enlace}</li>"
             )
         lineas_html.append(
             f"<p><strong>{html.escape(nombre)}</strong></p><ul>{''.join(html_items)}</ul>"
@@ -188,13 +209,30 @@ def escribir_atomico(ruta: Path, contenido: str | bytes) -> None:
 
 
 def cargar_indice(ruta: Path) -> dict:
+    """Lee el índice; si existe pero no parsea, lanza `IndiceCorrupto` sin tocar el fichero."""
     if not ruta.exists():
         return {"version": 1, "episodios": []}
     try:
-        return json.loads(ruta.read_text(encoding="utf-8"))
+        indice = json.loads(ruta.read_text(encoding="utf-8"))
+        if not isinstance(indice, dict):
+            raise ValueError("el índice no es un objeto JSON")
     except Exception as exc:
         logger.error("Índice de publicación corrupto en %s: %s", ruta, exc)
-        return {"version": 1, "episodios": []}
+        raise IndiceCorrupto(f"{ruta}: {exc}") from exc
+    return indice
+
+
+def limpiar_transcripcion(guion_md: str) -> str:
+    """Guion Markdown -> texto legible: nombres de bloque en vez de `## clave`, sin acotaciones."""
+    lineas = []
+    for linea in guion_md.splitlines():
+        if linea.startswith("## "):
+            clave = linea[3:].strip()
+            linea = NOMBRE_BLOQUE.get(clave, clave)
+        else:
+            linea = re.sub(r"\s*\([^)]*\)", "", linea)
+        lineas.append(linea.rstrip())
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lineas)).strip() + "\n"
 
 
 def registrar_episodio(indice: dict, entrada: dict) -> dict:
@@ -332,7 +370,7 @@ def publicar_episodio(
     destino_mp3 = carpeta_episodios / f"{id_episodio}.mp3"
     shutil.copyfile(ep.mp3, destino_mp3)
 
-    titulo = titulo_episodio(ep.fecha)
+    titulo = titulo_episodio(ep.fecha, ep.noticias)
     notas_texto, notas_html = construir_notas(ep.noticias, ep.fecha)
     etiquetar_mp3(destino_mp3, titulo, ep.fecha, notas_texto, portada)
 
@@ -359,7 +397,7 @@ def publicar_episodio(
     ruta_transcripcion: str | None = None
     if ep.guion is not None and ep.guion.exists():
         ruta_txt_fs = carpeta_episodios / f"{id_episodio}.txt"
-        escribir_atomico(ruta_txt_fs, ep.guion.read_text(encoding="utf-8"))
+        escribir_atomico(ruta_txt_fs, limpiar_transcripcion(ep.guion.read_text(encoding="utf-8")))
         ruta_transcripcion = f"episodios/{id_episodio}.txt"
 
     ruta_indice = carpeta / "episodios.json"
