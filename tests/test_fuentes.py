@@ -31,7 +31,7 @@ def test_catalogos_cubren_todas_las_categorias():
 
 
 # Mínimos de dominios distintos hoy (guardia: no se pierde contraste en silencio).
-_MINIMO_DOMINIOS = {"espana": 10, "geopolitica": 6, "ia_y_actualidad": 4, "ciencia": 4}
+_MINIMO_DOMINIOS = {"espana": 10, "geopolitica": 5, "ia_y_actualidad": 4, "ciencia": 4}
 
 
 def test_categorias_de_contraste_mantienen_sus_dominios_distintos():
@@ -39,3 +39,7 @@ def test_categorias_de_contraste_mantienen_sus_dominios_distintos():
     for cat, minimo in _MINIMO_DOMINIOS.items():
         dominios = {urlparse(u).netloc.removeprefix("www.") for u in fuentes.FEEDS_CURADOS[cat]}
         assert len(dominios) >= minimo, f"{cat}: {len(dominios)} < {minimo}"
+
+
+def test_globaltimes_fuera_del_catalogo_hasta_verificar_titularidad():
+    assert not any("globaltimes" in u for urls in fuentes.FEEDS_CURADOS.values() for u in urls)
