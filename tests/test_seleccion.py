@@ -121,6 +121,7 @@ def test_noticias_a_json_es_serializable_y_filtra_campos():
                 "fuente": "f",
                 "url": "https://f/t",
                 "otras_fuentes": ["g"],
+                "fuente_unica": False,
                 "resumen": "esto no debe salir",
                 "fecha": time.gmtime(),
             }
@@ -356,3 +357,30 @@ def test_formatear_noticias_prompt_versiones_saneadas():
 def test_formatear_noticias_prompt_marca_fuente_unica():
     noticia = {"titular": "T", "fuente": "f", "resumen": "r", "fuente_unica": True}
     assert seleccion.formatear_noticias_prompt([noticia]) == "- T (f; fuente única): r"
+
+
+@pytest.mark.parametrize("categoria", ["futbol", "friki"])
+def test_categorias_por_fecha_no_marcan_fuente_unica(categoria):
+    pool = {
+        categoria: [
+            _art("Real Madrid gana el clasico en el Bernabeu", "marca.com", _fecha(0)),
+            _art("Real Madrid gana el clasico Bernabeu", "as.com", _fecha(1)),
+        ]
+    }
+    noticias = seleccion.seleccionar_noticias(pool, max_por_categoria=8)[categoria]
+    assert all("fuente_unica" not in n for n in noticias)
+    assert "fuente única" not in seleccion.formatear_noticias_prompt(noticias)
+    assert all(
+        n["fuente_unica"] is None
+        for n in seleccion.noticias_a_json({categoria: noticias})[categoria]
+    )
+
+
+def test_seleccion_por_fecha_no_depende_del_orden_de_entrada_sin_fechas():
+    articulos = [_art(f"Titular {i}", f"medio{i % 4}.com") for i in range(12)]
+    esperado = None
+    for orden in (articulos, articulos[::-1], articulos[5:] + articulos[:5]):
+        resultado = seleccion.seleccionar_noticias({"futbol": orden}, max_por_categoria=4)
+        titulares = [n["titular"] for n in resultado["futbol"]]
+        esperado = esperado or titulares
+        assert titulares == esperado

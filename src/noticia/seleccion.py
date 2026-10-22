@@ -175,8 +175,7 @@ def _seleccionar_con_contraste(articulos: list[dict], n: int) -> list[dict]:
 def _seleccionar_por_fecha(articulos: list[dict], n: int) -> list[dict]:
     ordenadas = sorted(
         articulos,
-        key=lambda a: _epoch_o_menos_infinito(a.get("fecha")),
-        reverse=True,
+        key=lambda a: (-_epoch_o_menos_infinito(a.get("fecha")), a["fuente"], a["titular"]),
     )
     tope = _tope_por_medio(n, articulos)
     usadas: Counter[str] = Counter()
@@ -187,7 +186,10 @@ def _seleccionar_por_fecha(articulos: list[dict], n: int) -> list[dict]:
         if tope is not None and usadas[art["fuente"]] >= tope:
             continue
         usadas[art["fuente"]] += 1
-        seleccionadas.append(_construir_noticia(art, [art]))
+        noticia = _construir_noticia(art, [art])
+        # Sin agrupar no se sabe si otros medios cubren lo mismo.
+        del noticia["fuente_unica"]
+        seleccionadas.append(noticia)
     return seleccionadas
 
 
@@ -248,7 +250,7 @@ def noticias_a_json(noticias: Mapping[str, list[dict]]) -> dict[str, list[dict]]
                 "fuente": n.get("fuente", ""),
                 "url": n.get("url", ""),
                 "otras_fuentes": n.get("otras_fuentes") or [],
-                "fuente_unica": n.get("fuente_unica", not n.get("otras_fuentes")),
+                "fuente_unica": n.get("fuente_unica"),
             }
             for n in lista
         ]
