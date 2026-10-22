@@ -50,7 +50,7 @@ muchas fuentes → agrupar la misma noticia entre medios → clusters para contr
 
 ### Fase 2 — Cerebro Claude (Max vía Agent SDK) ⭐
 Sustituir Groq/Llama 3.3 por Claude. Rediseñar la generación del guion: contraste real
-a ciegas para neutralidad, personalidades de Álex y Santi, estructura y química. Es el
+a ciegas para neutralidad, personalidades de Álex y María, estructura y química. Es el
 salto de calidad principal. Primera skill de Claude Code natural aquí ("generar episodio
 de prueba").
 
@@ -81,12 +81,18 @@ Se crean cuando surge la necesidad concreta, no todas de golpe.
 
 ---
 
-## Estado 2026-09-24
+## Estado (revisado 2026-10-21)
 
 - **Fase 3 (Producción de audio):** hecha en su parte de código. Locución en paralelo,
   parser de locutor robusto, tres motores enchufables (edge-tts, Kokoro, Chatterbox) con
   selector automático por GPU y muestras comparativas, mastering con ffmpeg loudnorm.
 - **Fase 4 (Publicación):** publicación local hecha (feed RSS propio, ID3, portada, índice).
-  Pendiente: hosting del feed y del audio, y generación de vídeo + subida a YouTube.
+  Hosting del feed y del audio: no previsto (proyecto personal, solo feed local). Pendiente: generación
+  de vídeo + subida a YouTube.
 - **Fase 5 (Orquestación):** hecha salvo la programación por cron: el orquestador ya cubre
   idempotencia, lock y resumen de la ejecución.
+- **Contraste a ciegas (Fase 2): no implementado.** Por noticia, el prompt recibe el titular, el resumen
+  (300 caracteres) y los nombres de las otras fuentes del artículo principal del cluster
+  (`src/noticia/seleccion.py:131-134`, `:179-189`). Los titulares y resúmenes de las demás versiones no llegan al modelo.
+- **Spec de duración, fútbol y ritmo (2026-09-24): no implementada.** El guion sigue pidiendo
+  «8-10 minutos» (`src/noticia/generador.py:120`) y no hay módulo de resultados de fútbol.

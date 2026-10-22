@@ -4,10 +4,26 @@
 
 ## 🚀 Características
 
-- **Ingesta Multi-fuente:** Captura noticias de RSS feeds organizados por categorías (España, Geopolítica, Ciencia, Tecnología, Friki, Fútbol).
+- **Ingesta Multi-fuente:** Captura noticias de RSS feeds organizados por categorías (ver la tabla de bloques más abajo).
 - **Cerebro Claude:** Genera diálogos naturales entre dos locutores, **Álex** (el mentor experto) y **María** (la entusiasta tecnológica), vía el CLI headless `claude -p`.
-- **Voces Realistas:** Integración con `edge-tts` para una locución fluida con acento de España.
-- **Edición Pro:** Montaje automático con sintonías de fondo, transiciones dinámicas y una cadena de mastering (compresión, EQ y normalización) usando `pydub`.
+- **Voces:** Motores enchufables: Chatterbox (GPU, si la hay), Kokoro (CPU) y `edge-tts` como último recurso (`motor_voz` en la configuración permite fijar uno).
+- **Montaje:** `pydub` une los segmentos de voz con pausas y las sintonías de fondo.
+- **Mastering:** `ffmpeg` (loudnorm, -16 LUFS) masteriza el MP3 final.
+
+## 🗂️ Bloques del episodio
+
+Orden de emisión, con los nombres que usa el código (`src/noticia/bloques.py`):
+
+| Bloque | Nombre en el episodio |
+|---|---|
+| `intro` | Introducción |
+| `espana` | España |
+| `geopolitica` | Geopolítica |
+| `ia_y_actualidad` | IA y actualidad |
+| `ciencia` | Ciencia |
+| `friki` | Friki |
+| `futbol` | Fútbol |
+| `outro` | Despedida |
 
 ---
 
@@ -16,16 +32,33 @@
 1.  **[uv](https://docs.astral.sh/uv/)** — instala Python y las dependencias:
     `curl -LsSf https://astral.sh/uv/install.sh | sh`
 2.  **Python 3.13** (uv lo instala solo si no lo tienes).
-3.  **FFmpeg** — `pydub` lo necesita para leer y escribir MP3.
+3.  **FFmpeg** — necesario para leer y escribir MP3 y para el masterizado (loudnorm).
     - **Linux / WSL:** `sudo apt install ffmpeg`
     - **macOS:** `brew install ffmpeg`
     - **Windows:** descargar de [ffmpeg.org](https://ffmpeg.org/download.html) y añadir al `PATH`.
-4.  **[Claude Code](https://claude.ai/download) con una sesión de Claude Max iniciada** — es el cerebro
-    que escribe el guion, vía el CLI headless `claude -p`.
+4.  **[Claude Code](https://claude.ai/download) con una sesión de Claude Max iniciada (obligatoria)** — es el cerebro
+    que escribe el guion, vía el CLI headless `claude -p`. Sin ella `make guion` y `make episodio` no generan guion.
 
 > **No hacen falta API keys.** El guion usa tu suscripción de Claude Max, no una API de pago.
 > La sesión vive en `~/.claude` (tu carpeta de usuario), **no en el repositorio**: al clonar el
 > proyecto en otra máquina tendrás que ejecutar `claude` una vez e iniciar sesión allí.
+
+### Límites y dependencias de riesgo
+
+- **Proyecto personal, sin hosting.** Se lanza desde tu PC con tu sesión de Claude Max (decisión D-01 y D-14).
+  El feed (`feed.xml`) y el audio se generan en `output/publicacion/` y solo se sirven en local con
+  `make servir`. No hay ningún alojamiento público: Spotify, Apple o cualquier otra app no pueden leerlo
+  mientras el equipo no esté encendido y sirviendo la carpeta.
+- **Equipo encendido a diario.** La generación depende de la sesión de Claude del equipo donde corre.
+- **Sintonías no incluidas.** Los MP3 de `sintonias/` no están en git (`.gitignore`). Un clon nuevo sale
+  sin música: el bloque sigue, pero sin sintonía, y el log avisa por cada fichero que falta. `make preparar`
+  los lista. Los nombres esperados son `serio.mp3`, `animado.mp3`, `neutro.mp3` y `sintonia1.mp3`
+  (definidos en `Settings.sintonias`, `src/noticia/config.py`).
+- **`edge-tts` es una dependencia de riesgo.** Usa el servicio de lectura de Microsoft Edge, sin API
+  oficial ni garantía de uso. Puede cambiar o dejar de funcionar sin aviso. Es el último recurso de la
+  cadena automática: si Kokoro o Chatterbox no cargan, se usa `edge-tts`, y si este también falla no hay
+  otro motor.
+- **Coste.** El único coste previsto es la suscripción de Claude Max; cada guion consume cuota de esa suscripción.
 
 ---
 
@@ -85,7 +118,7 @@ El resultado final se guarda en `output/`.
 - `src/noticia/voz/`: Motores de voz (edge-tts, Kokoro, Chatterbox), selector por GPU y
   utilidades de texto para locución.
 - `reglas/`: Prompts de sistema y contexto que definen la personalidad de los locutores.
-- `sintonias/`: Archivos MP3 con la música de fondo para cada bloque.
+- `sintonias/`: Archivos MP3 con la música de fondo para cada bloque (no se versionan; ver [Límites](#límites-y-dependencias-de-riesgo)).
 - `output/`: Carpeta donde se generan los podcasts finales y `output/publicacion/` (feed
   RSS, ID3, portada).
 - `temp/`: Carpeta temporal para fragmentos de audio (se limpia automáticamente).
