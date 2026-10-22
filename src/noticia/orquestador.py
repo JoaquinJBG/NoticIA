@@ -34,6 +34,7 @@ from noticia.publicador import (
     publicar_episodio,
     titulo_episodio,
 )
+from noticia.revision import revisar_guion
 from noticia.seleccion import noticias_a_json, seleccionar_noticias
 from noticia.voz.selector import preparar_cadena, resolver_motores
 
@@ -242,6 +243,18 @@ def _construir_resumen_reutilizado(
     )
 
 
+def _revisar_neutralidad(bloques: dict[str, str], noticias: dict, carpeta: Path) -> None:
+    """Escribe `revision.json`. Solo avisa: un fallo aquí nunca detiene el episodio (D-03)."""
+    try:
+        resultado = revisar_guion(bloques, noticias)
+        escribir_atomico(
+            carpeta / "revision.json",
+            json.dumps(resultado.a_dict(), ensure_ascii=False, indent=2),
+        )
+    except Exception as exc:
+        logger.warning("No se pudo revisar la neutralidad del guion: %s", exc)
+
+
 def _publicar(fecha: date, carpeta: Path, ruta_mp3: Path, datos_episodio: dict) -> Path:
     noticias_citadas = [
         NoticiaCitada(
@@ -357,6 +370,8 @@ async def _ejecutar_bloqueado(
     bloques_ordenados = {
         bloque: bloques_texto[bloque] for bloque in ORDEN_BLOQUES if bloque in bloques_texto
     }
+
+    _revisar_neutralidad(bloques_ordenados, noticias_json, carpeta)
 
     motores = resolver_motores(motor_voz)
     motores = await preparar_cadena(motores)
