@@ -91,7 +91,7 @@ def _partidos_de_competicion(
     url = f"{URL_BASE}/{_temporada(fecha)}/{codigo}.json"
     try:
         crudo = _descargar(url, timeout)
-        partidos_crudos = json.loads(crudo)["matches"]
+        partidos_crudos = list(json.loads(crudo)["matches"])
     except Exception as exc:
         logger.warning("sin resultados de %s (%s): %s", competicion, url, exc)
         return []

@@ -146,6 +146,17 @@ def test_respuesta_invalida_devuelve_lista_vacia(monkeypatch, cuerpo):
     assert rf.obtener_resultados(FECHA) == []
 
 
+def test_matches_no_iterable_en_una_competicion_conserva_la_otra(monkeypatch):
+    def _descargar(url, timeout):
+        if url.endswith("/es.1.json"):
+            return b'{"matches": 3}'
+        return _bytes("openfootball_es2.json")
+
+    monkeypatch.setattr(rf, "_descargar", _descargar)
+
+    assert {p.competicion for p in rf.obtener_resultados(FECHA)} == {"Segunda"}
+
+
 def test_obtener_resultados_nunca_lanza_aunque_falle_el_resto(monkeypatch):
     def _fallo(*args, **kwargs):
         raise RuntimeError("fallo inesperado")
