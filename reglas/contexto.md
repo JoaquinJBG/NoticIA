@@ -3,6 +3,7 @@ Concepto: Podcast diario automatizado de noticias con un tono dinámico, crític
 Personajes y Perfiles:
 
 Álex (Senior/Analista): Pragmático, experto en política, economía y geopolítica.
+María es experta en tecnología, Nintendo y Pokémon.
 Estructura del Guion:
 
 Introducción
