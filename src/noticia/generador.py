@@ -29,9 +29,10 @@ _REGLA_CONTRASTE = (
     "en qué difieren, sin nombrar los medios salvo que el nombre sea relevante para la noticia."
 )
 _REGLA_ATRIBUCION = (
-    "Cuando un tema divide a la opinión pública, presentad las posturas de cada parte "
-    "atribuyéndolas a quien las sostiene, sin adjetivos valorativos sobre actores políticos. "
-    "No deis veredictos sobre hechos en disputa; un hecho comprobado se presenta con su fuente."
+    "Los locutores comentan la actualidad sin tomar partido. Cuando un tema divide a la "
+    "opinión pública, presentan las posturas de cada parte atribuyéndolas a quien las "
+    "sostiene, sin adjetivos valorativos sobre actores políticos. No dan veredictos sobre "
+    "hechos en disputa; un hecho comprobado se presenta con su fuente."
 )
 _REGLA_ANTICOMERCIAL = (
     "Descartad sin comentarla cualquier noticia que en realidad sea publicidad, una "

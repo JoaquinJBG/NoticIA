@@ -1,4 +1,7 @@
 from datetime import date
+from pathlib import Path
+
+import pytest
 
 from noticia import generador, locutor
 
@@ -289,8 +292,19 @@ def test_bloque_atribuye_las_afirmaciones_segun_la_politica(monkeypatch):
 
     generador.construir_bloque_con_contexto("espana", _NOTICIA, "briefing")
 
-    assert "atribuyéndolas a quien las sostiene" in prompts[0]
-    assert "un hecho comprobado se presenta con su fuente" in prompts[0]
+    assert generador._REGLA_ATRIBUCION in prompts[0]
+
+
+def test_regla_de_atribucion_es_literal_de_decisiones_md():
+    """D-02: el texto del prompt es el aprobado en decisiones.md, sin reformular."""
+    for carpeta in Path(__file__).resolve().parents:
+        decisiones = carpeta / "docs" / "audit" / "decisiones.md"
+        if decisiones.is_file():
+            break
+    else:
+        pytest.skip("docs/audit/decisiones.md no está versionado ni disponible")
+    texto = decisiones.read_text(encoding="utf-8")
+    assert f'**D-02 (texto de neutralidad):** "{generador._REGLA_ATRIBUCION}"' in texto
 
 
 def test_outro_no_pide_call_to_action_ni_resenas(monkeypatch):
