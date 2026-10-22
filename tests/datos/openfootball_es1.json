@@ -1,0 +1,12 @@
+{
+  "name": "Liga sintética 2025/26",
+  "matches": [
+    {"round": "Matchday 27", "date": "2026-03-08", "time": "21:00", "team1": "Club Norte", "team2": "Club Sur", "score": {"ht": [1, 0], "ft": [2, 1]}},
+    {"round": "Matchday 27", "date": "2026-03-07", "time": "18:30", "team1": "Club Este", "team2": "Club Oeste", "score": [0, 0]},
+    {"round": "Matchday 27", "date": "2026-03-08", "time": "21:00", "team1": "Club Norte", "team2": "Club Sur", "score": {"ht": [1, 0], "ft": [2, 1]}},
+    {"round": "Matchday 27", "date": "2026-03-09", "time": "21:00", "team1": "Club Centro", "team2": "Club Costa"},
+    {"round": "Matchday 27", "date": "2026-03-09", "time": "19:00", "team1": "Club Sur", "team2": "Club Este", "score": {"ht": [2, 2], "ft": [3, 3]}},
+    {"round": "Matchday 26", "date": "2026-02-20", "time": "21:00", "team1": "Club Oeste", "team2": "Club Norte", "score": {"ht": [0, 0], "ft": [1, 1]}},
+    {"round": "Matchday 27", "date": "2026-03-08", "score": {"ft": [1, 0]}}
+  ]
+}
