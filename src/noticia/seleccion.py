@@ -3,7 +3,7 @@
 Reduce el pool de la ingesta a las N noticias más relevantes por categoría:
 en las categorías de contraste, una por cluster (la más contrastada primero);
 en el resto, las más recientes. En ambos casos ningún medio ocupa más de la
-mitad del bloque (D-06), y cada noticia lleva todas las versiones del cluster.
+mitad del bloque, y cada noticia lleva todas las versiones del cluster.
 """
 
 import calendar
@@ -11,6 +11,7 @@ import logging
 import math
 import re
 import unicodedata
+from collections import Counter
 from collections.abc import Mapping
 
 from noticia.agrupador import agrupar_categoria
@@ -154,19 +155,19 @@ def _construir_noticia(principal: dict, cluster: list[dict]) -> dict:
 
 def _seleccionar_con_contraste(articulos: list[dict], n: int) -> list[dict]:
     tope = _tope_por_medio(n, articulos)
-    usadas: dict[str, int] = {}
+    usadas: Counter[str] = Counter()
     seleccionadas = []
     for cluster in agrupar_categoria(articulos):
         if len(seleccionadas) >= n:
             break
         # Si el principal del agrupador ya llegó al tope, otro medio del cluster hace de principal.
         principal = next(
-            (a for a in cluster["articulos"] if tope is None or usadas.get(a["fuente"], 0) < tope),
+            (a for a in cluster["articulos"] if tope is None or usadas[a["fuente"]] < tope),
             None,
         )
         if principal is None:
             continue
-        usadas[principal["fuente"]] = usadas.get(principal["fuente"], 0) + 1
+        usadas[principal["fuente"]] += 1
         seleccionadas.append(_construir_noticia(principal, cluster["articulos"]))
     return seleccionadas
 
@@ -178,14 +179,14 @@ def _seleccionar_por_fecha(articulos: list[dict], n: int) -> list[dict]:
         reverse=True,
     )
     tope = _tope_por_medio(n, articulos)
-    usadas: dict[str, int] = {}
+    usadas: Counter[str] = Counter()
     seleccionadas = []
     for art in ordenadas:
         if len(seleccionadas) >= n:
             break
-        if tope is not None and usadas.get(art["fuente"], 0) >= tope:
+        if tope is not None and usadas[art["fuente"]] >= tope:
             continue
-        usadas[art["fuente"]] = usadas.get(art["fuente"], 0) + 1
+        usadas[art["fuente"]] += 1
         seleccionadas.append(_construir_noticia(art, [art]))
     return seleccionadas
 
@@ -224,11 +225,7 @@ def _linea_version(version: dict, sufijo_fuentes: str = "") -> str:
 
 
 def formatear_noticias_prompt(noticias: list[dict]) -> str:
-    """Una línea por versión de cada noticia, lista para pegar en el prompt del bloque.
-
-    La primera línea de cada noticia es la principal; el resto, sus versiones
-    de otros medios, sangradas debajo.
-    """
+    """Una línea por noticia para el prompt del bloque, con sus otras versiones sangradas debajo."""
     lineas = []
     for noticia in noticias:
         otras = [_sanear_linea(o) for o in noticia.get("otras_fuentes") or []]
