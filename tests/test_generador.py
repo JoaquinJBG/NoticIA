@@ -236,3 +236,69 @@ def test_textos_de_reserva_no_tienen_espacio_antes_del_salto(monkeypatch):
 
     assert " \n" not in generador.generar_intro({})
     assert " \n" not in generador.generar_outro()
+
+
+def _capturar_prompts(monkeypatch):
+    capturados = []
+
+    def fake(sistema, usuario):
+        capturados.append(usuario)
+        return "Álex: hola"
+
+    monkeypatch.setattr(generador, "llamar_ia", fake)
+    return capturados
+
+
+_NOTICIA = [{"titular": "T", "resumen": "", "fuente": "f", "otras_fuentes": []}]
+
+
+def test_briefing_marca_como_no_verificado_lo_que_no_viene_de_una_fuente(monkeypatch):
+    """D-04: lo que no venga de una fuente se marca como "no verificado"."""
+    prompts = _capturar_prompts(monkeypatch)
+
+    generador.generar_briefing_contexto("espana", _NOTICIA)
+
+    prompt = prompts[0]
+    assert "datos poco conocidos" not in prompt
+    assert "no verificado" in prompt
+    assert "No inventes hechos actuales" in prompt
+
+
+def test_bloque_trata_el_briefing_no_verificado_como_contexto_sin_confirmar(monkeypatch):
+    """D-04: el bloque no presenta como hecho lo marcado como no verificado."""
+    prompts = _capturar_prompts(monkeypatch)
+
+    generador.construir_bloque_con_contexto("espana", _NOTICIA, "briefing")
+
+    assert 'marcados como "no verificado"' in prompts[0]
+
+
+def test_bloque_instruye_contraste_de_versiones_sin_nombrar_medios(monkeypatch):
+    """D-05: se contrastan las versiones de cada noticia y no se nombran los medios."""
+    prompts = _capturar_prompts(monkeypatch)
+
+    generador.construir_bloque_con_contexto("espana", _NOTICIA, "briefing")
+
+    assert generador._REGLA_CONTRASTE in prompts[0]
+    assert "sin nombrar los medios" in prompts[0]
+
+
+def test_bloque_atribuye_las_afirmaciones_segun_la_politica(monkeypatch):
+    """D-02: posturas atribuidas a quien las sostiene; hecho comprobado con su fuente."""
+    prompts = _capturar_prompts(monkeypatch)
+
+    generador.construir_bloque_con_contexto("espana", _NOTICIA, "briefing")
+
+    assert "atribuyéndolas a quien las sostiene" in prompts[0]
+    assert "un hecho comprobado se presenta con su fuente" in prompts[0]
+
+
+def test_outro_no_pide_call_to_action_ni_resenas(monkeypatch):
+    """D-01: uso personal, el outro no pide Call to Action ni reseñas."""
+    prompts = _capturar_prompts(monkeypatch)
+
+    generador.generar_outro(["T"])
+
+    prompt = prompts[0]
+    assert "Call to Action" not in prompt
+    assert "No pidáis suscripciones, reseñas ni valoraciones" in prompt
