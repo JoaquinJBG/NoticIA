@@ -5,8 +5,8 @@ _GN_PARAMS = "hl=es&gl=ES&ceid=ES:es"
 
 CATEGORIAS_CON_CONTRASTE = frozenset({"espana", "geopolitica", "ciencia", "ia_y_actualidad"})
 
-# Lista curada amplia y plural (izquierda, centro, derecha, internacional,
-# estatal). Sin etiquetas de orientación: la pluralidad la aporta la mezcla.
+# Lista curada amplia y plural (izquierda, centro, derecha, internacional).
+# Sin etiquetas de orientación: la pluralidad la aporta la mezcla.
 FEEDS_CURADOS = {
     "espana": [
         "https://elpais.com/rss/espana/el_pais.xml",
@@ -22,7 +22,6 @@ FEEDS_CURADOS = {
     ],
     "geopolitica": [
         "http://feeds.bbci.co.uk/news/world/rss.xml",
-        "https://www.globaltimes.cn/rss/china.xml",
         "https://feeds.feedburner.com/euronews/es/home/",
         "https://www.descifrandolaguerra.es/feed/",
         "https://www.lavanguardia.com/rss/internacional.xml",
