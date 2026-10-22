@@ -352,3 +352,46 @@ def test_formatear_y_trocear_guion_son_inversos():
     bloques = orquestador.trocear_guion(texto)
     assert bloques["intro"] == "Álex: hola"
     assert bloques["espana"] == "Álex: bla\nMaría: sí"
+
+
+def test_revision_json_se_guarda_en_la_carpeta_del_episodio(entorno, monkeypatch):
+    def _guion_con_veredicto(noticias, fecha=None):
+        return {
+            "intro": ["Álex: hola"],
+            "espana": ["Álex: Ciertos medios exageran."],
+            "outro": ["Álex: chao"],
+        }
+
+    monkeypatch.setattr(orquestador, "construir_guion", _guion_con_veredicto)
+
+    asyncio.run(orquestador.ejecutar(FECHA, publicar=False))
+
+    datos = json.loads((orquestador.carpeta_episodio(FECHA) / "revision.json").read_text("utf-8"))
+    assert datos["limpio"] is False
+    assert datos["hallazgos"][0]["tipo"] == "atribucion_sin_fuente"
+    assert datos["fuentes_por_bloque"] == {"espana": {"F": 1}}
+
+
+def test_aviso_de_revision_no_bloquea_el_episodio(entorno, monkeypatch):
+    def _guion_con_veredicto(noticias, fecha=None):
+        return {"espana": ["Álex: Ciertos medios exageran."]}
+
+    monkeypatch.setattr(orquestador, "construir_guion", _guion_con_veredicto)
+
+    resumen = asyncio.run(orquestador.ejecutar(FECHA, publicar=False))
+
+    assert resumen.codigo == orquestador.Codigo.OK
+    assert entorno["locutor_episodio_bloques"] == {"espana"}
+
+
+def test_fallo_de_la_revision_solo_avisa(entorno, monkeypatch, caplog):
+    def _roto(*a, **k):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(orquestador, "revisar_guion", _roto)
+
+    resumen = asyncio.run(orquestador.ejecutar(FECHA, publicar=False))
+
+    assert resumen.codigo == orquestador.Codigo.OK
+    assert not (orquestador.carpeta_episodio(FECHA) / "revision.json").exists()
+    assert "No se pudo revisar la neutralidad" in caplog.text
