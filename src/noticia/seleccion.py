@@ -2,13 +2,16 @@
 
 Reduce el pool de la ingesta a las N noticias más relevantes por categoría:
 en las categorías de contraste, una por cluster (la más contrastada primero);
-en el resto, las más recientes.
+en el resto, las más recientes. En ambos casos ningún medio ocupa más de la
+mitad del bloque, y cada noticia lleva todas las versiones del cluster.
 """
 
 import calendar
 import logging
+import math
 import re
 import unicodedata
+from collections import Counter
 from collections.abc import Mapping
 
 from noticia.agrupador import agrupar_categoria
@@ -124,28 +127,68 @@ def _epoch_o_menos_infinito(fecha):
     return calendar.timegm(fecha)
 
 
+def _tope_por_medio(n: int, articulos: list[dict]) -> int | None:
+    """Máximo de noticias de un mismo medio en un bloque; None si solo hay un medio."""
+    if len({a["fuente"] for a in articulos}) < 2:
+        return None
+    return max(1, math.ceil(n / 2))
+
+
+def _version(articulo: dict) -> dict:
+    return {
+        "titular": articulo.get("titular", ""),
+        "resumen": articulo.get("resumen") or "",
+        "fuente": articulo.get("fuente", ""),
+    }
+
+
+def _construir_noticia(principal: dict, cluster: list[dict]) -> dict:
+    otras_fuentes = sorted({a["fuente"] for a in cluster if a["fuente"] != principal["fuente"]})
+    noticia = dict(principal)
+    noticia["otras_fuentes"] = otras_fuentes
+    noticia["fuente_unica"] = not otras_fuentes
+    noticia["versiones"] = [_version(principal)] + [
+        _version(a) for a in cluster if a is not principal
+    ]
+    return noticia
+
+
 def _seleccionar_con_contraste(articulos: list[dict], n: int) -> list[dict]:
-    clusters = agrupar_categoria(articulos)
+    tope = _tope_por_medio(n, articulos)
+    usadas: Counter[str] = Counter()
     seleccionadas = []
-    for cluster in clusters[:n]:
-        principal, *resto = cluster["articulos"]
-        otras_fuentes = sorted({a["fuente"] for a in resto if a["fuente"] != principal["fuente"]})
-        noticia = dict(principal)
-        noticia["otras_fuentes"] = otras_fuentes
-        seleccionadas.append(noticia)
+    for cluster in agrupar_categoria(articulos):
+        if len(seleccionadas) >= n:
+            break
+        # Si el principal del agrupador ya llegó al tope, otro medio del cluster hace de principal.
+        principal = next(
+            (a for a in cluster["articulos"] if tope is None or usadas[a["fuente"]] < tope),
+            None,
+        )
+        if principal is None:
+            continue
+        usadas[principal["fuente"]] += 1
+        seleccionadas.append(_construir_noticia(principal, cluster["articulos"]))
     return seleccionadas
 
 
 def _seleccionar_por_fecha(articulos: list[dict], n: int) -> list[dict]:
     ordenadas = sorted(
         articulos,
-        key=lambda a: _epoch_o_menos_infinito(a.get("fecha")),
-        reverse=True,
+        key=lambda a: (-_epoch_o_menos_infinito(a.get("fecha")), a["fuente"], a["titular"]),
     )
+    tope = _tope_por_medio(n, articulos)
+    usadas: Counter[str] = Counter()
     seleccionadas = []
-    for art in ordenadas[:n]:
-        noticia = dict(art)
-        noticia.setdefault("otras_fuentes", [])
+    for art in ordenadas:
+        if len(seleccionadas) >= n:
+            break
+        if tope is not None and usadas[art["fuente"]] >= tope:
+            continue
+        usadas[art["fuente"]] += 1
+        noticia = _construir_noticia(art, [art])
+        # Sin agrupar no se sabe si otros medios cubren lo mismo.
+        del noticia["fuente_unica"]
         seleccionadas.append(noticia)
     return seleccionadas
 
@@ -176,16 +219,24 @@ def _sanear_linea(texto: str) -> str:
     return " ".join(sin_control.split()).replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _linea_version(version: dict, sufijo_fuentes: str = "") -> str:
+    titular = _sanear_linea(version.get("titular", ""))
+    fuente = _sanear_linea(version.get("fuente", ""))
+    resumen = _sanear_linea((version.get("resumen") or "")[:300])
+    return f"{titular} ({fuente}{sufijo_fuentes}): {resumen}"
+
+
 def formatear_noticias_prompt(noticias: list[dict]) -> str:
-    """Una línea por noticia, lista para pegar en el prompt del bloque."""
+    """Una línea por noticia para el prompt del bloque, con sus otras versiones sangradas debajo."""
     lineas = []
     for noticia in noticias:
-        titular = _sanear_linea(noticia.get("titular", ""))
-        fuente = _sanear_linea(noticia.get("fuente", ""))
         otras = [_sanear_linea(o) for o in noticia.get("otras_fuentes") or []]
         sufijo_fuentes = f"; también: {', '.join(otras)}" if otras else ""
-        resumen = _sanear_linea((noticia.get("resumen") or "")[:300])
-        lineas.append(f"- {titular} ({fuente}{sufijo_fuentes}): {resumen}")
+        if noticia.get("fuente_unica"):
+            sufijo_fuentes += "; fuente única"
+        versiones = noticia.get("versiones") or [noticia]
+        lineas.append(f"- {_linea_version(versiones[0], sufijo_fuentes)}")
+        lineas.extend(f"  · {_linea_version(v)}" for v in versiones[1:])
     return "\n".join(lineas)
 
 
@@ -199,6 +250,7 @@ def noticias_a_json(noticias: Mapping[str, list[dict]]) -> dict[str, list[dict]]
                 "fuente": n.get("fuente", ""),
                 "url": n.get("url", ""),
                 "otras_fuentes": n.get("otras_fuentes") or [],
+                "fuente_unica": n.get("fuente_unica"),
             }
             for n in lista
         ]
