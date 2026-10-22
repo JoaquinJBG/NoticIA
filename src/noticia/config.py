@@ -1,10 +1,15 @@
 from pathlib import Path
 from typing import Literal
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # src/noticia/config.py -> parents[2] es la raíz del proyecto
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def _desde_root(ruta: Path) -> Path:
+    return ruta if ruta.is_absolute() else ROOT / ruta
 
 
 class Settings(BaseSettings):
@@ -72,7 +77,8 @@ class Settings(BaseSettings):
 
     # Publicación.
     publicacion_url_base: str = "http://localhost:8000"
-    carpeta_publicacion: Path = ROOT / "output" / "publicacion"
+    # Sin valor explícito, `<carpeta_output>/publicacion` (ver `_resolver_rutas`).
+    carpeta_publicacion: Path | None = None
     podcast_titulo: str = "NoticIA"
     podcast_descripcion: str = (
         "La actualidad del día convertida en una tertulia entre Álex y María. "
@@ -84,21 +90,30 @@ class Settings(BaseSettings):
     podcast_explicito: bool = False
     max_items_feed: int = 300
 
+    @model_validator(mode="after")
+    def _resolver_rutas(self):
+        self.kokoro_dir = _desde_root(self.kokoro_dir)
+        self.chatterbox_ref_alex = _desde_root(self.chatterbox_ref_alex)
+        self.chatterbox_ref_maria = _desde_root(self.chatterbox_ref_maria)
+        if "carpeta_publicacion" in self.model_fields_set:
+            self.carpeta_publicacion = _desde_root(self.carpeta_publicacion)
+        else:
+            self.carpeta_publicacion = self.ruta_output / "publicacion"
+        return self
+
     @property
     def ruta_output(self) -> Path:
         """`carpeta_output` como ruta absoluta, resuelta desde ROOT si es relativa."""
-        ruta = Path(self.carpeta_output)
-        return ruta if ruta.is_absolute() else ROOT / ruta
+        return _desde_root(Path(self.carpeta_output))
 
     @property
     def ruta_temp(self) -> Path:
         """`carpeta_temp` como ruta absoluta, resuelta desde ROOT si es relativa."""
-        ruta = Path(self.carpeta_temp)
-        return ruta if ruta.is_absolute() else ROOT / ruta
+        return _desde_root(Path(self.carpeta_temp))
 
     @property
     def carpeta_episodios(self) -> Path:
-        return ROOT / "output" / "episodios"
+        return self.ruta_output / "episodios"
 
     @property
     def ruta_sintonia(self) -> str:
@@ -122,16 +137,21 @@ class Settings(BaseSettings):
 settings = Settings()
 
 
-def _leer_regla(nombre: str, fallback: str = "") -> str:
-    ruta = ROOT / "reglas" / nombre
-    if ruta.exists():
-        return ruta.read_text(encoding="utf-8")
-    return fallback
+def _dir_reglas() -> Path:
+    # En un wheel instalado no hay ROOT/reglas: hatch copia la carpeta dentro del paquete.
+    for candidato in (ROOT / "reglas", Path(__file__).parent / "reglas"):
+        if candidato.is_dir():
+            return candidato
+    return ROOT / "reglas"
 
 
 def get_prompt_sistema() -> str:
-    return _leer_regla("instrucciones.md", "Eres el equipo de producción de NoticIA.")
+    ruta = _dir_reglas() / "instrucciones.md"
+    if not ruta.is_file():
+        raise FileNotFoundError(f"no existe {ruta}: el prompt de sistema es obligatorio")
+    return ruta.read_text(encoding="utf-8")
 
 
 def get_contexto() -> str:
-    return _leer_regla("contexto.md", "")
+    ruta = _dir_reglas() / "contexto.md"
+    return ruta.read_text(encoding="utf-8") if ruta.is_file() else ""

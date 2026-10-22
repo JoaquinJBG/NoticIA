@@ -13,6 +13,8 @@ from noticia.logging_setup import configurar_logging
 logger = logging.getLogger("noticia.voz.modelos")
 
 _TAMANO_BLOQUE = 1024 * 1024
+# Por operación de red, no total: un fichero grande puede tardar mucho sin estancarse.
+_TIMEOUT_RED_S = 60
 
 
 @dataclass(frozen=True)
@@ -74,7 +76,10 @@ def descargar_fichero(fichero: FicheroModelo, destino: Path) -> Path:
     parcial = destino.with_suffix(".part")
     digest = hashlib.sha256()
     try:
-        with urllib.request.urlopen(fichero.url) as respuesta, parcial.open("wb") as salida:
+        with (
+            urllib.request.urlopen(fichero.url, timeout=_TIMEOUT_RED_S) as respuesta,
+            parcial.open("wb") as salida,
+        ):
             for bloque in iter(lambda: respuesta.read(_TAMANO_BLOQUE), b""):
                 digest.update(bloque)
                 salida.write(bloque)

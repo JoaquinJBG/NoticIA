@@ -2,12 +2,14 @@
 
 import asyncio
 import copy
+import hashlib
+import re
 import sys
 
 import pytest
 
 from noticia.voz.base import MotorNoDisponible
-from noticia.voz.motor_chatterbox import MotorChatterbox
+from noticia.voz.motor_chatterbox import _FICHEROS_CHATTERBOX, MotorChatterbox, _verificar_sha256
 
 
 class _AudioFalso:
@@ -191,3 +193,24 @@ def test_copy_del_conds_es_independiente(cargador_ok, modelo_falso, referencias_
     modelo_falso.conds = copy.copy(modelo_falso.conds) + "-mutado"
 
     assert conds_guardados["alex"] != modelo_falso.conds
+
+
+def test_ficheros_chatterbox_fijan_revision_y_sha256():
+    for nombre, (_repo, revision, sha256) in _FICHEROS_CHATTERBOX.items():
+        assert re.fullmatch(r"[0-9a-f]{40}", revision), nombre
+        assert re.fullmatch(r"[0-9a-f]{64}", sha256), nombre
+
+
+def test_verificar_sha256_acepta_el_hash_correcto(tmp_path):
+    ruta = tmp_path / "pesos.bin"
+    ruta.write_bytes(b"abc")
+
+    assert _verificar_sha256(ruta, hashlib.sha256(b"abc").hexdigest()) == ruta
+
+
+def test_verificar_sha256_rechaza_un_hash_distinto(tmp_path):
+    ruta = tmp_path / "pesos.bin"
+    ruta.write_bytes(b"abc")
+
+    with pytest.raises(ValueError, match="pesos.bin"):
+        _verificar_sha256(ruta, "0" * 64)

@@ -77,7 +77,7 @@ muestras-voz:
 	@uv run python -m noticia.voz.muestras
 
 servir:
-	@uv run python -m http.server -d output/publicacion 8000
+	@uv run python -m http.server -d output/publicacion --bind 127.0.0.1 8000
 
 limpiar:
 	@rm -rf temp/*
