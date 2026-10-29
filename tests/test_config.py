@@ -105,3 +105,24 @@ def test_ruta_temp_absoluta_se_mantiene(tmp_path, monkeypatch):
 
 def test_pronunciacion_extra_por_defecto_vacio():
     assert config.settings.pronunciacion_extra == {}
+
+
+def test_get_prompt_sistema_incluye_solo_los_perfiles_del_reparto(monkeypatch):
+    from noticia.personajes import Reparto
+
+    monkeypatch.setattr(config.settings, "invitada_nombre", "Marta")
+    habitual = config.get_prompt_sistema()
+    con_invitada = config.get_prompt_sistema(Reparto(("invitada", "santi"), sustituido="alex"))
+
+    assert "PERSONAJE: Álex" in habitual and "PERSONAJE: Santi" in habitual
+    assert "(invitada del día" not in habitual
+    assert "PERSONAJE: Marta (invitada del día" in con_invitada
+    assert "PERSONAJE: Santi" in con_invitada
+    assert "PERSONAJE: Álex" not in con_invitada
+
+
+def test_las_reglas_no_mencionan_a_maria_ni_a_personas_reales():
+    textos = [config.get_prompt_sistema(), config.get_contexto()]
+    for texto in textos:
+        assert "María" not in texto
+        assert "Wild Project" not in texto

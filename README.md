@@ -5,7 +5,7 @@
 ## 🚀 Características
 
 - **Ingesta Multi-fuente:** Captura noticias de RSS feeds organizados por categorías (España, Geopolítica, Ciencia, Tecnología, Friki, Fútbol).
-- **Cerebro Claude:** Genera diálogos naturales entre dos locutores, **Álex** (el mentor experto) y **María** (la entusiasta tecnológica), vía el CLI headless `claude -p`.
+- **Cerebro Claude:** Genera diálogos naturales entre dos presentadores, **Álex** (entusiasta y apasionado) y **Santi** (sarcástico y directo), con una **invitada** (analítica) que sustituye a uno de ellos cada N episodios (`INVITADA_CADA_N_EPISODIOS`, por defecto 3), vía el CLI headless `claude -p`.
 - **Voces Realistas:** Integración con `edge-tts` para una locución fluida con acento de España.
 - **Edición Pro:** Montaje automático con sintonías de fondo, transiciones dinámicas y una cadena de mastering (compresión, EQ y normalización) usando `pydub`.
 
@@ -95,8 +95,9 @@ El resultado final se guarda en `output/`.
 
 ## 🎙️ Personajes
 
-- **Álex:** El veterano carismático. Aporta el contexto histórico y la reflexión profunda. Fanático del cine de culto.
-- **María:** El motor de energía. Experta en gadgets, Nintendo y Pokémon VGC. Siempre busca cómo la tecnología afecta al día a día.
+- **Álex:** El entusiasta. Política, economía y geopolítica, detector de sesgos y fanático del cine de culto.
+- **Santi:** El cínico. Sarcástico y escéptico, experto en tecnología, Nintendo y Pokémon VGC; pregunta siempre cómo afecta esto al día a día.
+- **Invitada (Lucía por defecto):** Analítica y documentada; sustituye a uno de los dos solo en su episodio.
 
 ---
 

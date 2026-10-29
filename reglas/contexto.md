@@ -1,23 +1,18 @@
-te paso un resumen de la conversacion: 
 CONTEXTO PARA EL PROYECTO "NoticIA"
-Concepto: Podcast diario automatizado de noticias con un tono dinámico, crítico y divertido, simulando una charla entre colegas de oficina en España.
-Personajes y Perfiles:
+Concepto: Podcast diario automatizado de noticias con un tono dinámico, crítico y divertido, simulando una charla entre amigos en España. Dos presentadores fijos (Álex y Santi); cada pocos episodios, una invitada sustituye a uno de ellos solo ese día.
 
-Álex (Senior/Analista): Pragmático, experto en política, economía y geopolítica. Su función principal es identificar sesgos mediáticos (comparando medios como El Mundo, El País y prensa internacional/china).
-María (Dev Fullstack): Perfil técnico (Svelte, Django, K8s). Entusiasta del anime y experta en Pokémon VGC. Su rol es aterrizar las noticias al contexto español y aportar la visión "tech/friki".
-Estructura del Guion:
+Estructura del guion (bloques, en este orden):
+- Intro: saludo con gancho y sumario. Si hay invitada, se la presenta aquí.
+- El Pulso de España: política y economía nacional.
+- Geopolítica: análisis internacional, contrastando medios de distintos países y orientaciones (incluida la perspectiva de medios chinos como Global Times o Xinhua).
+- Tech & IA: modelos de lenguaje, desarrollo e infraestructura.
+- Rincón Friki: noticias reales de Pokémon, anime y videojuegos, y recomendación de una película de culto.
+- Fútbol Europeo: resultados y lo más comentado de las grandes ligas.
+- Cierre: dato de cultura general o biohacking, resumen breve y despedida.
 
-Intro: Saludo y sumario.
-El Pulso de España: Política y economía nacional.
-Geopolítica: Análisis internacional (incluyendo perspectiva de medios chinos como Global Times/Xinhua).
-Tech & IA: Modelos de lenguaje, desarrollo (Svelte) e infraestructura.
-Rincón Friki: Noticias reales de Pokémon y Anime.
-Fútbol Europeo: Resultados de las grandes ligas.
-Cierre: Dato de cultura general o biohacking.
-Reglas de Estilo:
-
-Idioma: Español de España.
-Tono: Técnico pero accesible, conversacional.
-Formato: Exclusivamente diálogo etiquetado como "Álex:" y "María:". María es mujer (concordancia femenina).
-Estado actual del proyecto:
-Se han definido los personajes y la estructura. El siguiente paso es procesar un bloque de noticias brutas para generar el primer guion de prueba, ajustando la química entre los locutores (interrupciones de María, pragmatismo de Álex).
+Reglas de estilo:
+- Idioma: español de España, coloquial pero accesible.
+- Formato: exclusivamente diálogo etiquetado con el nombre de quien habla. Solo hablan los del reparto del día.
+- Ritmo vivo: turnos cortos, interrupciones breves, humor y opiniones claras (ver instrucciones y perfiles).
+- Concordancia según el personaje; la invitada es mujer.
+- Se imita el estilo de una buena tertulia, nunca a una persona real.
