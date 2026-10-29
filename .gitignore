@@ -33,3 +33,7 @@ voces/*.wav
 
 # Lock del orquestador
 .noticia.lock
+
+# Voces de referencia propias (WAV y candidatas)
+voces/
+voces/candidatas/
