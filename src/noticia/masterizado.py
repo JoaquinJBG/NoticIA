@@ -46,7 +46,14 @@ class MedicionLoudness:
 
 def _ejecutar_ffmpeg(args: list[str]) -> subprocess.CompletedProcess:
     try:
-        resultado = subprocess.run(args, capture_output=True, text=True, check=False)
+        resultado = subprocess.run(
+            args,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
     except FileNotFoundError as exc:
         raise ErrorMasterizado(f"ffmpeg no está disponible: {exc}") from exc
     if resultado.returncode != 0:

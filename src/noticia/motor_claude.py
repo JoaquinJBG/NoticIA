@@ -44,6 +44,8 @@ def generar_texto(system_prompt: str, user_prompt: str) -> str:
                 input=user_prompt,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=TIMEOUT_SEGUNDOS,
                 cwd=directorio_aislado,
             )

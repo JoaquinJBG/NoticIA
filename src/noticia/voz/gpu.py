@@ -64,6 +64,8 @@ def detectar_gpu(comprobar_torch: bool = True) -> InfoGPU:
             ],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=10,
             check=True,
         )

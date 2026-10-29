@@ -352,3 +352,19 @@ def test_formatear_y_trocear_guion_son_inversos():
     bloques = orquestador.trocear_guion(texto)
     assert bloques["intro"] == "Álex: hola"
     assert bloques["espana"] == "Álex: bla\nMaría: sí"
+
+
+def test_bloqueo_exclusivo_no_borra_ni_bloquea_la_lectura_del_fichero(tmp_path):
+    ruta = tmp_path / "sub" / ".noticia.lock"
+    with orquestador.bloqueo_exclusivo(ruta):
+        assert ruta.exists()
+    assert ruta.exists()
+
+
+def test_bloqueo_exclusivo_se_libera_si_el_cuerpo_falla(tmp_path):
+    ruta = tmp_path / ".noticia.lock"
+    with pytest.raises(RuntimeError):
+        with orquestador.bloqueo_exclusivo(ruta):
+            raise RuntimeError("fallo")
+    with orquestador.bloqueo_exclusivo(ruta):
+        pass
