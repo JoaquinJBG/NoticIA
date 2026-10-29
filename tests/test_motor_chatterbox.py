@@ -191,3 +191,79 @@ def test_copy_del_conds_es_independiente(cargador_ok, modelo_falso, referencias_
     modelo_falso.conds = copy.copy(modelo_falso.conds) + "-mutado"
 
     assert conds_guardados["alex"] != modelo_falso.conds
+
+
+_FUENTE_ANALIZADOR_FALSO = """
+import logging
+
+logger = logging.getLogger("falso")
+
+
+class AlignmentStreamAnalyzer:
+    def decidir(self, long_tail, alignment_repetition, token_repetition):
+        if long_tail or alignment_repetition or token_repetition:
+            return "EOS"
+        return "sigue"
+"""
+
+
+def _modulo_analizador_falso(tmp_path, nombre):
+    import importlib.util as iu
+
+    ruta = tmp_path / f"{nombre}.py"
+    ruta.write_text(_FUENTE_ANALIZADOR_FALSO, encoding="utf-8")
+    spec = iu.spec_from_file_location(nombre, ruta)
+    modulo = iu.module_from_spec(spec)
+    sys.modules[nombre] = modulo
+    spec.loader.exec_module(modulo)
+    return modulo
+
+
+def test_analizador_parcheado_ignora_token_repetition(tmp_path):
+    from noticia.voz.motor_chatterbox import construir_analizador_sin_token_repetition
+
+    modulo = _modulo_analizador_falso(tmp_path, "analizador_falso_a")
+    try:
+        parcheada = construir_analizador_sin_token_repetition(modulo)
+    finally:
+        sys.modules.pop("analizador_falso_a", None)
+
+    assert modulo.AlignmentStreamAnalyzer().decidir(False, False, True) == "EOS"
+    analizador = parcheada()
+    assert analizador.decidir(False, False, True) == "sigue"
+    assert analizador.decidir(True, False, False) == "EOS"
+    assert analizador.decidir(False, True, False) == "EOS"
+
+
+def test_parchear_analizador_sustituye_la_clase_en_t3(tmp_path, monkeypatch):
+    import types
+
+    from noticia.voz.motor_chatterbox import parchear_analizador_chatterbox
+
+    analizador = _modulo_analizador_falso(tmp_path, "analizador_falso_b")
+    original = analizador.AlignmentStreamAnalyzer
+    modulo_t3 = types.ModuleType("chatterbox.models.t3.t3")
+    modulo_t3.AlignmentStreamAnalyzer = original
+    monkeypatch.setitem(sys.modules, "chatterbox", types.ModuleType("chatterbox"))
+    monkeypatch.setitem(sys.modules, "chatterbox.models", types.ModuleType("chatterbox.models"))
+    monkeypatch.setitem(
+        sys.modules, "chatterbox.models.t3", types.ModuleType("chatterbox.models.t3")
+    )
+    monkeypatch.setitem(sys.modules, "chatterbox.models.t3.t3", modulo_t3)
+    try:
+        assert parchear_analizador_chatterbox() is True
+        nuevo = modulo_t3.AlignmentStreamAnalyzer
+        assert nuevo is not original
+        assert nuevo().decidir(False, False, True) == "sigue"
+        assert parchear_analizador_chatterbox() is True
+        assert modulo_t3.AlignmentStreamAnalyzer is nuevo
+    finally:
+        sys.modules.pop("analizador_falso_b", None)
+
+
+def test_parchear_analizador_sin_chatterbox_no_rompe(monkeypatch):
+    from noticia.voz.motor_chatterbox import parchear_analizador_chatterbox
+
+    monkeypatch.setitem(sys.modules, "chatterbox.models.t3.t3", None)
+
+    assert parchear_analizador_chatterbox() is False

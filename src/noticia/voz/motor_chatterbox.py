@@ -2,8 +2,12 @@
 
 import asyncio
 import copy
+import importlib
 import importlib.util
+import inspect
 import logging
+import sys
+import types
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -31,6 +35,55 @@ def _referencia(locutor: Locutor) -> Path:
     return settings.chatterbox_ref_maria
 
 
+_CONDICION_CORTE = "if long_tail or alignment_repetition or token_repetition:"
+_CONDICION_SIN_REPETICION = "if long_tail or alignment_repetition:"
+_MARCA_PARCHE = "_noticia_sin_token_repetition"
+
+
+def construir_analizador_sin_token_repetition(modulo_analizador: types.ModuleType) -> type:
+    """Devuelve el AlignmentStreamAnalyzer sin el corte por `token_repetition`.
+
+    chatterbox-tts 0.1.7 fuerza EOS cuando salen 2 tokens de voz iguales seguidos (el
+    comentario dice 3 pero comprueba 2), lo que trunca audios válidos. Se conservan
+    `long_tail` y `alignment_repetition`. El código se recompila dentro del namespace
+    del módulo original para que resuelva sus propios imports.
+    """
+    fuente = inspect.getsource(modulo_analizador.AlignmentStreamAnalyzer)
+    if _CONDICION_CORTE not in fuente:
+        raise RuntimeError(
+            "el AlignmentStreamAnalyzer de chatterbox no tiene la condición esperada"
+        )
+    fuente = fuente.replace(_CONDICION_CORTE, _CONDICION_SIN_REPETICION)
+    espacio = dict(vars(modulo_analizador))
+    exec(compile(fuente, f"<{modulo_analizador.__name__} parcheado>", "exec"), espacio)  # noqa: S102
+    clase = espacio["AlignmentStreamAnalyzer"]
+    setattr(clase, _MARCA_PARCHE, True)
+    return clase
+
+
+def parchear_analizador_chatterbox() -> bool:
+    """Sustituye el analizador en `chatterbox.models.t3.t3`. Idempotente.
+
+    Devuelve True si el parche queda aplicado. Si falla (otra versión de chatterbox),
+    se registra y se sigue con el analizador original.
+    """
+    try:
+        modulo_t3 = importlib.import_module("chatterbox.models.t3.t3")
+        if getattr(modulo_t3.AlignmentStreamAnalyzer, _MARCA_PARCHE, False):
+            return True
+        modulo_analizador = sys.modules.get(
+            modulo_t3.AlignmentStreamAnalyzer.__module__
+        ) or importlib.import_module(modulo_t3.AlignmentStreamAnalyzer.__module__)
+        modulo_t3.AlignmentStreamAnalyzer = construir_analizador_sin_token_repetition(
+            modulo_analizador
+        )
+    except Exception as exc:
+        logger.warning("No se pudo parchear el analizador de Chatterbox: %s", exc)
+        return False
+    logger.info("AlignmentStreamAnalyzer de Chatterbox parcheado (sin corte por token_repetition)")
+    return True
+
+
 def cargar_es_es(device: str = "cuda") -> Any:
     """Carga el Language Pack es-ES de Chatterbox Multilingual con el paquete PyPI."""
     import torch
@@ -42,6 +95,8 @@ def cargar_es_es(device: str = "cuda") -> Any:
     from chatterbox.mtl_tts import ChatterboxMultilingualTTS, Conditionals
     from huggingface_hub import hf_hub_download, snapshot_download
     from safetensors.torch import load_file
+
+    parchear_analizador_chatterbox()
 
     base = Path(
         snapshot_download(
