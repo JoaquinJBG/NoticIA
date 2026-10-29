@@ -84,15 +84,14 @@ async def generar_solo_audio(
     carpeta_temp = Path(tempfile.mkdtemp(dir=settings.ruta_temp))
     try:
         resultado = await locutar_episodio(bloques_reconocidos, motores, carpeta_temp)
+        if salida is None:
+            salida = str(settings.ruta_output / "NoticIA_audio.mp3")
+        # Los fragmentos viven en carpeta_temp: se montan antes de borrarla.
+        ensamblar_podcast_dinamico(resultado.fragmentos_por_bloque, salida)
     finally:
         for motor in motores:
             await motor.cerrar()
         shutil.rmtree(carpeta_temp, ignore_errors=True)
-
-    if salida is None:
-        salida = str(settings.ruta_output / "NoticIA_audio.mp3")
-
-    ensamblar_podcast_dinamico(resultado.fragmentos_por_bloque, salida)
     logger.info("Audio escrito en %s", salida)
     return salida
 
