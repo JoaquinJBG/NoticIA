@@ -60,12 +60,16 @@ def cargador_ok(modelo_falso):
 @pytest.fixture
 def referencias_presentes(tmp_path, monkeypatch):
     ref_alex = tmp_path / "alex_ref.wav"
-    ref_maria = tmp_path / "maria_ref.wav"
+    ref_santi = tmp_path / "santi_ref.wav"
+    ref_invitada = tmp_path / "invitada_ref.wav"
     ref_alex.write_bytes(b"wav-alex")
-    ref_maria.write_bytes(b"wav-maria")
+    ref_santi.write_bytes(b"wav-santi")
+    ref_invitada.write_bytes(b"wav-invitada")
     monkeypatch.setattr("noticia.config.settings.chatterbox_ref_alex", ref_alex)
-    monkeypatch.setattr("noticia.config.settings.chatterbox_ref_maria", ref_maria)
-    return ref_alex, ref_maria
+    monkeypatch.setattr("noticia.config.settings.chatterbox_ref_santi", ref_santi)
+    monkeypatch.setattr("noticia.config.settings.chatterbox_ref_invitada", ref_invitada)
+    monkeypatch.setattr("noticia.config.settings.invitada_cada_n_episodios", 3)
+    return ref_alex, ref_santi, ref_invitada
 
 
 def test_prepare_conditionals_se_llama_una_vez_por_locutor(
@@ -75,19 +79,42 @@ def test_prepare_conditionals_se_llama_una_vez_por_locutor(
 
     asyncio.run(motor.cargar())
 
-    assert len(modelo_falso.llamadas_prepare) == 2
-    locutores_llamados = {ref for ref, _exag in modelo_falso.llamadas_prepare}
-    ref_alex, ref_maria = referencias_presentes
-    assert locutores_llamados == {str(ref_alex), str(ref_maria)}
+    assert len(modelo_falso.llamadas_prepare) == 3
+    refs_llamadas = {ref for ref, _exag in modelo_falso.llamadas_prepare}
+    assert refs_llamadas == {str(ref) for ref in referencias_presentes}
 
 
-def test_maria_usa_exageracion_0_65(cargador_ok, modelo_falso, referencias_presentes):
+def test_la_invitada_usa_su_exageracion(cargador_ok, modelo_falso, referencias_presentes):
     motor = MotorChatterbox(cargador=cargador_ok)
     asyncio.run(motor.cargar())
 
     exageraciones = dict(modelo_falso.llamadas_prepare)
-    ref_maria = referencias_presentes[1]
-    assert exageraciones[str(ref_maria)] == pytest.approx(0.65)
+    ref_invitada = referencias_presentes[2]
+    assert exageraciones[str(ref_invitada)] == pytest.approx(0.6)
+
+
+def test_sin_invitada_no_hace_falta_su_referencia(
+    cargador_ok, modelo_falso, referencias_presentes, monkeypatch
+):
+    monkeypatch.setattr("noticia.config.settings.invitada_cada_n_episodios", 0)
+    referencias_presentes[2].unlink()
+    monkeypatch.setattr("importlib.util.find_spec", lambda _nombre: object())
+    motor = MotorChatterbox(cargador=cargador_ok)
+
+    assert motor.disponible() == (True, "")
+    asyncio.run(motor.cargar())
+    assert len(modelo_falso.llamadas_prepare) == 2
+
+
+def test_con_invitada_falta_su_referencia_nombra_el_fichero(referencias_presentes, monkeypatch):
+    referencias_presentes[2].unlink()
+    monkeypatch.setattr("importlib.util.find_spec", lambda _nombre: object())
+    motor = MotorChatterbox(cargador=lambda device: None)
+
+    ok, motivo = motor.disponible()
+
+    assert ok is False
+    assert "invitada_ref.wav" in motivo
 
 
 def test_texto_largo_se_trocea_en_varias_llamadas(
@@ -134,7 +161,7 @@ def test_conds_del_locutor_se_restauran_antes_de_generar(
 def test_disponible_sin_wav_de_referencia_nombra_el_fichero(tmp_path, monkeypatch):
     monkeypatch.setattr("importlib.util.find_spec", lambda _nombre: object())
     monkeypatch.setattr("noticia.config.settings.chatterbox_ref_alex", tmp_path / "alex_ref.wav")
-    monkeypatch.setattr("noticia.config.settings.chatterbox_ref_maria", tmp_path / "maria_ref.wav")
+    monkeypatch.setattr("noticia.config.settings.chatterbox_ref_santi", tmp_path / "santi_ref.wav")
     motor = MotorChatterbox(cargador=lambda device: None)
 
     ok, motivo = motor.disponible()

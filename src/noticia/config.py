@@ -16,15 +16,29 @@ class Settings(BaseSettings):
 
     modelo_claude: str = "sonnet"
 
-    # Voces edge-tts. María: Ximena, elegida de oído por el usuario tras
-    # comparar muestras (antes Elvira +6%; Ximena suena más natural a +0%).
-    voz_alex: str = "es-ES-AlvaroNeural"
-    voz_maria: str = "es-ES-XimenaNeural"
+    # Reparto: dos presentadores fijos (Álex y Santi) y, cada N episodios, una
+    # invitada que sustituye a uno de los dos solo ese episodio. Los ajustes de
+    # voz de cada motor van por "ranura": alex, santi e invitada.
+    # N = 0: nunca hay invitada. La fecha decide el reparto (determinista).
+    invitada_cada_n_episodios: int = 3
+    invitada_sustituye: Literal["alterna", "aleatorio", "alex", "santi"] = "alterna"
+    invitada_nombre: str = "Lucía"
 
-    # Prosodia: Álex es el mentor reflexivo, María el motor de energía.
-    # No se toca el pitch: en voces neuronales suena artificial.
+    # Voces edge-tts. En es-ES solo hay un hombre (Álvaro): Santi usa la misma
+    # voz con otro rate y un pitch más grave para distinguirse. Para una voz
+    # claramente distinta cambia VOZ_SANTI en .env (p.ej. es-MX-JorgeNeural).
+    # La invitada usa Ximena (elegida de oído por el usuario); alternativa: Elvira.
+    voz_alex: str = "es-ES-AlvaroNeural"
+    voz_santi: str = "es-ES-AlvaroNeural"
+    voz_invitada: str = "es-ES-XimenaNeural"
+
+    # Prosodia: Álex más pausado, Santi más ágil y grave, la invitada neutra.
     rate_alex: str = "-4%"
-    rate_maria: str = "+0%"
+    rate_santi: str = "+6%"
+    rate_invitada: str = "+0%"
+    pitch_alex: str = "+0Hz"
+    pitch_santi: str = "-12Hz"
+    pitch_invitada: str = "+0Hz"
 
     # Silencio entre turnos. El crossfade solapaba sílabas.
     pausa_entre_turnos_ms: int = 350
@@ -47,16 +61,20 @@ class Settings(BaseSettings):
     # Kokoro (motor CPU).
     kokoro_dir: Path = ROOT / "modelos" / "kokoro"
     kokoro_voz_alex: str = "em_alex"
-    kokoro_voz_maria: str = "ef_dora"
+    kokoro_voz_santi: str = "em_santa"
+    kokoro_voz_invitada: str = "ef_dora"
     kokoro_velocidad_alex: float = 0.96
-    kokoro_velocidad_maria: float = 1.05
+    kokoro_velocidad_santi: float = 1.02
+    kokoro_velocidad_invitada: float = 1.05
     kokoro_concurrencia: int = 2
 
     # Chatterbox Multilingual es-ES (motor GPU).
     chatterbox_ref_alex: Path = ROOT / "voces" / "alex_ref.wav"
-    chatterbox_ref_maria: Path = ROOT / "voces" / "maria_ref.wav"
+    chatterbox_ref_santi: Path = ROOT / "voces" / "santi_ref.wav"
+    chatterbox_ref_invitada: Path = ROOT / "voces" / "invitada_ref.wav"
     chatterbox_exageracion_alex: float = 0.5
-    chatterbox_exageracion_maria: float = 0.65
+    chatterbox_exageracion_santi: float = 0.55
+    chatterbox_exageracion_invitada: float = 0.6
     chatterbox_cfg: float = 0.4
     chatterbox_temperatura: float = 0.8
 
@@ -75,8 +93,8 @@ class Settings(BaseSettings):
     carpeta_publicacion: Path = ROOT / "output" / "publicacion"
     podcast_titulo: str = "NoticIA"
     podcast_descripcion: str = (
-        "La actualidad del día convertida en una tertulia entre Álex y María. "
-        "Guion y voces generados con IA."
+        "La actualidad del día convertida en una tertulia entre amigos: Álex, Santi y, "
+        "de vez en cuando, una invitada. Guion y voces generados con IA."
     )
     podcast_autor: str = "NoticIA"
     podcast_email: str = ""  # vacío => se omiten itunes:owner y podcast:locked
@@ -129,8 +147,21 @@ def _leer_regla(nombre: str, fallback: str = "") -> str:
     return fallback
 
 
-def get_prompt_sistema() -> str:
-    return _leer_regla("instrucciones.md", "Eres el equipo de producción de NoticIA.")
+def get_prompt_sistema(reparto=None) -> str:
+    """Instrucciones generales + perfil de cada personaje del episodio.
+
+    `reparto` (noticia.personajes.Reparto) decide qué perfiles se incluyen; sin
+    él se usa el de los dos presentadores habituales.
+    """
+    from noticia.personajes import Reparto, nombre_personaje
+
+    reparto = reparto or Reparto.habitual()
+    partes = [_leer_regla("instrucciones.md", "Eres el equipo de producción de NoticIA.")]
+    for locutor in reparto.locutores:
+        perfil = _leer_regla(f"personaje_{locutor}.md")
+        if perfil:
+            partes.append(perfil.replace("{nombre}", nombre_personaje(locutor)))
+    return "\n\n".join(partes)
 
 
 def get_contexto() -> str:

@@ -5,17 +5,29 @@ import pytest
 
 from noticia.voz.base import (
     LOCUTORES,
-    NOMBRE_MOSTRADO,
     ErrorMotorVoz,
     MotorNoDisponible,
     Turno,
+    ajuste,
+    nombre_mostrado,
 )
 
 
 def test_locutores_y_nombre_mostrado():
-    assert LOCUTORES == ("alex", "maria")
-    assert NOMBRE_MOSTRADO["alex"] == "Álex"
-    assert NOMBRE_MOSTRADO["maria"] == "María"
+    assert LOCUTORES == ("alex", "santi", "invitada")
+    assert nombre_mostrado("alex") == "Álex"
+    assert nombre_mostrado("santi") == "Santi"
+
+
+def test_nombre_de_la_invitada_es_configurable(monkeypatch):
+    monkeypatch.setattr("noticia.config.settings.invitada_nombre", "Marta")
+    assert nombre_mostrado("invitada") == "Marta"
+
+
+def test_ajuste_lee_la_ranura_y_falla_con_un_locutor_desconocido():
+    assert ajuste("voz", "santi")
+    with pytest.raises(ErrorMotorVoz):
+        ajuste("voz", "maria")
 
 
 def test_turno_es_inmutable():

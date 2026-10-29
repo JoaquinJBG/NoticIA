@@ -7,6 +7,7 @@ from noticia.bloques import CATEGORIAS_NOTICIAS
 from noticia.config import get_contexto, get_prompt_sistema, settings
 from noticia.fechas import formatear_fecha_larga, hoy_madrid
 from noticia.motor_claude import generar_texto
+from noticia.personajes import Reparto, reparto_para_fecha
 from noticia.seleccion import formatear_noticias_prompt
 
 logger = logging.getLogger("noticia.generador")
@@ -47,13 +48,34 @@ def _con_reintento(fn: Callable[[], str], reintentos: int | None = None) -> str:
     return resultado
 
 
-def construir_guion(datos_noticias, fecha: date | None = None) -> dict[str, list[str]]:
+def _texto_reparto(reparto: Reparto) -> str:
+    """Aviso de quién habla hoy; se añade al prompt de sistema."""
+    texto = f"REPARTO DE HOY: {', '.join(reparto.nombres)}. Solo hablan estas personas."
+    if reparto.hay_invitada:
+        texto += (
+            f" Hoy {reparto.nombres[reparto.locutores.index('invitada')]} es la invitada del "
+            "episodio: preséntala en la intro y trátala como invitada, no como presentadora fija."
+        )
+    return texto
+
+
+def _prompt_sistema(reparto: Reparto, con_contexto: bool = False) -> str:
+    sistema = f"{get_prompt_sistema(reparto)}\n\n{_texto_reparto(reparto)}"
+    if con_contexto:
+        sistema += f"\n\nCONTEXTO GENERAL:\n{get_contexto()}"
+    return sistema
+
+
+def construir_guion(
+    datos_noticias, fecha: date | None = None, reparto: Reparto | None = None
+) -> dict[str, list[str]]:
     fecha = fecha or hoy_madrid()
+    reparto = reparto or reparto_para_fecha(fecha)
     guion_por_bloques = {}
 
     # 1. INTRO
     logger.info("Generando Introducción Profesional...")
-    guion_por_bloques["intro"] = [generar_intro(datos_noticias, fecha)]
+    guion_por_bloques["intro"] = [generar_intro(datos_noticias, fecha, reparto)]
 
     # 2. BLOQUES DE NOTICIAS CON INVESTIGACIÓN
     for cat in CATEGORIAS_NOTICIAS:
@@ -62,7 +84,9 @@ def construir_guion(datos_noticias, fecha: date | None = None) -> dict[str, list
             briefing = generar_briefing_contexto(cat, datos_noticias[cat], fecha)
 
             logger.info("Generando tertulia con autoridad para %s...", cat.upper())
-            texto_bloque = construir_bloque_con_contexto(cat, datos_noticias[cat], briefing, fecha)
+            texto_bloque = construir_bloque_con_contexto(
+                cat, datos_noticias[cat], briefing, fecha, reparto
+            )
             guion_por_bloques[cat] = [texto_bloque]
 
     # 3. OUTRO, con los titulares reales para que no se los invente
@@ -70,7 +94,7 @@ def construir_guion(datos_noticias, fecha: date | None = None) -> dict[str, list
         datos_noticias[cat][0]["titular"] for cat in CATEGORIAS_NOTICIAS if datos_noticias.get(cat)
     ]
     logger.info("Generando Despedida Profesional...")
-    guion_por_bloques["outro"] = [generar_outro(titulares, fecha)]
+    guion_por_bloques["outro"] = [generar_outro(titulares, fecha, reparto)]
 
     return guion_por_bloques
 
@@ -100,9 +124,13 @@ def generar_briefing_contexto(categoria, noticias, fecha: date | None = None) ->
     return _con_reintento(lambda: llamar_ia(prompt_sistema, prompt_usuario))
 
 
-def construir_bloque_con_contexto(categoria, noticias, briefing, fecha: date | None = None) -> str:
-    fecha_texto = formatear_fecha_larga(fecha or hoy_madrid())
-    prompt_sistema = f"{get_prompt_sistema()}\n\nCONTEXTO GENERAL:\n{get_contexto()}"
+def construir_bloque_con_contexto(
+    categoria, noticias, briefing, fecha: date | None = None, reparto: Reparto | None = None
+) -> str:
+    fecha = fecha or hoy_madrid()
+    reparto = reparto or reparto_para_fecha(fecha)
+    fecha_texto = formatear_fecha_larga(fecha)
+    prompt_sistema = _prompt_sistema(reparto, con_contexto=True)
     prompt_usuario = f"""
     Hoy es {fecha_texto}.
 
@@ -115,8 +143,9 @@ def construir_bloque_con_contexto(categoria, noticias, briefing, fecha: date | N
     {formatear_noticias_prompt(noticias)}
 
     INSTRUCCIONES:
-    - Álex debe usar los datos del BRIEFING para sonar como un experto mentor.
-    - María debe reaccionar a las curiosidades y analogías.
+    - Cada personaje habla según su perfil: usad los datos del BRIEFING como munición
+      para opinar, no para dar una clase.
+    - Ritmo vivo: frases cortas, interrupciones breves, humor y opiniones claras.
     - Evitad repeticiones robóticas. Charlad durante 8-10 minutos de forma apasionada.
     - DESCARTAD sin comentarla cualquier noticia de la lista que en realidad sea
       publicidad, una promoción, un cupón de descuento o contenido comercial, o
@@ -124,7 +153,7 @@ def construir_bloque_con_contexto(categoria, noticias, briefing, fecha: date | N
       su promoción.
 
     FORMATO DE RESPUESTA (obligatorio):
-    - Responde ÚNICAMENTE con el diálogo, empezando directamente por "Álex:" o "María:".
+    - Responde ÚNICAMENTE con el diálogo, empezando directamente por {reparto.prefijos_texto}.
     - Sin preámbulo, sin explicar lo que vas a hacer, sin resumen final.
     - Sin encabezados, sin markdown, sin separadores.
     """
@@ -135,15 +164,17 @@ def construir_bloque_con_contexto(categoria, noticias, briefing, fecha: date | N
     return ""
 
 
-def generar_intro(datos_noticias, fecha: date | None = None) -> str:
+def generar_intro(datos_noticias, fecha: date | None = None, reparto: Reparto | None = None) -> str:
+    fecha = fecha or hoy_madrid()
+    reparto = reparto or reparto_para_fecha(fecha)
     titulares = []
     for cat in CATEGORIAS_NOTICIAS:
         if datos_noticias.get(cat):
             titulares.append(datos_noticias[cat][0]["titular"])
 
     resumen_titulares = "\n".join(titulares[:3])
-    fecha_texto = formatear_fecha_larga(fecha or hoy_madrid())
-    prompt_sistema = get_prompt_sistema()
+    fecha_texto = formatear_fecha_larga(fecha)
+    prompt_sistema = _prompt_sistema(reparto)
     prompt_usuario = (
         f"Hoy es {fecha_texto}. "
         f"TAREA: Genera la introducción con este sumario de temas: {resumen_titulares}. "
@@ -154,13 +185,20 @@ def generar_intro(datos_noticias, fecha: date | None = None) -> str:
     texto = _con_reintento(lambda: llamar_ia(prompt_sistema, prompt_usuario))
     if texto:
         return _limpiar_markdown(texto)
-    return "Álex: ¡Bienvenidos! \nMaría: ¡Hola a todos, encantada de estar aquí!"
+    primero, segundo = reparto.nombres
+    return f"{primero}: ¡Bienvenidos! \n{segundo}: ¡Hola a todos!"
 
 
-def generar_outro(titulares: list[str] | None = None, fecha: date | None = None) -> str:
+def generar_outro(
+    titulares: list[str] | None = None,
+    fecha: date | None = None,
+    reparto: Reparto | None = None,
+) -> str:
+    fecha = fecha or hoy_madrid()
+    reparto = reparto or reparto_para_fecha(fecha)
     resumen_titulares = "\n".join(titulares or [])
-    fecha_texto = formatear_fecha_larga(fecha or hoy_madrid())
-    prompt_sistema = get_prompt_sistema()
+    fecha_texto = formatear_fecha_larga(fecha)
+    prompt_sistema = _prompt_sistema(reparto)
     prompt_usuario = (
         f"Hoy es {fecha_texto}. "
         "TAREA: Genera la despedida del podcast, recordando brevemente estos titulares "
@@ -172,4 +210,5 @@ def generar_outro(titulares: list[str] | None = None, fecha: date | None = None)
     texto = _con_reintento(lambda: llamar_ia(prompt_sistema, prompt_usuario))
     if texto:
         return _limpiar_markdown(texto)
-    return "Álex: Gracias por escucharnos. \nMaría: ¡Hasta pronto!"
+    primero, segundo = reparto.nombres
+    return f"{primero}: Gracias por escucharnos. \n{segundo}: ¡Hasta pronto!"

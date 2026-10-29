@@ -8,19 +8,26 @@ import unicodedata
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from itertools import permutations
 from pathlib import Path
 
 from noticia.config import settings
-from noticia.voz.base import Locutor, MotorNoDisponible, MotorVoz, Turno
+from noticia.voz.base import (
+    LOCUTORES,
+    Locutor,
+    MotorNoDisponible,
+    MotorVoz,
+    Turno,
+    nombre_mostrado,
+)
 from noticia.voz.texto import limpiar_texto_locucion
 
 logger = logging.getLogger("noticia.locutor")
 
-_LOCUTORES = ("alex", "maria")
-
-# Líneas que hablan "los dos a la vez" (p.ej. el eslogan final): se asignan a
-# Álex en vez de descartarse como locutor desconocido.
-_PREFIJOS_AMBOS = frozenset({"alex y maria", "maria y alex", "ambos", "los dos"})
+# Líneas que hablan "todos a la vez" (p.ej. el eslogan final) sin nombrar a nadie:
+# se asignan a Álex en vez de descartarse como locutor desconocido. Un prefijo
+# "Santi y Lucía" se asigna al primer nombre.
+_PREFIJOS_TODOS = frozenset({"ambos", "los dos", "todos"})
 
 _RE_PARENTESIS = re.compile(r"\([^)]*\)")
 # Una palabra sola (sin espacios) seguida de dos puntos: "Santi:", "IMPORTANTE:".
@@ -35,6 +42,21 @@ def _normalizar(texto: str) -> str:
     return "".join(
         c for c in unicodedata.normalize("NFD", texto) if unicodedata.category(c) != "Mn"
     )
+
+
+def _prefijos_conocidos() -> dict[str, str]:
+    """Prefijo normalizado -> id de locutor, según los nombres actuales.
+
+    Se reconocen todos los personajes (haya o no invitada ese día) y las
+    combinaciones "X y Y", que hablan con la voz de X.
+    """
+    nombres = {_normalizar(nombre_mostrado(loc)): loc for loc in LOCUTORES}
+    nombres.update({loc: loc for loc in LOCUTORES})
+    prefijos = dict(nombres)
+    for (a, loc_a), (b, _) in permutations(nombres.items(), 2):
+        prefijos[f"{a} y {b}"] = loc_a
+    prefijos.update(dict.fromkeys(_PREFIJOS_TODOS, "alex"))
+    return prefijos
 
 
 def _limpiar_prefijo(prefijo: str) -> str:
@@ -54,10 +76,8 @@ def _parsear_linea(linea: str) -> tuple[str, str] | None:
     if ":" not in linea:
         return None
     prefijo, resto = linea.split(":", 1)
-    locutor = _normalizar(_limpiar_prefijo(prefijo))
-    if locutor in _PREFIJOS_AMBOS:
-        locutor = "alex"
-    elif locutor not in _LOCUTORES:
+    locutor = _prefijos_conocidos().get(_normalizar(_limpiar_prefijo(prefijo)))
+    if locutor is None:
         return None
     texto = resto.strip()
     if not texto:

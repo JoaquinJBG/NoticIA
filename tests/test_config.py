@@ -9,9 +9,12 @@ def por_defecto(monkeypatch):
     """Settings sin .env ni variables de entorno: solo los valores del código."""
     for clave in (
         "VOZ_ALEX",
-        "VOZ_MARIA",
+        "VOZ_SANTI",
+        "VOZ_INVITADA",
         "RATE_ALEX",
-        "RATE_MARIA",
+        "RATE_SANTI",
+        "INVITADA_CADA_N_EPISODIOS",
+        "INVITADA_SUSTITUYE",
         "PAUSA_ENTRE_TURNOS_MS",
         "CARPETA_OUTPUT",
         "CARPETA_TEMP",
@@ -22,14 +25,16 @@ def por_defecto(monkeypatch):
 
 def test_settings_valores_por_defecto(por_defecto):
     assert por_defecto.voz_alex == "es-ES-AlvaroNeural"
-    assert por_defecto.voz_maria == "es-ES-XimenaNeural"
+    assert por_defecto.voz_invitada == "es-ES-XimenaNeural"
+    assert por_defecto.invitada_cada_n_episodios == 3
+    assert por_defecto.invitada_sustituye == "alterna"
     assert por_defecto.carpeta_output == "output"
     assert por_defecto.carpeta_temp == "temp"
 
 
 def test_prosodia_y_pausa_por_defecto(por_defecto):
     assert por_defecto.rate_alex == "-4%"
-    assert por_defecto.rate_maria == "+0%"
+    assert por_defecto.rate_santi == "+6%"
     assert por_defecto.pausa_entre_turnos_ms == 350
 
 

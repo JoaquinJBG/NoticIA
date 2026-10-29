@@ -2,13 +2,24 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
-Locutor = Literal["alex", "maria"]
+# Id de la "ranura" de voz: "alex", "santi" o "invitada". Es genérico a propósito:
+# cada episodio decide qué ranuras suenan (ver noticia.personajes.Reparto).
+Locutor = str
 
-LOCUTORES: tuple[Locutor, ...] = ("alex", "maria")
+LOCUTORES: tuple[Locutor, ...] = ("alex", "santi", "invitada")
 
-NOMBRE_MOSTRADO: dict[str, str] = {"alex": "Álex", "maria": "María"}
+_NOMBRE_FIJO: dict[str, str] = {"alex": "Álex", "santi": "Santi"}
+
+
+def nombre_mostrado(locutor: Locutor) -> str:
+    """Nombre del personaje; el de la invitada es configurable (INVITADA_NOMBRE)."""
+    if locutor == "invitada":
+        from noticia.config import settings
+
+        return settings.invitada_nombre
+    return _NOMBRE_FIJO.get(locutor, locutor)
 
 
 @dataclass(frozen=True)
@@ -25,6 +36,16 @@ class ErrorMotorVoz(Exception):
 
 class MotorNoDisponible(ErrorMotorVoz):
     """El motor no se pudo cargar o no cumple sus requisitos."""
+
+
+def ajuste(prefijo: str, locutor: Locutor):
+    """Valor del ajuste `<prefijo>_<locutor>` de la configuración (p.ej. `voz_santi`)."""
+    from noticia.config import settings
+
+    try:
+        return getattr(settings, f"{prefijo}_{locutor}")
+    except AttributeError as exc:
+        raise ErrorMotorVoz(f"locutor sin configurar: {locutor!r} ({prefijo})") from exc
 
 
 @runtime_checkable

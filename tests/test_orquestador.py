@@ -74,11 +74,11 @@ def entorno(tmp_path, monkeypatch):
     def _fake_seleccionar_noticias(pool, *a, **k):
         return pool
 
-    def _fake_construir_guion(noticias, fecha=None):
+    def _fake_construir_guion(noticias, fecha=None, reparto=None):
         llamadas["construir_guion"] += 1
         return {
             "intro": ["Álex: hola"],
-            "espana": ["Álex: bla\nMaría: sí"],
+            "espana": ["Álex: bla\nSanti: sí"],
             "outro": ["Álex: chao"],
         }
 
@@ -175,8 +175,8 @@ def _guion_solo_reserva() -> dict[str, list[str]]:
     siempre traen texto de reserva (ver `generador.generar_intro`/`generar_outro`),
     y ningún bloque de `CATEGORIAS_NOTICIAS` se añade al guion."""
     return {
-        "intro": ["Álex: ¡Bienvenidos! \nMaría: ¡Hola a todos, encantada de estar aquí!"],
-        "outro": ["Álex: Gracias por escucharnos. \nMaría: ¡Hasta pronto!"],
+        "intro": ["Álex: ¡Bienvenidos! \nSanti: ¡Hola a todos, encantada de estar aquí!"],
+        "outro": ["Álex: Gracias por escucharnos. \nSanti: ¡Hasta pronto!"],
     }
 
 
@@ -198,7 +198,9 @@ def test_generar_guion_con_intro_outro_de_reserva_y_sin_noticias_lanza_guion_vac
     monkeypatch.setattr(orquestador.settings, "reintentos_guion", 0)
     monkeypatch.setattr(orquestador.settings, "espera_reintento_guion_s", 0)
     monkeypatch.setattr(
-        orquestador, "construir_guion", lambda noticias, fecha=None: _guion_solo_reserva()
+        orquestador,
+        "construir_guion",
+        lambda noticias, fecha=None, reparto=None: _guion_solo_reserva(),
     )
 
     with pytest.raises(orquestador.GuionVacio):
@@ -209,7 +211,9 @@ def test_guion_vacio_tras_reintentos_no_crea_ni_mp3_ni_guion(entorno, monkeypatc
     monkeypatch.setattr(orquestador.settings, "reintentos_guion", 0)
     monkeypatch.setattr(orquestador.settings, "espera_reintento_guion_s", 0)
     monkeypatch.setattr(
-        orquestador, "construir_guion", lambda noticias, fecha=None: _guion_solo_reserva()
+        orquestador,
+        "construir_guion",
+        lambda noticias, fecha=None, reparto=None: _guion_solo_reserva(),
     )
 
     with pytest.raises(orquestador.GuionVacio):
@@ -293,7 +297,9 @@ def test_fallo_al_producir_se_registra_en_el_produccion_log_del_episodio(
     monkeypatch.setattr(orquestador.settings, "reintentos_guion", 0)
     monkeypatch.setattr(orquestador.settings, "espera_reintento_guion_s", 0)
     monkeypatch.setattr(
-        orquestador, "construir_guion", lambda noticias, fecha=None: _guion_solo_reserva()
+        orquestador,
+        "construir_guion",
+        lambda noticias, fecha=None, reparto=None: _guion_solo_reserva(),
     )
 
     with caplog.at_level(logging.INFO), pytest.raises(orquestador.GuionVacio):
@@ -346,12 +352,12 @@ def test_bloqueo_exclusivo_se_libera_al_salir(tmp_path):
 
 
 def test_formatear_y_trocear_guion_son_inversos():
-    guion = {"intro": ["Álex: hola"], "espana": ["Álex: bla", "María: sí"], "outro": [""]}
+    guion = {"intro": ["Álex: hola"], "espana": ["Álex: bla", "Santi: sí"], "outro": [""]}
     texto = orquestador.formatear_guion(guion)
     assert "## outro" not in texto
     bloques = orquestador.trocear_guion(texto)
     assert bloques["intro"] == "Álex: hola"
-    assert bloques["espana"] == "Álex: bla\nMaría: sí"
+    assert bloques["espana"] == "Álex: bla\nSanti: sí"
 
 
 def test_bloqueo_exclusivo_no_borra_ni_bloquea_la_lectura_del_fichero(tmp_path):
@@ -368,3 +374,39 @@ def test_bloqueo_exclusivo_se_libera_si_el_cuerpo_falla(tmp_path):
             raise RuntimeError("fallo")
     with orquestador.bloqueo_exclusivo(ruta):
         pass
+
+
+def test_el_reparto_con_invitada_llega_al_guion_al_json_y_a_la_publicacion(entorno, monkeypatch):
+    import json
+
+    monkeypatch.setattr(orquestador.settings, "invitada_cada_n_episodios", 1)
+    monkeypatch.setattr(orquestador.settings, "invitada_sustituye", "santi")
+    monkeypatch.setattr(orquestador.settings, "invitada_nombre", "Marta")
+    repartos = []
+    original = orquestador.construir_guion
+
+    def _espia(noticias, fecha=None, reparto=None):
+        repartos.append(reparto)
+        return original(noticias, fecha, reparto)
+
+    monkeypatch.setattr(orquestador, "construir_guion", _espia)
+
+    asyncio.run(orquestador.ejecutar(FECHA, publicar=True))
+
+    assert repartos[0].locutores == ("alex", "invitada")
+    datos = json.loads(
+        (orquestador.carpeta_episodio(FECHA) / "episodio.json").read_text(encoding="utf-8")
+    )
+    assert datos["reparto"] == {"locutores": ["alex", "invitada"], "sustituido": "santi"}
+    assert entorno["publicar_episodio"][0].presentadores == "Álex y Marta"
+
+
+def test_reejecutar_el_mismo_dia_no_cambia_el_reparto_ni_regenera(entorno, monkeypatch):
+    monkeypatch.setattr(orquestador.settings, "invitada_cada_n_episodios", 1)
+    monkeypatch.setattr(orquestador.settings, "invitada_sustituye", "aleatorio")
+
+    asyncio.run(orquestador.ejecutar(FECHA, publicar=False))
+    resumen = asyncio.run(orquestador.ejecutar(FECHA, publicar=False))
+
+    assert resumen.estado == "ya_existia"
+    assert entorno["construir_guion"] == 1

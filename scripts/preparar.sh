@@ -61,7 +61,7 @@ else
 fi
 
 if [ "$gpu_visible" -eq 1 ]; then
-    for ref in voces/alex_ref.wav voces/maria_ref.wav; do
+    for ref in voces/alex_ref.wav voces/santi_ref.wav voces/invitada_ref.wav; do
         if [ ! -f "$ref" ]; then
             aviso "Falta $ref: Chatterbox (motor GPU) no se activará hasta que exista, con voz y derechos de España."
         fi

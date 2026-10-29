@@ -26,6 +26,7 @@ from noticia.generador import construir_guion
 from noticia.ingesta import obtener_pool
 from noticia.locutor import locutar_episodio
 from noticia.logging_setup import anadir_log_fichero, quitar_handler
+from noticia.personajes import Reparto, reparto_para_fecha
 from noticia.publicador import (
     EpisodioPublicable,
     NoticiaCitada,
@@ -195,7 +196,9 @@ def carpeta_episodio(fecha: date) -> Path:
     return settings.carpeta_episodios / fecha.isoformat()
 
 
-def generar_guion(fecha: date) -> tuple[dict[str, list[str]], dict[str, list[dict]]]:
+def generar_guion(
+    fecha: date, reparto: Reparto | None = None
+) -> tuple[dict[str, list[str]], dict[str, list[dict]]]:
     """Genera el guion del episodio: ingesta, selección y llamada al generador de texto.
 
     Si todos los bloques de noticias del guion salen vacíos, reintenta hasta
@@ -208,7 +211,7 @@ def generar_guion(fecha: date) -> tuple[dict[str, list[str]], dict[str, list[dic
     for intento in range(intentos):
         pool = obtener_pool()
         noticias = seleccionar_noticias(pool)
-        guion = construir_guion(noticias, fecha)
+        guion = construir_guion(noticias, fecha, reparto)
         if guion_tiene_noticias(guion):
             return guion, noticias
         ultimo = intento == intentos - 1
@@ -263,6 +266,7 @@ def _publicar(fecha: date, carpeta: Path, ruta_mp3: Path, datos_episodio: dict) 
         capitulos=capitulos,
         guion=carpeta / "guion.md",
         motor_voz=datos_episodio.get("motor_voz", ""),
+        presentadores=datos_episodio.get("presentadores", ""),
     )
     ruta_feed = publicar_episodio(ep)
     if "edge" in (datos_episodio.get("motores_usados") or {}):
@@ -335,6 +339,11 @@ async def _ejecutar_bloqueado(
 
     sintonias_faltantes_previo = comprobar_sintonias()
 
+    # El reparto sale solo de la fecha (y la config): re-ejecutar el mismo día
+    # reutiliza el mismo guion y las mismas voces.
+    reparto = reparto_para_fecha(fecha)
+    logger.info("Reparto de %s: %s", fecha.isoformat(), reparto.presentadores_texto)
+
     ruta_guion_md = carpeta / "guion.md"
     ruta_noticias_json = carpeta / "noticias.json"
 
@@ -343,7 +352,7 @@ async def _ejecutar_bloqueado(
         noticias_json = json.loads(ruta_noticias_json.read_text(encoding="utf-8"))
         estado = "reanudado"
     else:
-        guion, noticias = generar_guion(fecha)
+        guion, noticias = generar_guion(fecha, reparto)
         noticias_json = noticias_a_json(noticias)
         bloques_texto = {
             bloque: "\n".join(lineas)
@@ -376,7 +385,7 @@ async def _ejecutar_bloqueado(
 
         metadatos = {
             "title": titulo_episodio(fecha),
-            "artist": "Álex y María",
+            "artist": reparto.presentadores_texto,
             "album": settings.podcast_titulo,
             "date": fecha.isoformat(),
         }
@@ -392,6 +401,8 @@ async def _ejecutar_bloqueado(
         "fecha": fecha.isoformat(),
         "titulo": titulo_episodio(fecha),
         "motor_voz": motor_voz_usado,
+        "reparto": reparto.a_dict(),
+        "presentadores": reparto.presentadores_texto,
         "motores_usados": dict(resultado_locucion.motores_usados),
         "duracion_s": resultado_montaje.duracion_s,
         "lufs": resultado_montaje.loudness.lufs_integrados,

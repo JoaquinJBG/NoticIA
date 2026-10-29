@@ -9,20 +9,32 @@ from noticia.voz.base import ErrorMotorVoz, MotorNoDisponible, Turno
 # --- Parser: comportamiento heredado -----------------------------------
 
 
-def test_parsear_linea_alex_y_maria():
+def test_parsear_linea_alex_y_santi():
     assert locutor._parsear_linea("Álex: hola") == ("alex", "hola")
-    assert locutor._parsear_linea("María: qué tal") == ("maria", "qué tal")
+    assert locutor._parsear_linea("Santi: qué tal") == ("santi", "qué tal")
+
+
+def test_parsear_linea_invitada_por_nombre_y_por_rol(monkeypatch):
+    monkeypatch.setattr(locutor.settings, "invitada_nombre", "Lucía")
+    assert locutor._parsear_linea("Lucía: pues mirad") == ("invitada", "pues mirad")
+    assert locutor._parsear_linea("**Invitada**: pues mirad") == ("invitada", "pues mirad")
+
+
+def test_parsear_linea_respeta_el_nombre_configurado_de_la_invitada(monkeypatch):
+    monkeypatch.setattr(locutor.settings, "invitada_nombre", "Marta")
+    assert locutor._parsear_linea("Marta: hola") == ("invitada", "hola")
+    assert locutor._parsear_linea("Lucía: hola") is None
 
 
 def test_parsear_linea_sin_tildes():
     assert locutor._parsear_linea("Alex: hola") == ("alex", "hola")
-    assert locutor._parsear_linea("Maria: hola") == ("maria", "hola")
+    assert locutor._parsear_linea("Santi: hola") == ("santi", "hola")
 
 
 def test_parsear_linea_mencion_de_otro_locutor_no_confunde():
     # El bug antiguo: buscaba "álex:" en CUALQUIER posición y se lo atribuía a Álex.
-    linea = "María: y entonces Álex: dijo que no"
-    assert locutor._parsear_linea(linea) == ("maria", "y entonces Álex: dijo que no")
+    linea = "Santi: y entonces Álex: dijo que no"
+    assert locutor._parsear_linea(linea) == ("santi", "y entonces Álex: dijo que no")
 
 
 def test_parsear_linea_dos_puntos_en_la_frase():
@@ -33,9 +45,10 @@ def test_parsear_linea_dos_puntos_en_la_frase():
     )
 
 
-def test_parsear_linea_ambos_locutores_se_asigna_a_alex():
-    assert locutor._parsear_linea("Álex y María: ¡NoticIA!") == ("alex", "¡NoticIA!")
-    assert locutor._parsear_linea("María y Álex: ¡NoticIA!") == ("alex", "¡NoticIA!")
+def test_parsear_linea_varios_locutores_se_asigna_al_primero_o_a_alex():
+    assert locutor._parsear_linea("Álex y Santi: ¡NoticIA!") == ("alex", "¡NoticIA!")
+    assert locutor._parsear_linea("Santi y Álex: ¡NoticIA!") == ("santi", "¡NoticIA!")
+    assert locutor._parsear_linea("Santi y Lucía: ¡NoticIA!") == ("santi", "¡NoticIA!")
     assert locutor._parsear_linea("Ambos: ¡NoticIA!") == ("alex", "¡NoticIA!")
     assert locutor._parsear_linea("Los dos: ¡NoticIA!") == ("alex", "¡NoticIA!")
 
@@ -43,7 +56,7 @@ def test_parsear_linea_ambos_locutores_se_asigna_a_alex():
 def test_parsear_linea_no_dialogo_devuelve_none():
     assert locutor._parsear_linea("IMPORTANTE: no inventes hechos") is None
     assert locutor._parsear_linea("una línea cualquiera") is None
-    assert locutor._parsear_linea("Santi: ya no existe") is None
+    assert locutor._parsear_linea("Pedro: ya no existe") is None
     assert locutor._parsear_linea("Álex:") is None  # sin texto
     assert locutor._parsear_linea("") is None
 
@@ -56,7 +69,7 @@ def test_parsear_linea_con_acotacion_entre_parentesis():
 
 
 def test_parsear_linea_con_negrita_markdown():
-    assert locutor._parsear_linea("**María**: hola") == ("maria", "hola")
+    assert locutor._parsear_linea("**Santi**: hola") == ("santi", "hola")
 
 
 # --- parsear_turnos ------------------------------------------------------
@@ -82,7 +95,7 @@ def test_parsear_turnos_linea_tras_blanco_se_descarta():
 
 
 def test_parsear_turnos_forma_palabra_no_se_une_aunque_no_haya_blanco():
-    texto = "Álex: buenos días\nSanti: esto no debería colarse"
+    texto = "Álex: buenos días\nPedro: esto no debería colarse"
     turnos, descartadas = locutor.parsear_turnos(texto, "intro")
     assert len(turnos) == 1
     assert turnos[0].texto == "buenos días"
@@ -90,10 +103,10 @@ def test_parsear_turnos_forma_palabra_no_se_une_aunque_no_haya_blanco():
 
 
 def test_parsear_turnos_indices_secuenciales_por_bloque():
-    texto = "Álex: uno\nMaría: dos\nÁlex: tres"
+    texto = "Álex: uno\nSanti: dos\nÁlex: tres"
     turnos, _ = locutor.parsear_turnos(texto, "espana")
     assert [t.indice for t in turnos] == [0, 1, 2]
-    assert [t.locutor for t in turnos] == ["alex", "maria", "alex"]
+    assert [t.locutor for t in turnos] == ["alex", "santi", "alex"]
 
 
 def test_parsear_turnos_texto_vacio_tras_limpiar_se_descarta():
@@ -154,8 +167,8 @@ class _MotorSiempreFalla(_MotorFalso):
 def test_locutar_episodio_conserva_el_orden(tmp_path):
     motor = _MotorFalso()
     bloques = {
-        "espana": "Álex: uno\nMaría: dos",
-        "futbol": "Álex: tres\nMaría: cuatro",
+        "espana": "Álex: uno\nSanti: dos",
+        "futbol": "Álex: tres\nSanti: cuatro",
     }
     resultado = asyncio.run(locutor.locutar_episodio(bloques, [motor], tmp_path, concurrencia=6))
     assert [p.name for p in resultado.fragmentos_por_bloque["espana"]] == [
@@ -183,7 +196,7 @@ def test_locutar_episodio_respeta_la_concurrencia_maxima(tmp_path):
 def test_locutar_episodio_usa_el_motor_secundario_si_el_principal_falla_siempre(tmp_path):
     principal = _MotorSiempreFalla(nombre="principal")
     secundario = _MotorFalso(nombre="secundario")
-    bloques = {"espana": "Álex: hola\nMaría: adiós"}
+    bloques = {"espana": "Álex: hola\nSanti: adiós"}
     resultado = asyncio.run(
         locutor.locutar_episodio(
             bloques, [principal, secundario], tmp_path, reintentos=0, espera_base_s=0
@@ -217,7 +230,7 @@ def test_locutar_episodio_reintenta_antes_de_darse_por_vencido(tmp_path):
 def test_locutar_episodio_lanza_error_si_superan_el_umbral_de_fallos(tmp_path, monkeypatch):
     monkeypatch.setattr(locutor.settings, "max_fraccion_fallos_locucion", 0.10)
     motor = _MotorSiempreFalla()
-    bloques = {"espana": "Álex: uno\nMaría: dos\nÁlex: tres"}
+    bloques = {"espana": "Álex: uno\nSanti: dos\nÁlex: tres"}
     with pytest.raises(locutor.ErrorLocucion):
         asyncio.run(
             locutor.locutar_episodio(bloques, [motor], tmp_path, reintentos=0, espera_base_s=0)
@@ -228,8 +241,8 @@ def test_locutar_episodio_arregla_el_bug_de_ficheros_sobrescritos(tmp_path):
     # Bug histórico: un contador global por episodio pisaba fragmentos de otros bloques.
     motor = _MotorFalso()
     bloques = {
-        "espana": "Álex: contenido espana uno\nMaría: contenido espana dos",
-        "friki": "Álex: contenido friki uno\nMaría: contenido friki dos",
+        "espana": "Álex: contenido espana uno\nSanti: contenido espana dos",
+        "friki": "Álex: contenido friki uno\nSanti: contenido friki dos",
     }
     resultado = asyncio.run(locutor.locutar_episodio(bloques, [motor], tmp_path))
 
@@ -242,14 +255,14 @@ def test_locutar_episodio_arregla_el_bug_de_ficheros_sobrescritos(tmp_path):
     ]
     assert contenido_espana == [
         "alex:contenido espana uno",
-        "maria:contenido espana dos",
+        "santi:contenido espana dos",
     ]
     contenido_friki = [
         ruta.read_text(encoding="utf-8") for ruta in resultado.fragmentos_por_bloque["friki"]
     ]
     assert contenido_friki == [
         "alex:contenido friki uno",
-        "maria:contenido friki dos",
+        "santi:contenido friki dos",
     ]
 
 
@@ -265,8 +278,8 @@ def test_procesar_guion_a_audio_con_motor_inyectado_devuelve_rutas_str(tmp_path,
     monkeypatch.setattr(locutor.settings, "carpeta_temp", str(tmp_path))
     motor = _MotorFalso()
     # La tercera línea, sin blanco de por medio y sin forma "Palabra:", se une
-    # como continuación al turno de María (ver test_parsear_turnos_linea_continuacion_se_une).
-    guion = "Álex: buenos días\nMaría: hola a todos\nsin prefijo de locutor"
+    # como continuación al turno de Santi (ver test_parsear_turnos_linea_continuacion_se_une).
+    guion = "Álex: buenos días\nSanti: hola a todos\nsin prefijo de locutor"
 
     piezas = asyncio.run(locutor.procesar_guion_a_audio(guion, motores=[motor]))
 
@@ -274,7 +287,7 @@ def test_procesar_guion_a_audio_con_motor_inyectado_devuelve_rutas_str(tmp_path,
     assert all(isinstance(p, str) for p in piezas)
     assert Path(piezas[0]).read_text(encoding="utf-8") == "alex:buenos días"
     assert (
-        Path(piezas[1]).read_text(encoding="utf-8") == "maria:hola a todos sin prefijo de locutor"
+        Path(piezas[1]).read_text(encoding="utf-8") == "santi:hola a todos sin prefijo de locutor"
     )
 
 

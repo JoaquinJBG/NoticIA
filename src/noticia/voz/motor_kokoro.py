@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from noticia.config import settings
-from noticia.voz.base import ErrorMotorVoz, Locutor, MotorNoDisponible
+from noticia.voz.base import ErrorMotorVoz, Locutor, MotorNoDisponible, ajuste
 from noticia.voz.modelos import modelos_kokoro_presentes, rutas_kokoro
 
 logger = logging.getLogger("noticia.voz.motor_kokoro")
@@ -16,9 +16,7 @@ logger = logging.getLogger("noticia.voz.motor_kokoro")
 
 def voz_y_velocidad(locutor: Locutor) -> tuple[str, float]:
     """Devuelve (voz, velocidad) configuradas para `locutor`."""
-    if locutor == "alex":
-        return settings.kokoro_voz_alex, settings.kokoro_velocidad_alex
-    return settings.kokoro_voz_maria, settings.kokoro_velocidad_maria
+    return ajuste("kokoro_voz", locutor), ajuste("kokoro_velocidad", locutor)
 
 
 def _fabrica_kokoro(onnx: str, voices: str) -> Any:

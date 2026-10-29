@@ -5,16 +5,18 @@ import logging
 from pathlib import Path
 
 from noticia.config import settings
-from noticia.voz.base import ErrorMotorVoz, Locutor
+from noticia.voz.base import ErrorMotorVoz, Locutor, ajuste
 
 logger = logging.getLogger("noticia.voz.motor_edge")
 
 
 def voz_y_rate(locutor: Locutor) -> tuple[str, str]:
     """Devuelve (voz, rate) configurados para `locutor`."""
-    if locutor == "alex":
-        return settings.voz_alex, settings.rate_alex
-    return settings.voz_maria, settings.rate_maria
+    return ajuste("voz", locutor), ajuste("rate", locutor)
+
+
+def pitch(locutor: Locutor) -> str:
+    return ajuste("pitch", locutor)
 
 
 class MotorEdge:
@@ -37,7 +39,7 @@ class MotorEdge:
 
         voz, rate = voz_y_rate(locutor)
         try:
-            await edge_tts.Communicate(texto, voz, rate=rate).save(str(ruta))
+            await edge_tts.Communicate(texto, voz, rate=rate, pitch=pitch(locutor)).save(str(ruta))
         except Exception as exc:
             logger.error("edge-tts falló al sintetizar para %s: %s", locutor, exc)
             raise ErrorMotorVoz(f"edge-tts falló al sintetizar: {exc}") from exc

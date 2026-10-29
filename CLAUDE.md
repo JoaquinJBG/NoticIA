@@ -1,7 +1,7 @@
 # NoticIA — Instrucciones del proyecto
 
 NoticIA es un **podcast diario automatizado**: transforma la actualidad en una tertulia
-entre dos locutores (**Álex** y **María**) y produce un MP3 final.
+entre dos amigos (**Álex** y **Santi**; cada N episodios una **invitada** sustituye a uno de ellos) y produce un MP3 final.
 
 ## Pipeline
 
@@ -22,6 +22,8 @@ definidos en `bloques.py`. `fechas.py` resuelve "hoy en Madrid" y el parseo de f
 - `src/noticia/{ingesta,seleccion,generador,locutor,editor,masterizado,publicador}.py` — el pipeline.
 - `src/noticia/bloques.py` — orden de emisión y categorías de noticias.
 - `src/noticia/fechas.py` — fecha de "hoy" en Madrid y parseo de fechas.
+- `src/noticia/personajes.py` — reparto del episodio (`reparto_para_fecha`): Álex + Santi, o la invitada
+  sustituyendo a uno; determinista por fecha. Ranuras de voz: `alex`, `santi`, `invitada`.
 - `src/noticia/voz/` — motores de voz (`motor_edge`, `motor_kokoro`, `motor_chatterbox`),
   `selector.py` (cadena de motores por preferencia/GPU), `gpu.py`, `texto.py` (limpieza y
   pronunciación) y `modelos.py`/`muestras.py` (descarga de pesos y muestras de audio).

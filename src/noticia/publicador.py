@@ -57,6 +57,7 @@ class EpisodioPublicable:
     capitulos: list[tuple[str, float]]
     guion: Path | None = None
     motor_voz: str = ""
+    presentadores: str = ""  # vacío => los habituales ("Álex y Santi")
 
 
 def titulo_episodio(fecha: date) -> str:
@@ -134,7 +135,7 @@ def asegurar_portada(ruta: Path) -> Path:
     )
     _centrar_texto(
         dibujo,
-        "Álex y María",
+        "Álex y Santi",
         fuente_subtitulo,
         _ANCHO_PORTADA,
         _ALTO_PORTADA / 2 + 140,
@@ -152,7 +153,14 @@ def asegurar_portada(ruta: Path) -> Path:
     return ruta
 
 
-def etiquetar_mp3(ruta: Path, titulo: str, fecha: date, descripcion: str, portada: Path) -> None:
+def etiquetar_mp3(
+    ruta: Path,
+    titulo: str,
+    fecha: date,
+    descripcion: str,
+    portada: Path,
+    presentadores: str = "Álex y Santi",
+) -> None:
     """Escribe las etiquetas ID3 del episodio, incluida la portada como APIC."""
     from mutagen.id3 import APIC, COMM, ID3, TALB, TCON, TDRC, TIT2, TLAN, TPE1, ID3NoHeaderError
 
@@ -162,7 +170,7 @@ def etiquetar_mp3(ruta: Path, titulo: str, fecha: date, descripcion: str, portad
         etiquetas = ID3()
 
     etiquetas.setall("TIT2", [TIT2(encoding=3, text=titulo)])
-    etiquetas.setall("TPE1", [TPE1(encoding=3, text="Álex y María")])
+    etiquetas.setall("TPE1", [TPE1(encoding=3, text=presentadores)])
     etiquetas.setall("TALB", [TALB(encoding=3, text=settings.podcast_titulo)])
     etiquetas.setall("TDRC", [TDRC(encoding=3, text=fecha.isoformat())])
     etiquetas.setall("TCON", [TCON(encoding=3, text="Podcast")])
@@ -334,7 +342,14 @@ def publicar_episodio(
 
     titulo = titulo_episodio(ep.fecha)
     notas_texto, notas_html = construir_notas(ep.noticias, ep.fecha)
-    etiquetar_mp3(destino_mp3, titulo, ep.fecha, notas_texto, portada)
+    etiquetar_mp3(
+        destino_mp3,
+        titulo,
+        ep.fecha,
+        notas_texto,
+        portada,
+        ep.presentadores or "Álex y Santi",
+    )
 
     tamano_bytes = destino_mp3.stat().st_size
 

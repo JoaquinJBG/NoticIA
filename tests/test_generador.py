@@ -41,7 +41,7 @@ def test_fallbacks_de_intro_y_outro_son_locutables(monkeypatch):
     """Si Claude no responde, generar_intro/generar_outro caen a un texto fijo.
 
     Ese texto fijo tiene que hablar con los locutores que el parser de
-    locutor.py reconoce de verdad (Álex/María), o la línea se descarta en
+    locutor.py reconoce de verdad (Álex/Santi/invitada), o la línea se descarta en
     silencio y el fallback se queda mudo.
     """
     monkeypatch.setattr(generador, "llamar_ia", lambda s, u: "")
@@ -56,7 +56,7 @@ def test_fallbacks_de_intro_y_outro_son_locutables(monkeypatch):
             parseada = locutor._parsear_linea(linea.strip())
             assert parseada is not None, f"línea no locutable en el fallback: {linea!r}"
             locutor_id, _ = parseada
-            assert locutor_id in ("alex", "maria")
+            assert locutor_id in ("alex", "santi", "invitada")
 
 
 def test_construir_guion_incluye_la_fecha_en_los_prompts(monkeypatch):
@@ -158,3 +158,42 @@ def test_construir_bloque_con_contexto_descarta_noticias_comerciales_o_irrelevan
     assert "promocion" in prompt or "promoción" in prompt
     assert "comercial" in prompt
     assert "audiencia española" in prompt or "interés" in prompt
+
+
+def test_los_prompts_se_construyen_con_el_reparto_del_episodio(monkeypatch):
+    from noticia.personajes import Reparto
+
+    monkeypatch.setattr("noticia.config.settings.invitada_nombre", "Marta")
+    capturados = []
+
+    def fake(sistema, usuario):
+        capturados.append((sistema, usuario))
+        return "Álex: hola"
+
+    monkeypatch.setattr(generador, "llamar_ia", fake)
+    reparto = Reparto(("alex", "invitada"), sustituido="santi")
+    noticias = [{"titular": "T", "resumen": "", "fuente": "f", "otras_fuentes": []}]
+
+    generador.construir_bloque_con_contexto("espana", noticias, "briefing", reparto=reparto)
+
+    sistema, usuario = capturados[0]
+    assert "REPARTO DE HOY: Álex, Marta" in sistema
+    assert "Marta es la invitada" in sistema
+    assert '"Álex:" o "Marta:"' in usuario
+    assert "Santi" not in usuario
+
+
+def test_fallbacks_usan_los_nombres_del_reparto(monkeypatch):
+    from noticia.personajes import Reparto
+
+    monkeypatch.setattr("noticia.config.settings.invitada_nombre", "Marta")
+    monkeypatch.setattr(generador, "llamar_ia", lambda s, u: "")
+    reparto = Reparto(("invitada", "santi"), sustituido="alex")
+
+    intro = generador.generar_intro({}, reparto=reparto)
+    outro = generador.generar_outro(reparto=reparto)
+
+    assert intro.startswith("Marta:") and "\nSanti:" in intro
+    assert outro.startswith("Marta:") and "\nSanti:" in outro
+    for linea in (intro + "\n" + outro).split("\n"):
+        assert locutor._parsear_linea(linea.strip()) is not None

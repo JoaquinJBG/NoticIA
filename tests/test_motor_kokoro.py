@@ -43,8 +43,9 @@ def test_voz_y_velocidad_alex():
     assert voz_y_velocidad("alex") == ("em_alex", 0.96)
 
 
-def test_voz_y_velocidad_maria():
-    assert voz_y_velocidad("maria") == ("ef_dora", 1.05)
+def test_voz_y_velocidad_santi_e_invitada():
+    assert voz_y_velocidad("santi") == ("em_santa", 1.02)
+    assert voz_y_velocidad("invitada") == ("ef_dora", 1.05)
 
 
 def test_sintetizar_llama_con_lang_es_y_voz_correcta(tmp_path):
@@ -62,12 +63,12 @@ def test_sintetizar_llama_con_lang_es_y_voz_correcta(tmp_path):
     assert llamada["speed"] == 0.96
 
 
-def test_sintetizar_maria_usa_su_voz_y_velocidad(tmp_path):
+def test_sintetizar_invitada_usa_su_voz_y_velocidad(tmp_path):
     motor = MotorKokoro(fabrica=_fabrica_ok)
     asyncio.run(motor.cargar())
     ruta = tmp_path / "salida.wav"
 
-    asyncio.run(motor.sintetizar("Hola", "maria", ruta))
+    asyncio.run(motor.sintetizar("Hola", "invitada", ruta))
 
     llamada = _KokoroFalso.llamadas[0]
     assert llamada["voice"] == "ef_dora"

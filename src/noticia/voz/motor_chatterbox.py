@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Any
 
 from noticia.config import settings
-from noticia.voz.base import ErrorMotorVoz, Locutor, MotorNoDisponible
+from noticia.personajes import locutores_requeridos
+from noticia.voz.base import ErrorMotorVoz, Locutor, MotorNoDisponible, ajuste
 from noticia.voz.texto import trocear_frases
 
 logger = logging.getLogger("noticia.voz.motor_chatterbox")
@@ -24,15 +25,11 @@ _CLAVES_FALTANTES_ESPERADAS = {"tokenizer._mel_filters", "tokenizer.window"}
 
 
 def _exageracion(locutor: Locutor) -> float:
-    if locutor == "alex":
-        return settings.chatterbox_exageracion_alex
-    return settings.chatterbox_exageracion_maria
+    return ajuste("chatterbox_exageracion", locutor)
 
 
 def _referencia(locutor: Locutor) -> Path:
-    if locutor == "alex":
-        return settings.chatterbox_ref_alex
-    return settings.chatterbox_ref_maria
+    return ajuste("chatterbox_ref", locutor)
 
 
 _CONDICION_CORTE = "if long_tail or alignment_repetition or token_repetition:"
@@ -152,7 +149,7 @@ class MotorChatterbox:
             return False, "el paquete chatterbox no está instalado"
         if importlib.util.find_spec("torch") is None:
             return False, "el paquete torch no está instalado"
-        for locutor in ("alex", "maria"):
+        for locutor in locutores_requeridos():
             ref = _referencia(locutor)
             if not ref.exists():
                 return False, f"falta el WAV de referencia {ref}"
@@ -164,7 +161,7 @@ class MotorChatterbox:
                 return
             try:
                 self._modelo = await asyncio.to_thread(self._cargador, "cuda")
-                for locutor in ("alex", "maria"):
+                for locutor in locutores_requeridos():
                     ref = _referencia(locutor)
                     exageracion = _exageracion(locutor)
                     await asyncio.to_thread(
