@@ -29,7 +29,7 @@ definidos en `bloques.py`. `fechas.py` resuelve "hoy en Madrid" y el parseo de f
   pronunciación) y `modelos.py`/`muestras.py` (descarga de pesos y muestras de audio).
 - `src/noticia/cli.py` — punto de entrada (`main`, modos `--solo-guion`/`--solo-audio`).
 - `reglas/` — prompts de personalidad y contexto.
-- `sintonias/` — músicas de fondo por bloque.
+- `sintonias/` — música de fondo (`vintage.mp3`, CC0, fuera de git; ver `CREDITOS.md`).
 - `tests/` — pytest.
 - `docs/superpowers/` — specs y planes (hoja de ruta del rework incluida).
 

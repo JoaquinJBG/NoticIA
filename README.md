@@ -85,7 +85,7 @@ El resultado final se guarda en `output/`.
 - `src/noticia/voz/`: Motores de voz (edge-tts, Kokoro, Chatterbox), selector por GPU y
   utilidades de texto para locución.
 - `reglas/`: Prompts de sistema y contexto que definen la personalidad de los locutores.
-- `sintonias/`: Archivos MP3 con la música de fondo para cada bloque.
+- `sintonias/`: Música de fondo (`vintage.mp3`, CC0; no va en git, ver `CREDITOS.md`).
 - `output/`: Carpeta donde se generan los podcasts finales y `output/publicacion/` (feed
   RSS, ID3, portada).
 - `temp/`: Carpeta temporal para fragmentos de audio (se limpia automáticamente).

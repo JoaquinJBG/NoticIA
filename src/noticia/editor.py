@@ -19,9 +19,16 @@ logger = logging.getLogger("noticia.editor")
 CROSSFADE_BLOQUES_MS = 1500
 CROSSFADE_MUSICA_MS = 1500
 
-VOL_FONDO_DB = -28
-VOL_RAFAGA_DB = -12
+# La pista ("Vintage") ya viene masterizada a ~-12 dBFS: -18 dB de fondo la deja
+# claramente por debajo de la voz.
+VOL_FONDO_DB = -18
+VOL_RAFAGA_DB = -6
 DURACION_RAFAGA_MS = 2000
+DURACION_RAFAGA_INTRO_MS = 4000
+BAJADA_MUSICA_MS = 1000
+ENTRADA_VOZ_MS = 500
+CIERRE_FUNDIDO_MS = 3000
+COLA_MUSICA_MS = 1500
 
 
 class ErrorMontaje(Exception):
@@ -114,12 +121,17 @@ def _mezclar_musica(bloque: str, voces_bloque: AudioSegment) -> AudioSegment:
     if not ruta_musica or not Path(ruta_musica).exists():
         return voces_bloque
     try:
+        # La intro arranca con música sola (4 s) antes de que entre la voz; el
+        # resto de bloques solo con una ráfaga corta.
+        rafaga_ms = DURACION_RAFAGA_INTRO_MS if bloque == "intro" else DURACION_RAFAGA_MS
+        entrada_voz_ms = rafaga_ms if bloque == "intro" else ENTRADA_VOZ_MS
         musica = AudioSegment.from_file(ruta_musica)
-        musica_bucle = _bucle_musica(musica, len(voces_bloque) + DURACION_RAFAGA_MS)
-        rafaga = musica_bucle[:DURACION_RAFAGA_MS] + VOL_RAFAGA_DB
-        fondo = musica_bucle[DURACION_RAFAGA_MS:] + VOL_FONDO_DB
-        musica_final = (rafaga + fondo).fade_out(3000)
-        return musica_final.overlay(voces_bloque, position=500)
+        musica_bucle = _bucle_musica(musica, entrada_voz_ms + len(voces_bloque) + COLA_MUSICA_MS)
+        # Bajada suave de la ráfaga al fondo (crossfade) en lugar de un corte seco.
+        rafaga = musica_bucle[: rafaga_ms + BAJADA_MUSICA_MS] + VOL_RAFAGA_DB
+        fondo = musica_bucle[rafaga_ms:] + VOL_FONDO_DB
+        musica_final = rafaga.append(fondo, crossfade=BAJADA_MUSICA_MS).fade_out(CIERRE_FUNDIDO_MS)
+        return musica_final.overlay(voces_bloque, position=entrada_voz_ms)
     except Exception as exc:
         logger.warning("Fallo al mezclar música del bloque %s: %s", bloque, exc)
         return voces_bloque

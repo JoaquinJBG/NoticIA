@@ -123,3 +123,22 @@ def test_ensamblar_podcast_dinamico_avisa_de_sintonias_faltantes(tmp_path, monke
 
     assert resultado.sintonias_faltantes == [ruta_falta]
     assert "Falta la sintonía" in caplog.text
+
+
+def test_mezclar_musica_intro_arranca_con_musica_sola_y_baja_bajo_la_voz(tmp_path, monkeypatch):
+    from pydub.generators import Sine
+
+    pista = tmp_path / "pista.wav"
+    Sine(220).to_audio_segment(duration=10_000).export(pista, format="wav")
+    monkeypatch.setattr(
+        type(editor.settings), "sintonias", property(lambda self: {"intro": str(pista)})
+    )
+    voz = Sine(440).to_audio_segment(duration=6_000) - 10
+
+    mezcla = editor._mezclar_musica("intro", voz)
+
+    assert len(mezcla) == editor.DURACION_RAFAGA_INTRO_MS + len(voz) + editor.COLA_MUSICA_MS
+    sola = mezcla[1000:3000]
+    con_voz = mezcla[7000:8000]
+    assert sola.dBFS > con_voz.dBFS - 20  # música sola presente, sin voz
+    assert sola.dBFS < -3

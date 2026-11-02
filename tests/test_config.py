@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
@@ -126,3 +128,7 @@ def test_las_reglas_no_mencionan_a_maria_ni_a_personas_reales():
     for texto in textos:
         assert "María" not in texto
         assert "Wild Project" not in texto
+
+
+def test_sintonias_usan_la_pista_vintage_en_todos_los_bloques():
+    assert {Path(v).name for v in config.settings.sintonias.values()} == {"vintage.mp3"}

@@ -120,20 +120,21 @@ class Settings(BaseSettings):
 
     @property
     def ruta_sintonia(self) -> str:
-        return str(ROOT / "sintonias" / "sintonia1.mp3")
+        return str(ROOT / "sintonias" / "vintage.mp3")
 
     @property
     def sintonias(self) -> dict[str, str]:
-        base = ROOT / "sintonias"
+        """Música de fondo por bloque: una única pista ("Vintage", HoliznaCC0, CC0)."""
+        pista = self.ruta_sintonia
         return {
-            "espana": str(base / "serio.mp3"),
-            "geopolitica": str(base / "serio.mp3"),
-            "ia_y_actualidad": str(base / "animado.mp3"),
-            "ciencia": str(base / "neutro.mp3"),
-            "friki": str(base / "animado.mp3"),
-            "futbol": str(base / "neutro.mp3"),
-            "intro": str(base / "sintonia1.mp3"),
-            "outro": str(base / "sintonia1.mp3"),
+            "espana": pista,
+            "geopolitica": pista,
+            "ia_y_actualidad": pista,
+            "ciencia": pista,
+            "friki": pista,
+            "futbol": pista,
+            "intro": pista,
+            "outro": pista,
         }
 
 
