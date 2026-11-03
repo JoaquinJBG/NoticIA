@@ -37,3 +37,6 @@ voces/*.wav
 # Voces de referencia propias (WAV y candidatas)
 voces/
 voces/candidatas/
+
+# Investigación: transcripciones de terceros (no se suben)
+investigacion/transcripciones/

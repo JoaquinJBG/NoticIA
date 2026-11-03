@@ -1,0 +1,1779 @@
+{
+ "buscatelavida/I4Do5rejRbw": {
+  "duracion_min": 97.5,
+  "palabras": 18411,
+  "wpm": 188.9,
+  "wpm_ventanas_p10_p90": [
+   161.0,
+   202.0
+  ],
+  "frase_media_palabras": 12.2,
+  "frase_mediana": 8,
+  "frases_cortas_pct": 34.3,
+  "frases_largas_pct": 13.4,
+  "segmentos_tema": {
+   "segmentos_aprox": 18,
+   "min_por_segmento": 5.5
+  },
+  "preguntas_x1000": 22.1,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 7.0,
+   "tío": 7.4,
+   "bueno": 3.4,
+   "mira": 0.6,
+   "a ver": 1.3,
+   "claro": 5.1,
+   "vale": 4.7,
+   "oye": 0.9,
+   "es que": 3.6,
+   "no sé": 2.9
+  },
+  "malsonantes_x1000": 0.71,
+  "transiciones_explicitas": 11,
+  "ganchos_x1000": 0.33,
+  "publicidad_x1000": 0.05,
+  "vosotros_x1000": 0.3,
+  "nosotros_x1000": 1.4,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "no",
+    103
+   ],
+   [
+    "y",
+    102
+   ],
+   [
+    "o",
+    100
+   ],
+   [
+    "sí",
+    89
+   ],
+   [
+    "yo",
+    58
+   ],
+   [
+    "pero",
+    51
+   ],
+   [
+    "entonces",
+    39
+   ],
+   [
+    "eh",
+    35
+   ]
+  ],
+  "formato": "tertulia de negocios"
+ },
+ "buscatelavida/pNqdQZQRsbE": {
+  "duracion_min": 122.7,
+  "palabras": 21887,
+  "wpm": 178.4,
+  "wpm_ventanas_p10_p90": [
+   156.0,
+   197.0
+  ],
+  "frase_media_palabras": 10.7,
+  "frase_mediana": 7.0,
+  "frases_cortas_pct": 38.5,
+  "frases_largas_pct": 9.6,
+  "segmentos_tema": {
+   "segmentos_aprox": 29,
+   "min_por_segmento": 4.2
+  },
+  "preguntas_x1000": 25.7,
+  "exclamaciones_x1000": 0.2,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 6.8,
+   "tío": 4.8,
+   "bueno": 4.2,
+   "mira": 1.3,
+   "a ver": 1.2,
+   "claro": 5.5,
+   "vale": 3.1,
+   "es que": 2.5,
+   "no sé": 2.1,
+   "imagínate": 0.6,
+   "ojo": 0.5
+  },
+  "malsonantes_x1000": 1.1,
+  "transiciones_explicitas": 12,
+  "ganchos_x1000": 0.27,
+  "publicidad_x1000": 0.27,
+  "vosotros_x1000": 0.2,
+  "nosotros_x1000": 2.0,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "sí",
+    151
+   ],
+   [
+    "no",
+    124
+   ],
+   [
+    "o",
+    102
+   ],
+   [
+    "y",
+    91
+   ],
+   [
+    "pero",
+    59
+   ],
+   [
+    "es",
+    54
+   ],
+   [
+    "bueno",
+    50
+   ],
+   [
+    "a",
+    48
+   ]
+  ],
+  "formato": "tertulia de negocios"
+ },
+ "buscatelavida/VYup-JyE_4o": {
+  "duracion_min": 155.1,
+  "palabras": 32188,
+  "wpm": 207.6,
+  "wpm_ventanas_p10_p90": [
+   190.0,
+   224.0
+  ],
+  "frase_media_palabras": 10.2,
+  "frase_mediana": 7.0,
+  "frases_cortas_pct": 39.1,
+  "frases_largas_pct": 8.1,
+  "segmentos_tema": {
+   "segmentos_aprox": 29,
+   "min_por_segmento": 5.4
+  },
+  "preguntas_x1000": 21.7,
+  "exclamaciones_x1000": 0.1,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 5.0,
+   "tío": 9.7,
+   "bueno": 2.8,
+   "mira": 0.6,
+   "a ver": 1.3,
+   "claro": 3.3,
+   "vale": 2.2,
+   "oye": 1.0,
+   "es que": 2.5,
+   "no sé": 2.7
+  },
+  "malsonantes_x1000": 1.86,
+  "transiciones_explicitas": 13,
+  "ganchos_x1000": 0.37,
+  "publicidad_x1000": 0.0,
+  "vosotros_x1000": 0.3,
+  "nosotros_x1000": 1.4,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "sí",
+    238
+   ],
+   [
+    "y",
+    193
+   ],
+   [
+    "no",
+    192
+   ],
+   [
+    "yo",
+    111
+   ],
+   [
+    "pero",
+    100
+   ],
+   [
+    "o",
+    92
+   ],
+   [
+    "es",
+    86
+   ],
+   [
+    "el",
+    62
+   ]
+  ],
+  "formato": "tertulia de negocios"
+ },
+ "pizarritas/g5xHK1Zpy34": {
+  "duracion_min": 31.4,
+  "palabras": 6573,
+  "wpm": 209.2,
+  "wpm_ventanas_p10_p90": [
+   18.0,
+   217.0
+  ],
+  "frase_media_palabras": 23.4,
+  "frase_mediana": 17,
+  "frases_cortas_pct": 22.8,
+  "frases_largas_pct": 35.6,
+  "segmentos_tema": {
+   "segmentos_aprox": 5,
+   "min_por_segmento": 6.6
+  },
+  "preguntas_x1000": 2.7,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.1,
+  "muletillas_x1000": {
+   "o sea": 2.0,
+   "bueno": 3.7,
+   "a ver": 0.9,
+   "la verdad": 1.2,
+   "claro": 2.7,
+   "oye": 0.9,
+   "es que": 5.6
+  },
+  "malsonantes_x1000": 0.3,
+  "transiciones_explicitas": 7,
+  "ganchos_x1000": 0.46,
+  "publicidad_x1000": 0.15,
+  "vosotros_x1000": 0.0,
+  "nosotros_x1000": 4.0,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "sí",
+    19
+   ],
+   [
+    "es",
+    15
+   ],
+   [
+    "y",
+    14
+   ],
+   [
+    "eh",
+    13
+   ],
+   [
+    "el",
+    12
+   ],
+   [
+    "no",
+    11
+   ],
+   [
+    "bueno",
+    8
+   ],
+   [
+    "yo",
+    7
+   ]
+  ],
+  "formato": "tertulia de fútbol (2-3 personas)"
+ },
+ "pizarritas/kMdg22AO-ds": {
+  "duracion_min": 31.5,
+  "palabras": 6753,
+  "wpm": 214.1,
+  "wpm_ventanas_p10_p90": [
+   42.0,
+   225.0
+  ],
+  "frase_media_palabras": 20.2,
+  "frase_mediana": 14.0,
+  "frases_cortas_pct": 24.6,
+  "frases_largas_pct": 26.9,
+  "segmentos_tema": {
+   "segmentos_aprox": 7,
+   "min_por_segmento": 4.7
+  },
+  "preguntas_x1000": 6.7,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 0.9,
+   "bueno": 5.0,
+   "a ver": 1.3,
+   "la verdad": 0.7,
+   "claro": 2.8,
+   "vale": 0.7,
+   "oye": 0.7,
+   "es que": 5.0
+  },
+  "malsonantes_x1000": 0.44,
+  "transiciones_explicitas": 5,
+  "ganchos_x1000": 0.89,
+  "publicidad_x1000": 0.15,
+  "vosotros_x1000": 0.1,
+  "nosotros_x1000": 2.8,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "sí",
+    22
+   ],
+   [
+    "eh",
+    19
+   ],
+   [
+    "el",
+    17
+   ],
+   [
+    "no",
+    15
+   ],
+   [
+    "pero",
+    12
+   ],
+   [
+    "bueno",
+    12
+   ],
+   [
+    "es",
+    12
+   ],
+   [
+    "a",
+    11
+   ]
+  ],
+  "formato": "tertulia de fútbol (2-3 personas)"
+ },
+ "pizarritas/N8klxeR1wjg": {
+  "duracion_min": 42.2,
+  "palabras": 9006,
+  "wpm": 213.4,
+  "wpm_ventanas_p10_p90": [
+   93.0,
+   224.0
+  ],
+  "frase_media_palabras": 27.0,
+  "frase_mediana": 20.0,
+  "frases_cortas_pct": 13.5,
+  "frases_largas_pct": 40.4,
+  "segmentos_tema": {
+   "segmentos_aprox": 3,
+   "min_por_segmento": 15.0
+  },
+  "preguntas_x1000": 3.6,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 1.2,
+   "bueno": 1.4,
+   "mira": 0.6,
+   "claro": 2.3,
+   "vale": 0.7,
+   "es que": 3.7,
+   "no sé": 1.1
+  },
+  "malsonantes_x1000": 0.0,
+  "transiciones_explicitas": 2,
+  "ganchos_x1000": 0.22,
+  "publicidad_x1000": 0.0,
+  "vosotros_x1000": 0.0,
+  "nosotros_x1000": 3.1,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    32
+   ],
+   [
+    "eh",
+    25
+   ],
+   [
+    "el",
+    18
+   ],
+   [
+    "sí",
+    15
+   ],
+   [
+    "no",
+    14
+   ],
+   [
+    "es",
+    12
+   ],
+   [
+    "entonces",
+    12
+   ],
+   [
+    "creo",
+    11
+   ]
+  ],
+  "formato": "tertulia de fútbol (2-3 personas)"
+ },
+ "rocaproject/Af_YuR5O2BI": {
+  "duracion_min": 109.8,
+  "palabras": 17304,
+  "wpm": 157.6,
+  "wpm_ventanas_p10_p90": [
+   136.0,
+   174.0
+  ],
+  "frase_media_palabras": 18.8,
+  "frase_mediana": 13.0,
+  "frases_cortas_pct": 27.0,
+  "frases_largas_pct": 25.8,
+  "segmentos_tema": {
+   "segmentos_aprox": 31,
+   "min_por_segmento": 3.6
+  },
+  "preguntas_x1000": 10.6,
+  "exclamaciones_x1000": 0.1,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 0.9,
+   "bueno": 2.0,
+   "mira": 0.9,
+   "a ver": 0.6,
+   "claro": 2.0,
+   "vale": 1.0,
+   "es que": 2.2,
+   "no sé": 0.9,
+   "fíjate": 0.5
+  },
+  "malsonantes_x1000": 0.4,
+  "transiciones_explicitas": 4,
+  "ganchos_x1000": 0.4,
+  "publicidad_x1000": 0.06,
+  "vosotros_x1000": 0.1,
+  "nosotros_x1000": 1.2,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    124
+   ],
+   [
+    "es",
+    30
+   ],
+   [
+    "no",
+    28
+   ],
+   [
+    "pero",
+    27
+   ],
+   [
+    "entonces",
+    23
+   ],
+   [
+    "sí",
+    21
+   ],
+   [
+    "qué",
+    20
+   ],
+   [
+    "eh",
+    19
+   ]
+  ],
+  "formato": "entrevista"
+ },
+ "rocaproject/gzX0G4Mn1iQ": {
+  "duracion_min": 86.1,
+  "palabras": 17141,
+  "wpm": 199.0,
+  "wpm_ventanas_p10_p90": [
+   148.0,
+   214.0
+  ],
+  "frase_media_palabras": 17.7,
+  "frase_mediana": 12,
+  "frases_cortas_pct": 26.6,
+  "frases_largas_pct": 22.4,
+  "segmentos_tema": {
+   "segmentos_aprox": 12,
+   "min_por_segmento": 7.2
+  },
+  "preguntas_x1000": 17.0,
+  "exclamaciones_x1000": 0.2,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 15.4,
+   "tío": 0.6,
+   "bueno": 2.9,
+   "mira": 0.8,
+   "a ver": 3.6,
+   "la verdad": 5.4,
+   "claro": 2.8,
+   "vale": 1.0,
+   "oye": 0.6,
+   "de verdad": 1.5,
+   "es que": 3.2,
+   "no sé": 2.6
+  },
+  "malsonantes_x1000": 0.29,
+  "transiciones_explicitas": 1,
+  "ganchos_x1000": 0.06,
+  "publicidad_x1000": 0.41,
+  "vosotros_x1000": 0.1,
+  "nosotros_x1000": 1.1,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    81
+   ],
+   [
+    "sí",
+    67
+   ],
+   [
+    "o",
+    50
+   ],
+   [
+    "entonces",
+    48
+   ],
+   [
+    "pero",
+    47
+   ],
+   [
+    "no",
+    39
+   ],
+   [
+    "eh",
+    38
+   ],
+   [
+    "a",
+    29
+   ]
+  ],
+  "formato": "entrevista"
+ },
+ "rocaproject/NkRCt66m__8": {
+  "duracion_min": 104.3,
+  "palabras": 14924,
+  "wpm": 143.1,
+  "wpm_ventanas_p10_p90": [
+   126.0,
+   157.0
+  ],
+  "frase_media_palabras": 15.3,
+  "frase_mediana": 10.0,
+  "frases_cortas_pct": 32.6,
+  "frases_largas_pct": 19.1,
+  "segmentos_tema": {
+   "segmentos_aprox": 28,
+   "min_por_segmento": 3.8
+  },
+  "preguntas_x1000": 12.7,
+  "exclamaciones_x1000": 0.1,
+  "pausas_1s_por_min": 0.1,
+  "muletillas_x1000": {
+   "o sea": 2.1,
+   "bueno": 3.0,
+   "mira": 1.1,
+   "claro": 4.9,
+   "vale": 1.2,
+   "de verdad": 0.5,
+   "es que": 2.3,
+   "no sé": 1.6
+  },
+  "malsonantes_x1000": 0.07,
+  "transiciones_explicitas": 3,
+  "ganchos_x1000": 0.2,
+  "publicidad_x1000": 0.2,
+  "vosotros_x1000": 0.1,
+  "nosotros_x1000": 1.3,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    87
+   ],
+   [
+    "sí",
+    47
+   ],
+   [
+    "es",
+    38
+   ],
+   [
+    "no",
+    35
+   ],
+   [
+    "claro",
+    33
+   ],
+   [
+    "pero",
+    29
+   ],
+   [
+    "o",
+    26
+   ],
+   [
+    "me",
+    23
+   ]
+  ],
+  "formato": "entrevista"
+ },
+ "spicy4tuna/cqWkBN6M_Zo": {
+  "duracion_min": 129.1,
+  "palabras": 28177,
+  "wpm": 218.3,
+  "wpm_ventanas_p10_p90": [
+   203.0,
+   228.0
+  ],
+  "frase_media_palabras": 15.1,
+  "frase_mediana": 10.0,
+  "frases_cortas_pct": 27.8,
+  "frases_largas_pct": 16.9,
+  "segmentos_tema": {
+   "segmentos_aprox": 21,
+   "min_por_segmento": 6.3
+  },
+  "preguntas_x1000": 15.2,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 3.3,
+   "tío": 0.9,
+   "bueno": 4.7,
+   "mira": 1.3,
+   "a ver": 1.9,
+   "claro": 3.4,
+   "vale": 4.6,
+   "es que": 3.4,
+   "no sé": 2.0
+  },
+  "malsonantes_x1000": 0.35,
+  "transiciones_explicitas": 9,
+  "ganchos_x1000": 0.25,
+  "publicidad_x1000": 0.5,
+  "vosotros_x1000": 0.4,
+  "nosotros_x1000": 4.7,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    204
+   ],
+   [
+    "no",
+    107
+   ],
+   [
+    "sí",
+    102
+   ],
+   [
+    "[risas]",
+    71
+   ],
+   [
+    "pero",
+    69
+   ],
+   [
+    "yo",
+    57
+   ],
+   [
+    "es",
+    53
+   ],
+   [
+    "porque",
+    48
+   ]
+  ],
+  "formato": "tertulia/entrevista de negocios"
+ },
+ "spicy4tuna/UAz9_2Zp9wA": {
+  "duracion_min": 121.9,
+  "palabras": 25306,
+  "wpm": 207.6,
+  "wpm_ventanas_p10_p90": [
+   186.0,
+   221.0
+  ],
+  "frase_media_palabras": 18.1,
+  "frase_mediana": 12,
+  "frases_cortas_pct": 22.1,
+  "frases_largas_pct": 25.2,
+  "segmentos_tema": {
+   "segmentos_aprox": 23,
+   "min_por_segmento": 5.3
+  },
+  "preguntas_x1000": 12.5,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 6.6,
+   "tío": 1.9,
+   "bueno": 4.1,
+   "a ver": 1.1,
+   "claro": 6.0,
+   "vale": 4.4,
+   "oye": 1.8,
+   "es que": 3.9,
+   "no sé": 1.6
+  },
+  "malsonantes_x1000": 0.55,
+  "transiciones_explicitas": 9,
+  "ganchos_x1000": 0.55,
+  "publicidad_x1000": 0.24,
+  "vosotros_x1000": 0.2,
+  "nosotros_x1000": 1.9,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    104
+   ],
+   [
+    "es",
+    78
+   ],
+   [
+    "o",
+    75
+   ],
+   [
+    "entonces",
+    65
+   ],
+   [
+    "no",
+    54
+   ],
+   [
+    "pero",
+    53
+   ],
+   [
+    "sí",
+    53
+   ],
+   [
+    "claro",
+    53
+   ]
+  ],
+  "formato": "tertulia/entrevista de negocios"
+ },
+ "tengounplan/KPUcCvEMbyM": {
+  "duracion_min": 127.5,
+  "palabras": 23980,
+  "wpm": 188.1,
+  "wpm_ventanas_p10_p90": [
+   169.0,
+   204.0
+  ],
+  "frase_media_palabras": 20.5,
+  "frase_mediana": 16,
+  "frases_cortas_pct": 23.1,
+  "frases_largas_pct": 30.2,
+  "segmentos_tema": {
+   "segmentos_aprox": 33,
+   "min_por_segmento": 3.9
+  },
+  "preguntas_x1000": 9.8,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 3.6,
+   "bueno": 3.0,
+   "a ver": 1.7,
+   "claro": 4.9,
+   "vale": 2.4,
+   "oye": 0.5,
+   "es que": 2.9,
+   "no sé": 0.8
+  },
+  "malsonantes_x1000": 0.25,
+  "transiciones_explicitas": 14,
+  "ganchos_x1000": 0.46,
+  "publicidad_x1000": 0.17,
+  "vosotros_x1000": 0.3,
+  "nosotros_x1000": 3.2,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    116
+   ],
+   [
+    "pero",
+    70
+   ],
+   [
+    "entonces",
+    64
+   ],
+   [
+    "claro",
+    53
+   ],
+   [
+    "ya",
+    51
+   ],
+   [
+    "o",
+    47
+   ],
+   [
+    "por",
+    41
+   ],
+   [
+    "eh",
+    38
+   ]
+  ],
+  "formato": "entrevista"
+ },
+ "tengounplan/XZh-unZxSfk": {
+  "duracion_min": 112.6,
+  "palabras": 21254,
+  "wpm": 188.8,
+  "wpm_ventanas_p10_p90": [
+   168.0,
+   206.0
+  ],
+  "frase_media_palabras": 19.5,
+  "frase_mediana": 14.0,
+  "frases_cortas_pct": 25.1,
+  "frases_largas_pct": 29.3,
+  "segmentos_tema": {
+   "segmentos_aprox": 25,
+   "min_por_segmento": 4.6
+  },
+  "preguntas_x1000": 13.7,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 3.6,
+   "bueno": 2.1,
+   "mira": 1.0,
+   "a ver": 0.7,
+   "claro": 2.7,
+   "vale": 9.1,
+   "es que": 1.8,
+   "no sé": 0.7
+  },
+  "malsonantes_x1000": 0.09,
+  "transiciones_explicitas": 16,
+  "ganchos_x1000": 0.38,
+  "publicidad_x1000": 0.05,
+  "vosotros_x1000": 1.3,
+  "nosotros_x1000": 1.1,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    79
+   ],
+   [
+    "entonces",
+    68
+   ],
+   [
+    "vale",
+    61
+   ],
+   [
+    "es",
+    48
+   ],
+   [
+    "eh",
+    41
+   ],
+   [
+    "yo",
+    30
+   ],
+   [
+    "o",
+    30
+   ],
+   [
+    "claro",
+    29
+   ]
+  ],
+  "formato": "entrevista"
+ },
+ "urisabat/85aYu_JbtDc": {
+  "duracion_min": 119.0,
+  "palabras": 18215,
+  "wpm": 153.0,
+  "wpm_ventanas_p10_p90": [
+   138.0,
+   166.0
+  ],
+  "frase_media_palabras": 11.6,
+  "frase_mediana": 8,
+  "frases_cortas_pct": 36.6,
+  "frases_largas_pct": 10.6,
+  "segmentos_tema": {
+   "segmentos_aprox": 33,
+   "min_por_segmento": 3.6
+  },
+  "preguntas_x1000": 12.1,
+  "exclamaciones_x1000": 0.1,
+  "pausas_1s_por_min": 0.1,
+  "muletillas_x1000": {
+   "o sea": 1.6,
+   "bueno": 1.6,
+   "claro": 2.0,
+   "vale": 1.5,
+   "increíble": 0.5,
+   "totalmente": 1.0,
+   "es que": 1.5,
+   "no sé": 1.2
+  },
+  "malsonantes_x1000": 0.16,
+  "transiciones_explicitas": 10,
+  "ganchos_x1000": 0.16,
+  "publicidad_x1000": 0.0,
+  "vosotros_x1000": 0.0,
+  "nosotros_x1000": 4.4,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    159
+   ],
+   [
+    "no",
+    82
+   ],
+   [
+    "mhm",
+    61
+   ],
+   [
+    "es",
+    57
+   ],
+   [
+    "yo",
+    49
+   ],
+   [
+    "el",
+    41
+   ],
+   [
+    "sí",
+    41
+   ],
+   [
+    "pero",
+    34
+   ]
+  ],
+  "formato": "entrevista (narración propia del presentador)"
+ },
+ "urisabat/yWci0qCFe6k": {
+  "duracion_min": 106.2,
+  "palabras": 18636,
+  "wpm": 175.5,
+  "wpm_ventanas_p10_p90": [
+   161.0,
+   186.0
+  ],
+  "frase_media_palabras": 23.9,
+  "frase_mediana": 18,
+  "frases_cortas_pct": 14.1,
+  "frases_largas_pct": 36.4,
+  "segmentos_tema": {
+   "segmentos_aprox": 29,
+   "min_por_segmento": 3.7
+  },
+  "preguntas_x1000": 5.1,
+  "exclamaciones_x1000": 0.1,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 1.2,
+   "bueno": 2.0,
+   "claro": 0.9,
+   "es que": 2.0,
+   "no sé": 0.6
+  },
+  "malsonantes_x1000": 0.0,
+  "transiciones_explicitas": 22,
+  "ganchos_x1000": 0.21,
+  "publicidad_x1000": 0.27,
+  "vosotros_x1000": 0.2,
+  "nosotros_x1000": 4.1,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    61
+   ],
+   [
+    "entonces",
+    54
+   ],
+   [
+    "es",
+    37
+   ],
+   [
+    "por",
+    30
+   ],
+   [
+    "eh",
+    29
+   ],
+   [
+    "el",
+    27
+   ],
+   [
+    "no",
+    27
+   ],
+   [
+    "eso",
+    21
+   ]
+  ],
+  "formato": "entrevista (narración propia del presentador)"
+ },
+ "wildproject/51t-wigqHIk": {
+  "duracion_min": 324.4,
+  "palabras": 62113,
+  "wpm": 191.4,
+  "wpm_ventanas_p10_p90": [
+   172.0,
+   209.0
+  ],
+  "frase_media_palabras": 14.5,
+  "frase_mediana": 9,
+  "frases_cortas_pct": 32.3,
+  "frases_largas_pct": 16.5,
+  "segmentos_tema": {
+   "segmentos_aprox": 79,
+   "min_por_segmento": 4.1
+  },
+  "preguntas_x1000": 12.1,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 6.7,
+   "tío": 1.7,
+   "bueno": 4.9,
+   "mira": 1.7,
+   "a ver": 1.7,
+   "claro": 3.6,
+   "vale": 1.6,
+   "oye": 0.7,
+   "es que": 5.7,
+   "no sé": 1.6
+  },
+  "malsonantes_x1000": 0.48,
+  "transiciones_explicitas": 36,
+  "ganchos_x1000": 0.52,
+  "publicidad_x1000": 0.11,
+  "vosotros_x1000": 0.4,
+  "nosotros_x1000": 3.3,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "no",
+    265
+   ],
+   [
+    "y",
+    205
+   ],
+   [
+    "sí",
+    205
+   ],
+   [
+    "es",
+    191
+   ],
+   [
+    "yo",
+    177
+   ],
+   [
+    "o",
+    173
+   ],
+   [
+    "bueno",
+    156
+   ],
+   [
+    "pero",
+    120
+   ]
+  ],
+  "formato": "tertulia de actualidad (3+ personas)"
+ },
+ "wildproject/7SbJ-i20WVc": {
+  "duracion_min": 231.7,
+  "palabras": 46322,
+  "wpm": 199.9,
+  "wpm_ventanas_p10_p90": [
+   179.0,
+   217.0
+  ],
+  "frase_media_palabras": 13.4,
+  "frase_mediana": 8,
+  "frases_cortas_pct": 33.7,
+  "frases_largas_pct": 15.3,
+  "segmentos_tema": {
+   "segmentos_aprox": 47,
+   "min_por_segmento": 5.0
+  },
+  "preguntas_x1000": 14.1,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 5.1,
+   "tío": 1.7,
+   "bueno": 5.2,
+   "mira": 2.0,
+   "a ver": 1.8,
+   "claro": 3.9,
+   "vale": 2.3,
+   "oye": 0.7,
+   "de verdad": 0.6,
+   "es que": 4.9,
+   "no sé": 1.5
+  },
+  "malsonantes_x1000": 0.6,
+  "transiciones_explicitas": 20,
+  "ganchos_x1000": 0.39,
+  "publicidad_x1000": 0.24,
+  "vosotros_x1000": 0.5,
+  "nosotros_x1000": 1.5,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    197
+   ],
+   [
+    "no",
+    191
+   ],
+   [
+    "es",
+    178
+   ],
+   [
+    "sí",
+    173
+   ],
+   [
+    "yo",
+    138
+   ],
+   [
+    "o",
+    117
+   ],
+   [
+    "bueno",
+    115
+   ],
+   [
+    "pero",
+    107
+   ]
+  ],
+  "formato": "tertulia de actualidad (3+ personas)"
+ },
+ "wildproject/eSCMAPpcZmk": {
+  "duracion_min": 263.9,
+  "palabras": 53125,
+  "wpm": 201.3,
+  "wpm_ventanas_p10_p90": [
+   178.0,
+   219.0
+  ],
+  "frase_media_palabras": 13.6,
+  "frase_mediana": 9.0,
+  "frases_cortas_pct": 31.9,
+  "frases_largas_pct": 14.8,
+  "segmentos_tema": {
+   "segmentos_aprox": 57,
+   "min_por_segmento": 4.6
+  },
+  "preguntas_x1000": 11.9,
+  "exclamaciones_x1000": 0.1,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 4.8,
+   "tío": 4.5,
+   "bueno": 4.9,
+   "mira": 1.5,
+   "a ver": 1.5,
+   "claro": 3.4,
+   "vale": 1.5,
+   "oye": 0.5,
+   "increíble": 0.7,
+   "de verdad": 0.6,
+   "es que": 4.1,
+   "no sé": 1.5
+  },
+  "malsonantes_x1000": 0.81,
+  "transiciones_explicitas": 31,
+  "ganchos_x1000": 0.55,
+  "publicidad_x1000": 0.09,
+  "vosotros_x1000": 0.3,
+  "nosotros_x1000": 1.6,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "no",
+    282
+   ],
+   [
+    "y",
+    208
+   ],
+   [
+    "es",
+    203
+   ],
+   [
+    "yo",
+    158
+   ],
+   [
+    "sí",
+    126
+   ],
+   [
+    "o",
+    123
+   ],
+   [
+    "bueno",
+    122
+   ],
+   [
+    "pero",
+    120
+   ]
+  ],
+  "formato": "tertulia de actualidad (3+ personas)"
+ },
+ "wildproject/Fzc3WziqZRk": {
+  "duracion_min": 310.1,
+  "palabras": 57041,
+  "wpm": 183.9,
+  "wpm_ventanas_p10_p90": [
+   166.0,
+   198.0
+  ],
+  "frase_media_palabras": 13.9,
+  "frase_mediana": 9.0,
+  "frases_cortas_pct": 32.0,
+  "frases_largas_pct": 16.1,
+  "segmentos_tema": {
+   "segmentos_aprox": 69,
+   "min_por_segmento": 4.5
+  },
+  "preguntas_x1000": 11.2,
+  "exclamaciones_x1000": 0.1,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 4.9,
+   "tío": 2.1,
+   "bueno": 5.2,
+   "mira": 1.1,
+   "a ver": 2.2,
+   "claro": 2.6,
+   "vale": 1.4,
+   "oye": 0.7,
+   "es que": 4.6,
+   "no sé": 1.3
+  },
+  "malsonantes_x1000": 0.35,
+  "transiciones_explicitas": 27,
+  "ganchos_x1000": 0.51,
+  "publicidad_x1000": 0.19,
+  "vosotros_x1000": 0.2,
+  "nosotros_x1000": 2.0,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "no",
+    266
+   ],
+   [
+    "y",
+    249
+   ],
+   [
+    "sí",
+    221
+   ],
+   [
+    "yo",
+    206
+   ],
+   [
+    "es",
+    147
+   ],
+   [
+    "pero",
+    137
+   ],
+   [
+    "o",
+    134
+   ],
+   [
+    "bueno",
+    129
+   ]
+  ],
+  "formato": "tertulia de actualidad (3+ personas)"
+ },
+ "wildproject/vfUAabofwJ4": {
+  "duracion_min": 283.4,
+  "palabras": 57707,
+  "wpm": 203.6,
+  "wpm_ventanas_p10_p90": [
+   188.0,
+   222.0
+  ],
+  "frase_media_palabras": 15.5,
+  "frase_mediana": 11,
+  "frases_cortas_pct": 27.6,
+  "frases_largas_pct": 19.4,
+  "segmentos_tema": {
+   "segmentos_aprox": 60,
+   "min_por_segmento": 4.8
+  },
+  "preguntas_x1000": 12.0,
+  "exclamaciones_x1000": 0.2,
+  "pausas_1s_por_min": 0.1,
+  "muletillas_x1000": {
+   "o sea": 5.2,
+   "tío": 3.5,
+   "bueno": 5.4,
+   "mira": 1.2,
+   "a ver": 1.9,
+   "claro": 3.7,
+   "vale": 1.3,
+   "oye": 0.9,
+   "es que": 5.0,
+   "no sé": 1.8
+  },
+  "malsonantes_x1000": 0.52,
+  "transiciones_explicitas": 28,
+  "ganchos_x1000": 0.29,
+  "publicidad_x1000": 0.03,
+  "vosotros_x1000": 0.2,
+  "nosotros_x1000": 1.9,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    249
+   ],
+   [
+    "es",
+    192
+   ],
+   [
+    "no",
+    175
+   ],
+   [
+    "sí",
+    171
+   ],
+   [
+    "yo",
+    158
+   ],
+   [
+    "o",
+    154
+   ],
+   [
+    "pero",
+    123
+   ],
+   [
+    "bueno",
+    122
+   ]
+  ],
+  "formato": "tertulia de actualidad (3+ personas)"
+ },
+ "wildproject/XJqBNaaxdZY": {
+  "duracion_min": 296.5,
+  "palabras": 57554,
+  "wpm": 194.1,
+  "wpm_ventanas_p10_p90": [
+   175.0,
+   217.0
+  ],
+  "frase_media_palabras": null,
+  "frase_mediana": null,
+  "frases_cortas_pct": null,
+  "frases_largas_pct": null,
+  "segmentos_tema": {
+   "segmentos_aprox": 80,
+   "min_por_segmento": 3.7
+  },
+  "preguntas_x1000": 0.0,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.1,
+  "muletillas_x1000": {
+   "o sea": 5.5,
+   "tío": 3.2,
+   "bueno": 5.3,
+   "mira": 1.2,
+   "a ver": 2.1,
+   "en plan": 0.7,
+   "claro": 2.4,
+   "vale": 3.1,
+   "oye": 1.0,
+   "es que": 4.3,
+   "no sé": 1.3
+  },
+  "malsonantes_x1000": 0.5,
+  "transiciones_explicitas": 27,
+  "ganchos_x1000": 0.82,
+  "publicidad_x1000": 0.26,
+  "vosotros_x1000": 0.2,
+  "nosotros_x1000": 1.8,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "x",
+    1
+   ]
+  ],
+  "formato": "tertulia de actualidad (3+ personas)"
+ },
+ "wildproject/yJFQF0U8C-0": {
+  "duracion_min": 242.6,
+  "palabras": 48175,
+  "wpm": 198.6,
+  "wpm_ventanas_p10_p90": [
+   183.0,
+   213.0
+  ],
+  "frase_media_palabras": 12.1,
+  "frase_mediana": 7.0,
+  "frases_cortas_pct": 38.3,
+  "frases_largas_pct": 12.0,
+  "segmentos_tema": {
+   "segmentos_aprox": 57,
+   "min_por_segmento": 4.3
+  },
+  "preguntas_x1000": 17.1,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 6.9,
+   "tío": 2.1,
+   "bueno": 7.4,
+   "mira": 1.8,
+   "a ver": 2.0,
+   "claro": 3.3,
+   "vale": 3.1,
+   "oye": 0.7,
+   "increíble": 0.5,
+   "de verdad": 0.5,
+   "es que": 5.5,
+   "no sé": 1.8
+  },
+  "malsonantes_x1000": 0.48,
+  "transiciones_explicitas": 26,
+  "ganchos_x1000": 0.46,
+  "publicidad_x1000": 0.08,
+  "vosotros_x1000": 0.4,
+  "nosotros_x1000": 2.0,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "no",
+    250
+   ],
+   [
+    "sí",
+    205
+   ],
+   [
+    "y",
+    197
+   ],
+   [
+    "es",
+    185
+   ],
+   [
+    "bueno",
+    179
+   ],
+   [
+    "o",
+    177
+   ],
+   [
+    "yo",
+    147
+   ],
+   [
+    "a",
+    97
+   ]
+  ],
+  "formato": "tertulia de actualidad (3+ personas)"
+ },
+ "worldcast/bUv0xjEJwHY": {
+  "duracion_min": 96.1,
+  "palabras": 18423,
+  "wpm": 191.8,
+  "wpm_ventanas_p10_p90": [
+   179.0,
+   200.0
+  ],
+  "frase_media_palabras": 23.4,
+  "frase_mediana": 17.0,
+  "frases_cortas_pct": 13.1,
+  "frases_largas_pct": 35.1,
+  "segmentos_tema": {
+   "segmentos_aprox": 18,
+   "min_por_segmento": 5.5
+  },
+  "preguntas_x1000": 6.4,
+  "exclamaciones_x1000": 0.1,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 3.6,
+   "bueno": 3.8,
+   "a ver": 0.7,
+   "claro": 2.6,
+   "vale": 0.5,
+   "es que": 4.3,
+   "no sé": 1.0,
+   "imagínate": 0.6
+  },
+  "malsonantes_x1000": 0.0,
+  "transiciones_explicitas": 6,
+  "ganchos_x1000": 0.76,
+  "publicidad_x1000": 0.0,
+  "vosotros_x1000": 0.0,
+  "nosotros_x1000": 3.6,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    98
+   ],
+   [
+    "entonces",
+    88
+   ],
+   [
+    "pero",
+    47
+   ],
+   [
+    "o",
+    43
+   ],
+   [
+    "es",
+    35
+   ],
+   [
+    "si",
+    27
+   ],
+   [
+    "por",
+    22
+   ],
+   [
+    "yo",
+    21
+   ]
+  ],
+  "formato": "entrevista"
+ },
+ "worldcast/f92Z3QKpBRo": {
+  "duracion_min": 86.0,
+  "palabras": 14087,
+  "wpm": 163.9,
+  "wpm_ventanas_p10_p90": [
+   131.0,
+   182.0
+  ],
+  "frase_media_palabras": 14.8,
+  "frase_mediana": 10,
+  "frases_cortas_pct": 30.7,
+  "frases_largas_pct": 18.0,
+  "segmentos_tema": {
+   "segmentos_aprox": 21,
+   "min_por_segmento": 4.1
+  },
+  "preguntas_x1000": 12.3,
+  "exclamaciones_x1000": 0.1,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 2.4,
+   "bueno": 0.9,
+   "mira": 0.8,
+   "a ver": 3.3,
+   "la verdad": 1.4,
+   "claro": 9.2,
+   "vale": 4.8,
+   "es que": 1.9,
+   "no sé": 1.2
+  },
+  "malsonantes_x1000": 0.07,
+  "transiciones_explicitas": 4,
+  "ganchos_x1000": 0.14,
+  "publicidad_x1000": 0.07,
+  "vosotros_x1000": 0.2,
+  "nosotros_x1000": 1.6,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    138
+   ],
+   [
+    "entonces",
+    44
+   ],
+   [
+    "claro",
+    44
+   ],
+   [
+    "sí",
+    37
+   ],
+   [
+    "porque",
+    34
+   ],
+   [
+    "a",
+    34
+   ],
+   [
+    "pero",
+    32
+   ],
+   [
+    "vale",
+    28
+   ]
+  ],
+  "formato": "entrevista"
+ },
+ "worldcast/PJORq_pIDWs": {
+  "duracion_min": 85.4,
+  "palabras": 16927,
+  "wpm": 198.3,
+  "wpm_ventanas_p10_p90": [
+   166.0,
+   210.0
+  ],
+  "frase_media_palabras": 18.0,
+  "frase_mediana": 13,
+  "frases_cortas_pct": 26.3,
+  "frases_largas_pct": 27.2,
+  "segmentos_tema": {
+   "segmentos_aprox": 18,
+   "min_por_segmento": 4.8
+  },
+  "preguntas_x1000": 8.5,
+  "exclamaciones_x1000": 0.0,
+  "pausas_1s_por_min": 0.0,
+  "muletillas_x1000": {
+   "o sea": 4.1,
+   "bueno": 3.3,
+   "a ver": 1.2,
+   "la verdad": 0.5,
+   "claro": 1.9,
+   "vale": 3.0,
+   "es que": 5.2,
+   "no sé": 0.6
+  },
+  "malsonantes_x1000": 0.06,
+  "transiciones_explicitas": 5,
+  "ganchos_x1000": 0.24,
+  "publicidad_x1000": 0.12,
+  "vosotros_x1000": 0.1,
+  "nosotros_x1000": 1.3,
+  "top_palabras_vacias_inicio_frase": [
+   [
+    "y",
+    83
+   ],
+   [
+    "entonces",
+    51
+   ],
+   [
+    "no",
+    36
+   ],
+   [
+    "pero",
+    34
+   ],
+   [
+    "o",
+    32
+   ],
+   [
+    "por",
+    31
+   ],
+   [
+    "que",
+    29
+   ],
+   [
+    "qué",
+    28
+   ]
+  ],
+  "formato": "entrevista"
+ }
+}
