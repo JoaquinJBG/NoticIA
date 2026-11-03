@@ -63,8 +63,12 @@ Condiciones: voz solo en `voces/propia/` (carpeta ignorada por git: `git check-i
 ## 4. Pruebas A/B (estado)
 
 - Referencia para comparar: `output/muestras-mejoras-2026-11-02/nat1_parametros-por-defecto.wav` (Chatterbox por defecto), mismo diálogo `textos2.DIALOGO`.
-- Candidato probado: **MOSS-TTSD** con las dos referencias públicas ya usadas (lombardi / pablocrdz de LibriVox, solo como prueba interna), cuantizado a 4 bits con `C:\Users\dotoy\ttsp\moss\moss_gen_ab.py`. 8 bits (~9 GB) no cabe ahora: la GPU tiene ~6,7 GB ocupados por otros procesos. Resultado en `output/muestras-voces-naturales/` (ignorada por git); el estado real se indica en el mensaje de entrega.
-- No he escuchado nada. El orden de preferencia lo da el usuario.
+- Candidato intentado: **MOSS-TTSD** (referencias públicas lombardi / pablocrdz de LibriVox, solo prueba interna) con `C:\Users\dotoy\ttsp\moss\moss_gen_ab.py`. **No se pudo generar ninguna muestra**:
+  - 4 bits: *segmentation fault* al cargar pesos (bitsandbytes en Windows); log `ab_moss4b.log` en esa carpeta.
+  - 8 bits: `CUDA out of memory` con ~3,3 GB cargados, porque otras apps ya ocupan ~6,5 GB de los 12 GB; log `ab_moss8.log`.
+  - Siguiente intento razonable: cerrar apps que usen GPU y repetir en 8 bits; si falla, MOSS-TTSD queda descartado en esta máquina.
+- `output/muestras-voces-naturales/` está vacía: no hay A/B todavía. La primera comparación real será Chatterbox/Qwen3-TTS con la voz propia cuando el usuario grabe.
+- No he escuchado nada; el orden de preferencia lo da el usuario.
 
 ## Fuentes
 [MLS](https://huggingface.co/datasets/facebook/multilingual_librispeech) · [Common Voice 25 es](https://datacollective.mozillafoundation.org/datasets/cmn4z1n52000knv07h01532dd) · [términos Common Voice](https://commonvoice.mozilla.org/en/terms) · [VoxPopuli](https://huggingface.co/datasets/facebook/voxpopuli) · [calidad de datasets (licencia VoxPopuli)](https://arxiv.org/pdf/2506.17525) · [CSS10](https://github.com/Kyubyong/css10) · [M-AILABS](https://cs.paperswithcode.com/dataset/m-ailabs-speech-dataset) · [OpenSLR 73](https://www.openslr.org/73/) · [OpenSLR 67](https://www.openslr.org/67/) · [Chatterbox](https://huggingface.co/ResembleAI/chatterbox) · [F5-TTS](https://huggingface.co/SWivid/F5-TTS) · [XTTS-v2](https://huggingface.co/coqui/XTTS-v2) · [Qwen3-TTS](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base) · [MOSS-TTSD](https://huggingface.co/OpenMOSS-Team/MOSS-TTSD-v1.0) · [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) · informe previo `output/muestras-mejoras-2026-11-02/INFORME-naturalidad.md`.
