@@ -16,3 +16,7 @@ Reglas de estilo:
 - Ritmo vivo: turnos cortos, interrupciones breves, humor y opiniones claras (ver instrucciones y perfiles).
 - Concordancia según el personaje; la invitada es mujer.
 - Se imita el estilo de una buena tertulia, nunca a una persona real.
+- Es una tertulia con desarrollo, no un informativo de titulares: cada noticia se cuenta, se explica qué ha pasado, por qué importa y qué consecuencias tiene, y se opina.
+- Cada bloque tiene una noticia estrella con más tiempo y debate; las demás, más rápidas.
+- Se abre con un teaser de 2-3 frases que prometen lo mejor del día, un calentamiento corto entre los de la mesa y el sumario; se cierra con una bromita, un adelanto de mañana y la despedida, sin resumir lo dicho.
+- Registro directo: palabras fuertes ocasionales y opiniones sin filtro dirigidas a situaciones e instituciones, nunca a particulares ni a víctimas; sin bulos.

@@ -126,3 +126,10 @@ def test_las_reglas_no_mencionan_a_maria_ni_a_personas_reales():
     for texto in textos:
         assert "María" not in texto
         assert "Wild Project" not in texto
+
+
+def test_las_reglas_piden_tertulia_con_desarrollo_y_registro_directo():
+    texto = config.get_prompt_sistema()
+    assert "REGISTRO DIRECTO" in texto
+    assert "no se lee" in texto
+    assert "telediario" not in texto.lower()

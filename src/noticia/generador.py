@@ -118,6 +118,8 @@ def generar_briefing_contexto(categoria, noticias, fecha: date | None = None) ->
     2. Curiosidades o datos poco conocidos relacionados.
     3. Una analogía con la cultura pop (cine, series, libros).
     4. Una pregunta "incómoda" o profunda para debatir.
+    5. Un giro cercano: qué cambia esto en la vida diaria de un oyente en España, o una
+       comparación con algo que conozca.
 
     IMPORTANTE: No inventes hechos actuales, solo aporta contexto histórico y cultural real.
     """
@@ -143,10 +145,23 @@ def construir_bloque_con_contexto(
     {formatear_noticias_prompt(noticias)}
 
     INSTRUCCIONES:
-    - Cada personaje habla según su perfil: usad los datos del BRIEFING como munición
-      para opinar, no para dar una clase.
-    - Ritmo vivo: frases cortas, interrupciones breves, humor y opiniones claras.
-    - Evitad repeticiones robóticas. Charlad durante 8-10 minutos de forma apasionada.
+    - Es una tertulia entre amigos con desarrollo, no un informativo de titulares: que el
+      oyente acabe entendiendo qué ha pasado, por qué importa y qué consecuencias puede tener.
+    - Cada cual habla según su perfil: usad los datos del BRIEFING como munición para
+      opinar, no para dar una clase.
+    - Elegid UNA noticia estrella del bloque (la más interesante para un oyente español) y
+      dadle el triple de tiempo y debate; las demás, más rápidas, pero explicadas.
+    - Cada noticia: gancho en la primera frase, dato duro en una o dos frases, reacción o duda
+      del otro, qué ha ocurrido y por qué, por qué importa y consecuencias, opinión con
+      discrepancia, comparación cercana y remate. No enumeréis esos pasos: que se note solo.
+    - Mezclad turnos: muchas reacciones de 1-4 palabras en línea propia y alguna explicación
+      de 60-120 palabras que el otro interrumpe. Que no todos los turnos midan lo mismo.
+    - Al menos una pregunta cada 4-5 turnos. Muletillas ("o sea", "es que", "claro",
+      "bueno") a ráfagas.
+    - Pasad de un tema al siguiente por asociación o con una broma, sin fórmulas ("pasamos a…").
+    - Registro directo: alguna palabra fuerte y opiniones sin filtro sobre decisiones e
+      instituciones, nunca insultos a personas concretas ni bulos.
+    - Charlad durante 8-10 minutos de forma apasionada.
     - DESCARTAD sin comentarla cualquier noticia de la lista que en realidad sea
       publicidad, una promoción, un cupón de descuento o contenido comercial, o
       que no tenga interés real para una audiencia española: no forméis parte de
@@ -177,8 +192,12 @@ def generar_intro(datos_noticias, fecha: date | None = None, reparto: Reparto | 
     prompt_sistema = _prompt_sistema(reparto)
     prompt_usuario = (
         f"Hoy es {fecha_texto}. "
-        f"TAREA: Genera la introducción con este sumario de temas: {resumen_titulares}. "
-        "Saludo carismático y hook inicial. "
+        f"TAREA: Genera la apertura con este sumario de temas: {resumen_titulares}. "
+        "Estructura: (1) un teaser de 2-3 frases que prometa lo mejor del día, (2) un "
+        "calentamiento corto y gracioso entre los de la mesa (una pulla, una discrepancia "
+        "pequeña), (3) el saludo y la presentación del episodio, (4) el sumario con "
+        "promesas, sin leer titulares secos. Si hay invitada, se la presenta con un par de "
+        "frases de cachondeo cariñoso. "
         "Responde ÚNICAMENTE con el diálogo, sin preámbulo ni markdown."
     )
 
@@ -201,9 +220,10 @@ def generar_outro(
     prompt_sistema = _prompt_sistema(reparto)
     prompt_usuario = (
         f"Hoy es {fecha_texto}. "
-        "TAREA: Genera la despedida del podcast, recordando brevemente estos titulares "
-        f"reales de hoy (no os inventéis otros):\n{resumen_titulares}\n"
-        "Resumen breve, Call to Action y cierre: NoticIA. "
+        "TAREA: Genera la despedida: una pulla o broma final, un adelanto de mañana si "
+        "procede y un cierre breve que recuerde dos o tres de estos titulares reales de hoy "
+        f"(no os inventéis otros):\n{resumen_titulares}\n"
+        "Nada de resumen formal ni de 'esto es todo'. Termina con la despedida: NoticIA. "
         "Responde ÚNICAMENTE con el diálogo, sin preámbulo ni markdown."
     )
 

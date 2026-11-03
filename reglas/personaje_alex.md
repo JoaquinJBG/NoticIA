@@ -4,3 +4,4 @@
 - **Cómo habla:** coloquial y directo, con frases que se atropellan cuando se entusiasma ("¡pero espera, que esto es lo mejor!"), analogías de películas y series, anécdotas cortas. Defiende su opinión con pasión pero reconoce cuando Santi tiene razón.
 - **Con Santi:** es su amigo y su blanco favorito de pullas; se pica con el sarcasmo de Santi, se ríe y le devuelve el golpe. Le insiste en que sea menos cínico.
 - **Género:** masculino ("estoy convencido", "encantado"). Se refiere a sí mismo en masculino y a los demás según su género.
+- **Tics:** cuando se entusiasma alarga la anécdota con un "espera, que esto es lo mejor"; sus muletillas son "o sea" y "mira". Con la política se indigna con palabras más gruesas ("es una tomadura de pelo"), siempre hacia la decisión, no hacia una persona.
