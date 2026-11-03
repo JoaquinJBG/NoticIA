@@ -37,7 +37,7 @@ Notas:
 |---|---|---|---|---|---|
 | Chatterbox multilingüe (actual) | sí, hay [finetunes es-ES/es-LatAm](https://huggingface.co/ResembleAI/chatterbox) | MIT **(verificado)** | zero-shot | LoRA con repos de terceros: [Ahmed-Ezzat20](https://gh.hhj520.top/Ahmed-Ezzat20/chatterbox-finetuning-multilingual) (rank 32, alpha 64), [gokhaneraslan](https://huggingface.co/ibibek/train_chatterbox) | sí |
 | Qwen3-TTS 1.7B Base | sí (10 idiomas) | Apache-2.0 **(verificado)** | 3 s + transcripción | "se puede usar para FT" **(verificado)**, sin guía en la ficha | sí |
-| MOSS-TTSD v1.0 (8B) | sí (20 idiomas) | Apache-2.0 **(verificado)** | 1-5 hablantes, 3-10 s | no | solo cuantizado; **la GPU tiene ~6,7 GB ocupados por otras apps** (ver §4) |
+| MOSS-TTSD v1.0 (8B) | sí (20 idiomas) | Apache-2.0 **(verificado)** | 1-5 hablantes, 3-10 s | no | solo cuantizado; en la prueba falló (ver §4) |
 | CosyVoice 2/3 (0,5 B) | sí (9 idiomas) | Apache-2.0 **(verificado)** | zero-shot cross-lingual | scripts de entrenamiento en el repo | sí; instalación en Windows incierta |
 | F5-TTS | no declarado en la ficha | **CC BY-NC 4.0** **(verificado)** | zero-shot | sí, con notebooks | sí, pero **no comercial** |
 | XTTS-v2 | sí | CPML (Coqui, no comercial **sin verificar**) | 6 s | sí | sí; proyecto abandonado |
